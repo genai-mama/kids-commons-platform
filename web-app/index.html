@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>App Store</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <h1>App Store</h1>
+            </div>
+            <nav class="nav">
+                <ul class="nav-list">
+                    <li><a href="#featured" class="nav-link active">おすすめ</a></li>
+                    <li><a href="#categories" class="nav-link">カテゴリ</a></li>
+                    <li><a href="#top-charts" class="nav-link">ランキング</a></li>
+                    <li><a href="#search" class="nav-link">検索</a></li>
+                </ul>
+            </nav>
+            <div class="search-bar">
+                <input type="text" placeholder="アプリを検索" class="search-input">
+                <button class="search-btn">🔍</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <section id="featured" class="section">
+            <div class="container">
+                <h2 class="section-title">今日のおすすめ</h2>
+                <div class="featured-apps">
+                    <div class="featured-card large">
+                        <img src="https://via.placeholder.com/300x200" alt="Featured App" class="featured-image">
+                        <div class="featured-content">
+                            <h3 class="featured-title">今日のApp</h3>
+                            <p class="featured-description">新しい体験を提供するアプリ</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="apps-grid">
+                    <div class="app-card">
+                        <img src="https://via.placeholder.com/60x60" alt="App Icon" class="app-icon">
+                        <div class="app-info">
+                            <h3 class="app-title">サンプルアプリ 1</h3>
+                            <p class="app-subtitle">エンターテインメント</p>
+                            <div class="app-rating">
+                                <span class="stars">★★★★★</span>
+                                <span class="rating-count">4.5</span>
+                            </div>
+                        </div>
+                        <button class="download-btn">入手</button>
+                    </div>
+                    
+                    <div class="app-card">
+                        <img src="https://via.placeholder.com/60x60" alt="App Icon" class="app-icon">
+                        <div class="app-info">
+                            <h3 class="app-title">サンプルアプリ 2</h3>
+                            <p class="app-subtitle">ユーティリティ</p>
+                            <div class="app-rating">
+                                <span class="stars">★★★★☆</span>
+                                <span class="rating-count">4.2</span>
+                            </div>
+                        </div>
+                        <button class="download-btn">入手</button>
+                    </div>
+                    
+                    <div class="app-card">
+                        <img src="https://via.placeholder.com/60x60" alt="App Icon" class="app-icon">
+                        <div class="app-info">
+                            <h3 class="app-title">サンプルアプリ 3</h3>
+                            <p class="app-subtitle">ゲーム</p>
+                            <div class="app-rating">
+                                <span class="stars">★★★★★</span>
+                                <span class="rating-count">4.8</span>
+                            </div>
+                        </div>
+                        <button class="download-btn">入手</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="categories" class="section">
+            <div class="container">
+                <h2 class="section-title">カテゴリ</h2>
+                <div class="categories-grid">
+                    <div class="category-card">
+                        <div class="category-icon">🎮</div>
+                        <h3 class="category-title">ゲーム</h3>
+                    </div>
+                    <div class="category-card">
+                        <div class="category-icon">📱</div>
+                        <h3 class="category-title">ユーティリティ</h3>
+                    </div>
+                    <div class="category-card">
+                        <div class="category-icon">🎵</div>
+                        <h3 class="category-title">音楽</h3>
+                    </div>
+                    <div class="category-card">
+                        <div class="category-icon">📚</div>
+                        <h3 class="category-title">教育</h3>
+                    </div>
+                    <div class="category-card">
+                        <div class="category-icon">🏃</div>
+                        <h3 class="category-title">ヘルスケア</h3>
+                    </div>
+                    <div class="category-card">
+                        <div class="category-icon">💼</div>
+                        <h3 class="category-title">ビジネス</h3>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="top-charts" class="section">
+            <div class="container">
+                <h2 class="section-title">トップチャート</h2>
+                <div class="chart-tabs">
+                    <button class="tab-btn active">有料</button>
+                    <button class="tab-btn">無料</button>
+                    <button class="tab-btn">売上トップ</button>
+                </div>
+                <div class="chart-list">
+                    <div class="chart-item">
+                        <span class="chart-rank">1</span>
+                        <img src="https://via.placeholder.com/50x50" alt="App Icon" class="chart-icon">
+                        <div class="chart-info">
+                            <h4 class="chart-title">人気アプリ 1</h4>
+                            <p class="chart-category">エンターテインメント</p>
+                        </div>
+                        <button class="download-btn small">入手</button>
+                    </div>
+                    <div class="chart-item">
+                        <span class="chart-rank">2</span>
+                        <img src="https://via.placeholder.com/50x50" alt="App Icon" class="chart-icon">
+                        <div class="chart-info">
+                            <h4 class="chart-title">人気アプリ 2</h4>
+                            <p class="chart-category">ゲーム</p>
+                        </div>
+                        <button class="download-btn small">入手</button>
+                    </div>
+                    <div class="chart-item">
+                        <span class="chart-rank">3</span>
+                        <img src="https://via.placeholder.com/50x50" alt="App Icon" class="chart-icon">
+                        <div class="chart-info">
+                            <h4 class="chart-title">人気アプリ 3</h4>
+                            <p class="chart-category">ユーティリティ</p>
+                        </div>
+                        <button class="download-btn small">入手</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 App Store. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
