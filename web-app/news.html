@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>News - #生成AIママ部</title>
+    <meta
+      name="description"
+      content="#生成AIママ部の最新ニュース - コミュニティの最新情報やお知らせをお届けします。"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/responsive.css" />
+  </head>
+  <body>
+    <!-- Navigation -->
+    <header class="header">
+      <div class="container">
+        <div class="logo">
+          <a href="index.html">
+            <img
+              src="images/logo/genai-mama-logo.svg"
+              alt="#生成AIママ部"
+              class="logo-image"
+            />
+          </a>
+        </div>
+        <nav class="nav" id="nav">
+          <ul class="nav-list">
+            <li>
+              <a href="index.html" class="nav-link">ホーム</a>
+            </li>
+            <li>
+              <a href="about.html" class="nav-link">About</a>
+            </li>
+            <li>
+              <a href="products.html" class="nav-link">Products</a>
+            </li>
+            <li>
+              <a href="news.html" class="nav-link active">News</a>
+            </li>
+          </ul>
+        </nav>
+        <div class="header-actions">
+          <div class="search-bar">
+            <input
+              type="text"
+              placeholder="成果物を検索"
+              class="search-input"
+              id="search-input"
+            />
+            <button class="search-btn" id="search-btn">🔍</button>
+          </div>
+          <a href="#" class="btn-join" id="join-btn">参加する</a>
+        </div>
+        <button class="mobile-menu-toggle" id="mobile-menu-toggle">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main">
+      <section class="news">
+        <div class="container">
+          <h1 class="page-title">ニュース</h1>
+          <div class="news-grid" id="news-grid">
+            <!-- News will be injected here -->
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="container">
+        <p>&copy; 2024 #生成AIママ部. All rights reserved.</p>
+      </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="js/data.js"></script>
+    <script src="js/mobile-menu.js"></script>
+    <script src="js/news-page.js"></script>
+  </body>
+</html>
