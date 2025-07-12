@@ -55,13 +55,31 @@ const products = [
     thumbnail: "https://via.placeholder.com/300x200/6366F1/FFFFFF?text=mamaconne",
     featured: true,
     url: "https://mamaconne.netlify.app/profile"
+  },
+  {
+    id: 4,
+    title: "葉っぱメモアプリ",
+    category: "学習",
+    description: "写真を撮影したら、植物の名前を教えてくれて、写真に名前を貼り付けられるアプリです。",
+    tags: ["学習", "効率化", "メモ"],
+    author: {
+      name: "開発ママDさん",
+      avatar: "D",
+      role: "iOS個人開発者"
+    },
+    date: "2025-07-10",
+    likes: 0,
+    comments: 0,
+    thumbnail: "https://via.placeholder.com/300x200/9B7BD8/FFFFFF?text=葉っぱメモ",
+    featured: false,
+    url: "https://apps.apple.com/jp/app/%E8%91%89%E3%81%A3%E3%81%B1%E3%83%A1%E3%83%A2/id6746083452"
   }
 ];
 
 // Statistics Data
 const stats = {
   totalMembers: 127,
-  totalProducts: 3,
+  totalProducts: 4,
   activeDays: 156,
   totalLikes: 105
 };
@@ -110,7 +128,8 @@ const categories = [
   { id: 'all', name: 'すべて', count: products.length },
   { id: '仕事効率化', name: '仕事効率化', count: products.filter(p => p.category === '仕事効率化').length },
   { id: '学校', name: '学校', count: products.filter(p => p.category === '学校').length },
-  { id: 'コミュニケーション', name: 'コミュニケーション', count: products.filter(p => p.category === 'コミュニケーション').length }
+  { id: 'コミュニケーション', name: 'コミュニケーション', count: products.filter(p => p.category === 'コミュニケーション').length },
+  { id: '学習', name: '学習', count: products.filter(p => p.category === '学習').length }
 ];
 
 // Utility functions
