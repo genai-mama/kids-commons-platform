@@ -6,7 +6,19 @@
       "Bash(firebase use:*)",
       "Bash(firebase deploy:*)",
       "Bash(firebase login:*)",
-      "Bash(gcloud auth:*)"
+      "Bash(gcloud auth:*)",
+      "Bash(npm install:*)",
+      "Bash(cp:*)",
+      "Bash(mkdir:*)",
+      "Bash(npm run dev:*)",
+      "Bash(pkill:*)",
+      "Bash(npm run build:*)",
+      "Bash(curl:*)",
+      "Bash(lsof:*)",
+      "Bash(true)",
+      "Bash(npx vite build:*)",
+      "Bash(python3:*)",
+      "Bash(npx serve:*)"
     ],
     "deny": []
   }
