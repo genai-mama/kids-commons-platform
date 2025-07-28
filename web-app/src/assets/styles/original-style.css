@@ -243,8 +243,8 @@ body {
 
 .btn-secondary {
   background: var(--white);
-  color: var(--primary-purple);
-  border: 1px solid var(--primary-purple-light);
+  color: var(--primary-purple-dark);
+  border: 1px solid var(--primary-purple-dark);
   padding: var(--spacing-3) var(--spacing-6);
   border-radius: var(--radius-lg);
   font-weight: 600;

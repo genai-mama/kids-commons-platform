@@ -27,18 +27,12 @@ const news = computed(() => dataStore.news)
             :key="newsItem.id"
             class="news-card"
           >
-            <img
-              :src="newsItem.thumbnail"
-              :alt="newsItem.title"
-              class="news-thumbnail"
-            />
             <div class="news-content">
               <div class="news-meta">
-                <span class="news-category">{{ newsItem.category }}</span>
-                <time class="news-date">{{ newsItem.date }}</time>
+                <time class="news-date">{{ dataStore.formatDate(newsItem.date) }}</time>
               </div>
               <h2 class="news-title">{{ newsItem.title }}</h2>
-              <p class="news-summary">{{ newsItem.summary }}</p>
+              <p class="news-summary">{{ newsItem.excerpt }}</p>
               <div class="news-footer">
                 <a 
                   :href="newsItem.url" 

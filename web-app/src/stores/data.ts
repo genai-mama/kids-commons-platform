@@ -23,10 +23,8 @@ export interface Product {
 export interface NewsItem {
   id: number
   title: string
-  summary: string
+  excerpt: string
   date: string
-  category: string
-  thumbnail: string
   url: string
 }
 
@@ -38,6 +36,12 @@ export interface Stats {
 }
 
 export const useDataStore = defineStore('data', () => {
+  // Discord サーバー情報
+  const discordServerId = ref('1384414582621081620')
+  const discordMemberCount = ref(1247) // フォールバック値
+  const discordOnlineCount = ref(0)
+  const discordServerName = ref('#生成AIママ部')
+  
   // State
   const products = ref<Product[]>([
     {
@@ -91,101 +95,73 @@ export const useDataStore = defineStore('data', () => {
       likes: 35,
       comments: 12,
       thumbnail: "https://via.placeholder.com/300x200/6366F1/FFFFFF?text=mamaconne",
-      featured: false,
-      url: "https://mamaconne-profile.netlify.app/"
+      featured: true,
+      url: "https://mamaconne.netlify.app/profile"
     },
     {
       id: 4,
-      title: "レシピAI助手",
-      category: "料理",
-      description: "冷蔵庫の余り物を入力するだけで、AIが美味しいレシピを提案。食材の無駄を減らしながら料理のレパートリーが広がります。",
-      tags: ["料理", "AI", "節約"],
+      title: "葉っぱメモアプリ",
+      category: "学習",
+      description: "写真を撮影したら、植物の名前を教えてくれて、写真に名前を貼り付けられるアプリです。",
+      tags: ["学習", "効率化", "メモ"],
       author: {
-        name: "料理好きママDさん",
+        name: "開発ママDさん",
         avatar: "D",
-        role: "管理栄養士"
+        role: "iOS個人開発者"
       },
-      date: "2025-06-20",
-      likes: 67,
-      comments: 23,
-      thumbnail: "https://via.placeholder.com/300x200/EC4899/FFFFFF?text=レシピAI",
+      date: "2025-07-10",
+      likes: 0,
+      comments: 0,
+      thumbnail: "https://via.placeholder.com/300x200/9B7BD8/FFFFFF?text=葉っぱメモ",
       featured: false,
-      url: "https://recipe-ai-assistant.netlify.app/"
-    },
-    {
-      id: 5,
-      title: "子どもの成長記録アプリ",
-      category: "育児",
-      description: "写真と共に子どもの成長を記録・分析できるアプリ。発達の節目や記念日を自動で通知してくれます。",
-      tags: ["育児", "記録", "成長"],
-      author: {
-        name: "新米ママEさん",
-        avatar: "E",
-        role: "UI/UXデザイナー"
-      },
-      date: "2025-06-15",
-      likes: 89,
-      comments: 31,
-      thumbnail: "https://via.placeholder.com/300x200/10B981/FFFFFF?text=成長記録",
-      featured: true,
-      url: "https://kids-growth-tracker.netlify.app/"
-    },
-    {
-      id: 6,
-      title: "家計簿スマートBot",
-      category: "家計管理",
-      description: "レシートを撮影するだけで自動的に家計簿に記録。AIが支出パターンを分析して節約のコツを教えてくれます。",
-      tags: ["家計簿", "節約", "AI"],
-      author: {
-        name: "節約ママFさん",
-        avatar: "F",
-        role: "ファイナンシャルプランナー"
-      },
-      date: "2025-06-10",
-      likes: 54,
-      comments: 18,
-      thumbnail: "https://via.placeholder.com/300x200/F59E0B/FFFFFF?text=家計簿Bot",
-      featured: false,
-      url: "https://household-bot.netlify.app/"
+      url: "https://apps.apple.com/jp/app/%E8%91%89%E3%81%A3%E3%81%B1%E3%83%A1%E3%83%A2/id6746083452"
     }
   ])
 
   const news = ref<NewsItem[]>([
     {
       id: 1,
-      title: "#生成AIママ部 メンバー数1000人突破！",
-      summary: "コミュニティ開設から6ヶ月で1000人のママが参加。様々な分野でAI活用が進んでいます。",
-      date: "2025-07-01",
-      category: "お知らせ",
-      thumbnail: "https://via.placeholder.com/300x200/9B7BD8/FFFFFF?text=1000人突破",
-      url: "#"
+      title: "生成AIママ部メンバー100人突破！",
+      excerpt: "おかげさまでコミュニティメンバーが100人を突破しました。日々活発な情報交換が行われており、素晴らしい成果物も続々と生まれています。",
+      date: "2025-07-05",
+      url: "https://note.com/genai-mama/n/n123456789"
     },
     {
       id: 2,
-      title: "第1回ママハッカソン開催決定",
-      summary: "8月に開催予定の初のハッカソンイベント。テーマは「子育てを楽にするAIツール」です。",
-      date: "2025-06-28",
-      category: "イベント",
-      thumbnail: "https://via.placeholder.com/300x200/7C3AED/FFFFFF?text=ハッカソン",
-      url: "#"
+      title: "第1回 AIママハッカソン開催決定",
+      excerpt: "8月に第1回AIママハッカソンを開催します。家事育児の課題をAIで解決するアイデアを募集中です。",
+      date: "2025-06-30",
+      url: "https://note.com/genai-mama/n/n987654321"
     },
     {
       id: 3,
-      title: "AIプロンプト集を無料公開",
-      summary: "メンバーが作成した育児・家事に役立つプロンプト集をGitHubで公開開始しました。",
+      title: "メンバー作成のAIツールが話題に",
+      excerpt: "メンバーが作成した「育児記録AIアシスタント」がSNSで話題となり、多くの育児中のママから注目を集めています。",
       date: "2025-06-25",
-      category: "リソース",
-      thumbnail: "https://via.placeholder.com/300x200/6366F1/FFFFFF?text=プロンプト集",
-      url: "#"
+      url: "https://note.com/genai-mama/n/n456789123"
+    },
+    {
+      id: 4,
+      title: "AI活用セミナー開催レポート",
+      excerpt: "先月開催したAI活用セミナーには50名以上のママが参加。ChatGPTの基本的な使い方から実践的なプロンプトまで学びました。",
+      date: "2025-06-20",
+      url: "https://note.com/genai-mama/n/n789123456"
+    },
+    {
+      id: 5,
+      title: "新しいカテゴリ「デザイン」を追加",
+      excerpt: "成果物カテゴリに「デザイン」を新たに追加しました。AIを活用したデザインワークの共有をお待ちしています。",
+      date: "2025-06-15",
+      url: "https://note.com/genai-mama/n/n321654987"
     }
   ])
 
-  const stats = ref<Stats>({
-    totalMembers: 1247,
-    totalProducts: 23,
-    totalCategories: 8,
-    avgLikes: 45
-  })
+  const stats = computed<Stats>(() => ({
+    totalMembers: 127,
+    totalProducts: products.value.length,
+    totalCategories: categories.value.length,
+    avgLikes: Math.round(products.value.reduce((sum, p) => sum + p.likes, 0) / products.value.length) || 0
+  }))
 
   const likedProducts = ref<Set<number>>(new Set())
 
@@ -267,12 +243,63 @@ export const useDataStore = defineStore('data', () => {
     })
   }
 
+  // Discord Actions
+  function updateDiscordInfo(memberCount: number, onlineCount: number, serverName?: string) {
+    discordMemberCount.value = memberCount
+    discordOnlineCount.value = onlineCount
+    if (serverName) {
+      discordServerName.value = serverName
+    }
+  }
+
+  // Utility functions  
+  function formatDate(dateString: string): string {
+    const date = new Date(dateString)
+    return date.toLocaleDateString('ja-JP', { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    })
+  }
+
+  function formatDateShort(dateString: string): string {
+    const date = new Date(dateString)
+    return date.toLocaleDateString('ja-JP', { 
+      month: 'short', 
+      day: 'numeric' 
+    })
+  }
+
+  function getTimeAgo(dateString: string): string {
+    const date = new Date(dateString)
+    const now = new Date()
+    const diffTime = Math.abs(now.getTime() - date.getTime())
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+    
+    if (diffDays === 1) {
+      return '1日前'
+    } else if (diffDays < 7) {
+      return `${diffDays}日前`
+    } else if (diffDays < 30) {
+      const weeks = Math.floor(diffDays / 7)
+      return `${weeks}週間前`
+    } else {
+      const months = Math.floor(diffDays / 30)
+      return `${months}ヶ月前`
+    }
+  }
+
   return {
     // State
     products,
     news,
     stats,
     likedProducts,
+    // Discord State
+    discordServerId,
+    discordMemberCount,
+    discordOnlineCount,
+    discordServerName,
     // Getters
     featuredProducts,
     categories,
@@ -283,6 +310,11 @@ export const useDataStore = defineStore('data', () => {
     loadLikedProducts,
     searchProducts,
     filterByCategory,
-    sortProducts
+    sortProducts,
+    updateDiscordInfo,
+    // Utilities
+    formatDate,
+    formatDateShort,
+    getTimeAgo
   }
 })

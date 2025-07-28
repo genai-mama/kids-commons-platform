@@ -18,7 +18,13 @@
       "Bash(true)",
       "Bash(npx vite build:*)",
       "Bash(python3:*)",
-      "Bash(npx serve:*)"
+      "Bash(npx serve:*)",
+      "Bash(mv:*)",
+      "Bash(find:*)",
+      "Bash(npx tsc:*)",
+      "Bash(rm:*)",
+      "Bash(ls:*)",
+      "Bash(cat:*)"
     ],
     "deny": []
   }

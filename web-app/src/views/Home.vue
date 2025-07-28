@@ -1,13 +1,27 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useDataStore } from '../stores/data'
 import ProductCard from '../components/ProductCard-enhanced.vue'
+import DiscordWidget from '../components/DiscordWidget.vue'
 
 const dataStore = useDataStore()
 
 const featuredProducts = computed(() => dataStore.featuredProducts)
 const stats = computed(() => dataStore.stats)
 const latestNews = computed(() => dataStore.latestNews)
+const discordServerId = computed(() => dataStore.discordServerId)
+
+// Discord情報更新のハンドラー
+const handleDiscordUpdate = (data: any) => {
+  if (data) {
+    dataStore.updateDiscordInfo(data.memberCount, data.onlineCount, data.serverName)
+  }
+}
+
+// Initialize liked products from localStorage
+onMounted(() => {
+  dataStore.loadLikedProducts()
+})
 </script>
 
 <template>
@@ -16,15 +30,15 @@ const latestNews = computed(() => dataStore.latestNews)
     <section class="hero">
       <div class="container">
         <h1 class="hero-title">
-          生成AIで変わる<br />ママの新しい働き方
+          #生成AIママ部
         </h1>
         <p class="hero-subtitle">
-          家事育児の効率化からコーディングまで、生成AIを活用するママのためのDiscordコミュニティ。
-          みんなで作った成果物をProduct Hunt風に紹介します。
+          家事育児の効率化からコーディングまで、生成AIを活用するママのためのDiscordコミュニティです🎵<br>
+          エンジニアでも、そうでなくても、経験問わずママさんなら大歓迎🙆‍♀️✨<br>
+          ぜひみんなで生成AI活用していきましょう〜！
         </p>
-        <a href="https://discord.gg/genai-mama" class="hero-cta" target="_blank">
-          <span>💬</span>
-          コミュニティに参加する
+        <a href="https://discord.gg/genai-mama" class="btn-join" target="_blank">
+          参加する
         </a>
       </div>
     </section>
@@ -32,22 +46,35 @@ const latestNews = computed(() => dataStore.latestNews)
     <!-- Stats Section -->
     <section class="stats-section">
       <div class="container">
-        <div class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-number">{{ stats.totalMembers.toLocaleString() }}</div>
-            <div class="stat-label">メンバー数</div>
+        <div class="stats-layout">
+          <!-- 統計カード -->
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-number">{{ stats.totalMembers.toLocaleString() }}</div>
+              <div class="stat-label">メンバー数</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-number">{{ stats.totalProducts }}</div>
+              <div class="stat-label">成果物</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-number">{{ stats.totalCategories }}</div>
+              <div class="stat-label">カテゴリ</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-number">{{ stats.avgLikes }}</div>
+              <div class="stat-label">平均いいね</div>
+            </div>
           </div>
-          <div class="stat-card">
-            <div class="stat-number">{{ stats.totalProducts }}</div>
-            <div class="stat-label">成果物</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-number">{{ stats.totalCategories }}</div>
-            <div class="stat-label">カテゴリ</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-number">{{ stats.avgLikes }}</div>
-            <div class="stat-label">平均いいね</div>
+          
+          <!-- Discord ウィジェット -->
+          <div class="discord-section">
+            <DiscordWidget 
+              :server-id="discordServerId"
+              :show-details="true"
+              :auto-update="true"
+              @update="handleDiscordUpdate"
+            />
           </div>
         </div>
       </div>
@@ -70,7 +97,7 @@ const latestNews = computed(() => dataStore.latestNews)
           />
         </div>
         <div class="section-cta">
-          <RouterLink to="/products" class="cta-button">
+          <RouterLink to="/products" class="btn-secondary">
             すべての成果物を見る
           </RouterLink>
         </div>
@@ -80,11 +107,11 @@ const latestNews = computed(() => dataStore.latestNews)
     <!-- Latest News Section -->
     <section class="news-section">
       <div class="container">
-        <div class="section-header">
+        <div class="section-header-flex">
           <h2 class="section-title">最新ニュース</h2>
-          <p class="section-subtitle">
-            コミュニティの最新情報をお届けします
-          </p>
+          <RouterLink to="/news" class="view-all-link">
+            すべて見る→
+          </RouterLink>
         </div>
         <div class="news-grid">
           <article
@@ -107,11 +134,6 @@ const latestNews = computed(() => dataStore.latestNews)
             </div>
           </article>
         </div>
-        <div class="section-cta">
-          <RouterLink to="/news" class="cta-button">
-            すべてのニュースを見る
-          </RouterLink>
-        </div>
       </div>
     </section>
   </div>
@@ -128,10 +150,22 @@ const latestNews = computed(() => dataStore.latestNews)
   background: var(--gray-50);
 }
 
+.stats-layout {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: var(--spacing-8);
+  align-items: start;
+}
+
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: var(--spacing-6);
+}
+
+.discord-section {
+  position: sticky;
+  top: var(--spacing-8);
 }
 
 .stat-card {
@@ -170,11 +204,18 @@ const latestNews = computed(() => dataStore.latestNews)
   margin-bottom: var(--spacing-12);
 }
 
+.section-header-flex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-12);
+}
+
 .section-title {
   font-size: var(--font-size-4xl);
   font-weight: 700;
   color: var(--gray-900);
-  margin-bottom: var(--spacing-4);
+  margin: 0;
 }
 
 .section-subtitle {
@@ -189,23 +230,22 @@ const latestNews = computed(() => dataStore.latestNews)
   margin-top: var(--spacing-12);
 }
 
-.cta-button {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--spacing-2);
-  background: var(--purple-gradient);
-  color: var(--white);
+/* セクションのCTAボタンは btn-secondary クラスを使用 */
+
+.view-all-link {
+  color: var(--primary-purple-dark);
   text-decoration: none;
-  padding: var(--spacing-4) var(--spacing-8);
-  border-radius: var(--radius-full);
   font-weight: 600;
+  font-size: var(--font-size-lg);
   transition: var(--transition-base);
-  box-shadow: var(--shadow-md);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-1);
 }
 
-.cta-button:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
+.view-all-link:hover {
+  color: var(--primary-purple);
+  transform: translateX(4px);
 }
 
 /* News Section */
@@ -283,9 +323,30 @@ const latestNews = computed(() => dataStore.latestNews)
     font-size: var(--font-size-3xl);
   }
 
+  .stats-layout {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-6);
+  }
+
   .stats-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: var(--spacing-4);
+  }
+
+  .discord-section {
+    position: static;
+    order: -1;
+  }
+
+  .section-header-flex {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-4);
+  }
+
+  .view-all-link {
+    align-self: flex-end;
+    font-size: var(--font-size-base);
   }
 
   .products-grid {
