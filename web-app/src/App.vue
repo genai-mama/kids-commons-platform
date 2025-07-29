@@ -238,7 +238,7 @@
               <!-- 新規追加フォーム -->
               <div v-if="showProductForm" class="admin-form">
                 <h3>新しい成果物を追加</h3>
-                <form @submit.prevent="handleAddProduct">
+                <form @submit.prevent="handleAddProduct" :key="showProductForm">
                   <div class="form-group">
                     <label>タイトル</label>
                     <input type="text" v-model="newProduct.title" required>
@@ -254,7 +254,7 @@
                   </div>
                   <div class="form-group">
                     <label>説明</label>
-                    <textarea v-model="newProduct.description" required></textarea>
+                    <textarea v-model="newProduct.description" required rows="4"></textarea>
                   </div>
                   <div class="form-group">
                     <label>タグ（カンマ区切り）</label>
@@ -304,14 +304,14 @@
               <!-- 新規追加フォーム -->
               <div v-if="showNewsForm" class="admin-form">
                 <h3>新しいニュースを追加</h3>
-                <form @submit.prevent="handleAddNews">
+                <form @submit.prevent="handleAddNews" :key="showNewsForm">
                   <div class="form-group">
                     <label>タイトル</label>
                     <input type="text" v-model="newNews.title" required>
                   </div>
                   <div class="form-group">
                     <label>抜粋</label>
-                    <textarea v-model="newNews.excerpt" required></textarea>
+                    <textarea v-model="newNews.excerpt" required rows="4"></textarea>
                   </div>
                   <div class="form-group">
                     <label>URL</label>
@@ -345,7 +345,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, nextTick } from 'vue'
+import { ref, onMounted, nextTick, watch } from 'vue'
 import { useFirestore } from './composables/useFirestore'
 
 // State
@@ -401,21 +401,31 @@ const categories = ref([
 ])
 
 // Methods
-const navigateToPage = (page: string) => {
+const navigateToPage = async (page: string) => {
   currentPage.value = page
   mobileMenuOpen.value = false
   
-  nextTick(() => {
-    if (page === 'home') {
-      initializePage('home')
-    } else if (page === 'products') {
-      initializePage('products')
-    } else if (page === 'news') {
-      initializePage('news')
-    } else if (page === 'admin') {
-      // 管理ページは特別な初期化不要
+  await nextTick()
+  
+  // Firestoreデータが読み込まれていない場合は初期化
+  if (products.value.length === 0 || news.value.length === 0) {
+    try {
+      await initialize()
+      console.log('Firestore re-initialized for navigation')
+    } catch (error) {
+      console.error('Failed to re-initialize Firestore:', error)
     }
-  })
+  }
+  
+  if (page === 'home') {
+    initializePage('home')
+  } else if (page === 'products') {
+    initializePage('products')
+  } else if (page === 'news') {
+    initializePage('news')
+  } else if (page === 'admin') {
+    // 管理ページは特別な初期化不要
+  }
 }
 
 const toggleMobileMenu = () => {
@@ -469,9 +479,18 @@ const setAdminTab = (tab: string) => {
 }
 
 const handleAddProduct = async () => {
+  console.log('handleAddProduct called')
+  console.log('newProduct.value:', newProduct.value)
+  
+  if (!newProduct.value.title || !newProduct.value.description || !newProduct.value.authorName) {
+    alert('必須項目を入力してください')
+    return
+  }
+  
   try {
     const tags = newProduct.value.tagsString.split(',').map(tag => tag.trim()).filter(tag => tag)
     
+    console.log('Calling addProduct...')
     await addProduct({
       title: newProduct.value.title,
       category: newProduct.value.category,
@@ -490,6 +509,8 @@ const handleAddProduct = async () => {
       url: newProduct.value.url
     })
     
+    console.log('Product added successfully')
+    
     // フォームをリセット
     newProduct.value = {
       title: '',
@@ -505,6 +526,7 @@ const handleAddProduct = async () => {
     showProductForm.value = false
     alert('成果物をFirestoreに追加しました！')
   } catch (err) {
+    console.error('Error adding product:', err)
     alert('エラーが発生しました: ' + err)
   }
 }
@@ -656,7 +678,10 @@ const renderFeaturedProducts = () => {
   const featuredProducts = getFeaturedProducts()
   container.innerHTML = ""
 
-  if (featuredProducts.length === 0) return
+  if (featuredProducts.length === 0) {
+    container.innerHTML = '<div class="no-results">データを読み込み中...</div>'
+    return
+  }
 
   featuredProducts.forEach((product, index) => {
     const productCard = createProductCard(product, index * 100)
@@ -670,6 +695,11 @@ const renderLatestNews = () => {
 
   const latestNews = getLatestNews(3)
   container.innerHTML = ""
+
+  if (latestNews.length === 0) {
+    container.innerHTML = '<div class="no-results">データを読み込み中...</div>'
+    return
+  }
 
   latestNews.forEach((newsItem, index) => {
     const newsCard = createNewsCard(newsItem, index * 100)
@@ -732,7 +762,17 @@ const initializePage = (page: string) => {
 
 // Global keyboard shortcuts
 const handleKeyDown = (e: KeyboardEvent) => {
-  if (e.key === "/" && !e.target || (e.target as HTMLElement).tagName !== 'INPUT') {
+  const target = e.target as HTMLElement
+  // テキスト入力要素（input, textarea, contenteditable）では無効化
+  if (target && (
+    target.tagName === 'INPUT' || 
+    target.tagName === 'TEXTAREA' || 
+    target.contentEditable === 'true'
+  )) {
+    return
+  }
+  
+  if (e.key === "/") {
     e.preventDefault()
     const searchInput = document.getElementById("search-input") as HTMLInputElement
     if (searchInput) {
@@ -751,12 +791,30 @@ const handleKeyDown = (e: KeyboardEvent) => {
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
   document.addEventListener("keydown", handleKeyDown)
   // Firestoreからデータを読み込み
-  initialize()
+  try {
+    await initialize()
+    console.log('Firestore initialized, products:', products.value.length, 'news:', news.value.length)
+  } catch (error) {
+    console.error('Failed to initialize Firestore:', error)
+  }
+  // データ読み込み後にページを初期化
   initializePage("home")
 })
+
+// Firestoreデータの変更を監視してレンダリング更新
+watch([products, news], () => {
+  if (currentPage.value === 'home') {
+    renderFeaturedProducts()
+    renderLatestNews()
+  } else if (currentPage.value === 'products') {
+    renderProducts()
+  } else if (currentPage.value === 'news') {
+    renderNews()
+  }
+}, { deep: true })
 </script>
 
 <style>

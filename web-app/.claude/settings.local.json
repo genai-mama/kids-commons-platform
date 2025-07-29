@@ -24,7 +24,8 @@
       "Bash(npx tsc:*)",
       "Bash(rm:*)",
       "Bash(ls:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(npx vite:*)"
     ],
     "deny": []
   }

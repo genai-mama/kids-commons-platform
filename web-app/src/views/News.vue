@@ -1,9 +1,18 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useDataStore } from '../stores/data'
 
 const dataStore = useDataStore()
 const news = computed(() => dataStore.news)
+
+onMounted(async () => {
+  // Firestoreからデータを読み込む
+  try {
+    await dataStore.initializeFirestore()
+  } catch (error) {
+    console.error('Failed to initialize Firestore:', error)
+  }
+})
 </script>
 
 <template>

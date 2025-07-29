@@ -44,7 +44,14 @@ const handleCategoryChange = (category: string) => {
   selectedCategory.value = category
 }
 
-onMounted(() => {
+onMounted(async () => {
+  // Firestoreからデータを読み込む
+  try {
+    await dataStore.initializeFirestore()
+  } catch (error) {
+    console.error('Failed to initialize Firestore:', error)
+  }
+  
   // Focus search on '/' key press
   const handleKeyPress = (e: KeyboardEvent) => {
     if (e.key === '/' && !e.ctrlKey && !e.metaKey) {

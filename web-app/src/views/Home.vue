@@ -18,9 +18,15 @@ const handleDiscordUpdate = (data: any) => {
   }
 }
 
-// Initialize liked products from localStorage
-onMounted(() => {
+// Initialize liked products from localStorage and Firestore data
+onMounted(async () => {
   dataStore.loadLikedProducts()
+  // Firestoreからデータを読み込む
+  try {
+    await dataStore.initializeFirestore()
+  } catch (error) {
+    console.error('Failed to initialize Firestore:', error)
+  }
 })
 </script>
 

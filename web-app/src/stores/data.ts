@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { useFirestore } from '../composables/useFirestore'
 
 export interface Product {
   id: number
@@ -36,14 +37,17 @@ export interface Stats {
 }
 
 export const useDataStore = defineStore('data', () => {
+  // Firestore composable
+  const firestore = useFirestore()
+  
   // Discord サーバー情報
   const discordServerId = ref('1384414582621081620')
   const discordMemberCount = ref(1247) // フォールバック値
   const discordOnlineCount = ref(0)
   const discordServerName = ref('#生成AIママ部')
   
-  // State
-  const products = ref<Product[]>([
+  // State - Firestoreデータをメインに、フォールバックとしてローカルデータを使用
+  const localProducts = [
     {
       id: 1,
       title: "ポストック",
@@ -116,9 +120,9 @@ export const useDataStore = defineStore('data', () => {
       featured: false,
       url: "https://apps.apple.com/jp/app/%E8%91%89%E3%81%A3%E3%81%B1%E3%83%A1%E3%83%A2/id6746083452"
     }
-  ])
+  ]
 
-  const news = ref<NewsItem[]>([
+  const localNews = [
     {
       id: 1,
       title: "生成AIママ部メンバー100人突破！",
@@ -154,7 +158,16 @@ export const useDataStore = defineStore('data', () => {
       date: "2025-06-15",
       url: "https://note.com/genai-mama/n/n321654987"
     }
-  ])
+  ]
+
+  // メインのデータはFirestoreを優先し、フォールバックとしてローカルデータを使用
+  const products = computed(() => 
+    firestore.products.value.length > 0 ? firestore.products.value : localProducts
+  )
+  
+  const news = computed(() => 
+    firestore.news.value.length > 0 ? firestore.news.value : localNews
+  )
 
   const stats = computed<Stats>(() => ({
     totalMembers: 127,
@@ -315,6 +328,10 @@ export const useDataStore = defineStore('data', () => {
     // Utilities
     formatDate,
     formatDateShort,
-    getTimeAgo
+    getTimeAgo,
+    // Firestore methods
+    initializeFirestore: firestore.initialize,
+    firestoreLoading: firestore.loading,
+    firestoreError: firestore.error
   }
 })
