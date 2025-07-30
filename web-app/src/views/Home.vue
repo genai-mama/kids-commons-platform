@@ -1,33 +1,37 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
-import { useDataStore } from '../stores/data'
-import ProductCard from '../components/ProductCard-enhanced.vue'
-import DiscordWidget from '../components/DiscordWidget.vue'
+import { computed, onMounted } from "vue";
+import { useDataStore } from "../stores/data";
+import ProductCard from "../components/ProductCard-enhanced.vue";
+import DiscordWidget from "../components/DiscordWidget.vue";
 
-const dataStore = useDataStore()
+const dataStore = useDataStore();
 
-const featuredProducts = computed(() => dataStore.featuredProducts)
-const stats = computed(() => dataStore.stats)
-const latestNews = computed(() => dataStore.latestNews)
-const discordServerId = computed(() => dataStore.discordServerId)
+const featuredProducts = computed(() => dataStore.featuredProducts);
+const stats = computed(() => dataStore.stats);
+const latestNews = computed(() => dataStore.latestNews);
+const discordServerId = computed(() => dataStore.discordServerId);
 
 // Discord情報更新のハンドラー
 const handleDiscordUpdate = (data: any) => {
   if (data) {
-    dataStore.updateDiscordInfo(data.memberCount, data.onlineCount, data.serverName)
+    dataStore.updateDiscordInfo(
+      data.memberCount,
+      data.onlineCount,
+      data.serverName
+    );
   }
-}
+};
 
 // Initialize liked products from localStorage and Firestore data
 onMounted(async () => {
-  dataStore.loadLikedProducts()
+  dataStore.loadLikedProducts();
   // Firestoreからデータを読み込む
   try {
-    await dataStore.initializeFirestore()
+    await dataStore.initializeFirestore();
   } catch (error) {
-    console.error('Failed to initialize Firestore:', error)
+    console.error("Failed to initialize Firestore:", error);
   }
-})
+});
 </script>
 
 <template>
@@ -35,17 +39,15 @@ onMounted(async () => {
     <!-- Hero Section -->
     <section class="hero">
       <div class="container">
-        <h1 class="hero-title">
-          #生成AIママ部
-        </h1>
+        <h1 class="hero-title">#生成AIママ部</h1>
         <p class="hero-subtitle">
-          家事育児の効率化からコーディングまで、生成AIを活用するママのためのDiscordコミュニティです🎵<br>
-          エンジニアでも、そうでなくても、経験問わずママさんなら大歓迎🙆‍♀️✨<br>
+          家事育児の効率化からコーディングまで、生成AIを活用するママのためのDiscordコミュニティです🎵<br />
+          エンジニアでも、そうでなくても、経験問わずママさんなら大歓迎🙆‍♀️✨<br />
           ぜひみんなで生成AI活用していきましょう〜！
         </p>
-        <a href="https://discord.gg/genai-mama" class="btn-join" target="_blank">
+        <!-- <a href="https://discord.gg/genai-mama" class="btn-join" target="_blank">
           参加する
-        </a>
+        </a> -->
       </div>
     </section>
 
@@ -56,7 +58,9 @@ onMounted(async () => {
           <!-- 統計カード -->
           <div class="stats-grid">
             <div class="stat-card">
-              <div class="stat-number">{{ stats.totalMembers.toLocaleString() }}</div>
+              <div class="stat-number">
+                {{ stats.totalMembers.toLocaleString() }}
+              </div>
               <div class="stat-label">メンバー数</div>
             </div>
             <div class="stat-card">
@@ -72,10 +76,10 @@ onMounted(async () => {
               <div class="stat-label">平均いいね</div>
             </div>
           </div>
-          
+
           <!-- Discord ウィジェット -->
           <div class="discord-section">
-            <DiscordWidget 
+            <DiscordWidget
               :server-id="discordServerId"
               :show-details="true"
               :auto-update="true"

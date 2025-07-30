@@ -1,18 +1,18 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
-import { useDataStore } from '../stores/data'
+import { computed, onMounted } from "vue";
+import { useDataStore } from "../stores/data";
 
-const dataStore = useDataStore()
-const news = computed(() => dataStore.news)
+const dataStore = useDataStore();
+const news = computed(() => dataStore.news);
 
 onMounted(async () => {
   // Firestoreからデータを読み込む
   try {
-    await dataStore.initializeFirestore()
+    await dataStore.initializeFirestore();
   } catch (error) {
-    console.error('Failed to initialize Firestore:', error)
+    console.error("Failed to initialize Firestore:", error);
   }
-})
+});
 </script>
 
 <template>
@@ -38,13 +38,15 @@ onMounted(async () => {
           >
             <div class="news-content">
               <div class="news-meta">
-                <time class="news-date">{{ dataStore.formatDate(newsItem.date) }}</time>
+                <time class="news-date">{{
+                  dataStore.formatDate(newsItem.date)
+                }}</time>
               </div>
               <h2 class="news-title">{{ newsItem.title }}</h2>
               <p class="news-summary">{{ newsItem.excerpt }}</p>
               <div class="news-footer">
-                <a 
-                  :href="newsItem.url" 
+                <a
+                  :href="newsItem.url"
                   class="read-more-btn"
                   target="_blank"
                   rel="noopener noreferrer"
@@ -63,10 +65,10 @@ onMounted(async () => {
             <p class="cta-description">
               Discordコミュニティに参加して、リアルタイムで情報をキャッチしましょう
             </p>
-            <a href="https://discord.gg/genai-mama" class="cta-button" target="_blank">
+            <!-- <a href="https://discord.gg/genai-mama" class="cta-button" target="_blank">
               <span>💬</span>
               Discordに参加する
-            </a>
+            </a> -->
           </div>
         </div>
       </div>
@@ -81,7 +83,11 @@ onMounted(async () => {
 
 /* Hero Section */
 .hero {
-  background: linear-gradient(135deg, var(--primary-purple-lighter), var(--white));
+  background: linear-gradient(
+    135deg,
+    var(--primary-purple-lighter),
+    var(--white)
+  );
   padding: var(--spacing-12) 0;
   text-align: center;
 }
@@ -202,7 +208,11 @@ onMounted(async () => {
 
 /* CTA Section */
 .cta-section {
-  background: linear-gradient(135deg, var(--primary-purple-lighter), var(--white));
+  background: linear-gradient(
+    135deg,
+    var(--primary-purple-lighter),
+    var(--white)
+  );
   border-radius: var(--radius-2xl);
   padding: var(--spacing-16);
   text-align: center;

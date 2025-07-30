@@ -5,34 +5,96 @@
       <div class="container">
         <div class="logo">
           <a href="#" @click="navigateToPage('home')">
-            <img src="/images/logo/genai-mama-logo.svg" alt="#生成AIママ部" class="logo-image" />
+            <img
+              src="/images/logo/genai-mama-logo.svg"
+              alt="#生成AIママ部"
+              class="logo-image"
+            />
           </a>
         </div>
         <nav class="nav" id="nav" :class="{ active: mobileMenuOpen }">
           <ul class="nav-list">
-            <li><a href="#" @click="navigateToPage('home')" class="nav-link" :class="{ active: currentPage === 'home' }">ホーム</a></li>
-            <li><a href="#" @click="navigateToPage('about')" class="nav-link" :class="{ active: currentPage === 'about' }">About</a></li>
-            <li><a href="#" @click="navigateToPage('products')" class="nav-link" :class="{ active: currentPage === 'products' }">Products</a></li>
-            <li><a href="#" @click="navigateToPage('news')" class="nav-link" :class="{ active: currentPage === 'news' }">News</a></li>
-            <li><a href="#" @click="navigateToPage('admin')" class="nav-link" :class="{ active: currentPage === 'admin' }">Managed</a></li>
+            <li>
+              <a
+                href="#"
+                @click="navigateToPage('home')"
+                class="nav-link"
+                :class="{ active: currentPage === 'home' }"
+                >ホーム</a
+              >
+            </li>
+            <li>
+              <a
+                href="#"
+                @click="navigateToPage('about')"
+                class="nav-link"
+                :class="{ active: currentPage === 'about' }"
+                >About</a
+              >
+            </li>
+            <li>
+              <a
+                href="#"
+                @click="navigateToPage('products')"
+                class="nav-link"
+                :class="{ active: currentPage === 'products' }"
+                >Products</a
+              >
+            </li>
+            <li>
+              <a
+                href="#"
+                @click="navigateToPage('news')"
+                class="nav-link"
+                :class="{ active: currentPage === 'news' }"
+                >News</a
+              >
+            </li>
+            <li>
+              <a
+                href="#"
+                @click="navigateToPage('admin')"
+                class="nav-link"
+                :class="{ active: currentPage === 'admin' }"
+                >Managed</a
+              >
+            </li>
           </ul>
         </nav>
         <div class="header-actions">
-          <div class="search-bar" :class="{ 'mobile-active': mobileSearchActive }">
-            <input 
-              type="text" 
-              placeholder="成果物を検索" 
-              class="search-input" 
+          <div
+            class="search-bar"
+            :class="{ 'mobile-active': mobileSearchActive }"
+          >
+            <input
+              type="text"
+              placeholder="成果物を検索"
+              class="search-input"
               id="search-input"
               v-model="searchQuery"
               @keypress="handleSearchKeypress"
               @input="debounceSearch"
             />
-            <button class="search-btn" id="search-btn" @click="handleSearch">🔍</button>
+            <button class="search-btn" id="search-btn" @click="handleSearch">
+              🔍
+            </button>
           </div>
-          <button class="search-toggle" @click="toggleMobileSearch" v-show="!mobileSearchActive">🔍</button>
-          <a href="#" class="btn-join" id="join-btn" @click="handleJoinClick">参加する</a>
-          <button class="mobile-menu-toggle" id="mobile-menu-toggle" @click="toggleMobileMenu" :class="{ active: mobileMenuOpen }">
+          <button
+            class="search-toggle"
+            @click="toggleMobileSearch"
+            v-show="!mobileSearchActive"
+          >
+            🔍
+          </button>
+          <!-- <a href="#" class="btn-join" id="join-btn" @click="handleJoinClick"
+            >参加する</a
+          > -->
+          <button
+            class="mobile-menu-toggle"
+            id="mobile-menu-toggle"
+            @click="toggleMobileMenu"
+            :class="{ active: mobileMenuOpen }"
+          >
             <span></span><span></span><span></span>
           </button>
         </div>
@@ -49,14 +111,14 @@
             <div class="hero-content">
               <h1 class="hero-title">#生成AIママ部</h1>
               <p class="hero-subtitle">
-                家事育児の効率化からコーディングまで、生成AIを活用するママのためのDiscordコミュニティです🎵<br>
-                エンジニアでも、そうでなくても、経験問わずママさんなら大歓迎🙆‍♀️✨<br>
+                家事育児の効率化からコーディングまで、生成AIを活用するママのためのDiscordコミュニティです🎵<br />
+                エンジニアでも、そうでなくても、経験問わずママさんなら大歓迎🙆‍♀️✨<br />
                 ぜひみんなで生成AI活用していきましょう〜！
               </p>
-              <div class="hero-actions">
+              <!-- <div class="hero-actions">
                 <a href="#" class="btn-primary" id="hero-join-btn" @click="handleJoinClick">参加する</a>
                 <a href="#" class="btn-secondary" @click="navigateToPage('products')">成果物を見る</a>
-              </div>
+              </div> -->
             </div>
             <div class="hero-visual">
               <div class="hero-icon">🤖</div>
@@ -70,19 +132,27 @@
           <div class="container">
             <div class="stats-grid" id="stats-grid">
               <div class="stat-card">
-                <div class="stat-number" data-count="127">{{ stats.totalMembers }}</div>
+                <div class="stat-number" data-count="127">
+                  {{ stats.totalMembers }}
+                </div>
                 <div class="stat-label">メンバー数</div>
               </div>
               <div class="stat-card">
-                <div class="stat-number" data-count="4">{{ stats.totalProducts }}</div>
+                <div class="stat-number" data-count="4">
+                  {{ stats.totalProducts }}
+                </div>
                 <div class="stat-label">成果物</div>
               </div>
               <div class="stat-card">
-                <div class="stat-number" data-count="156">{{ stats.activeDays }}</div>
+                <div class="stat-number" data-count="156">
+                  {{ stats.activeDays }}
+                </div>
                 <div class="stat-label">活動日数</div>
               </div>
               <div class="stat-card">
-                <div class="stat-number" data-count="105">{{ stats.totalLikes }}</div>
+                <div class="stat-number" data-count="105">
+                  {{ stats.totalLikes }}
+                </div>
                 <div class="stat-label">総いいね数</div>
               </div>
             </div>
@@ -97,7 +167,12 @@
               <section class="featured-products content-section">
                 <div class="section-header">
                   <h2 class="section-title">注目の成果物</h2>
-                  <a href="#" @click="navigateToPage('products')" class="view-all">すべて見る →</a>
+                  <a
+                    href="#"
+                    @click="navigateToPage('products')"
+                    class="view-all"
+                    >すべて見る →</a
+                  >
                 </div>
                 <div class="products-grid" id="featured-products-grid">
                   <!-- 動的に生成される -->
@@ -108,7 +183,9 @@
               <section class="latest-news content-section news-section">
                 <div class="section-header">
                   <h2 class="section-title">最新ニュース</h2>
-                  <a href="#" @click="navigateToPage('news')" class="view-all">すべて見る →</a>
+                  <a href="#" @click="navigateToPage('news')" class="view-all"
+                    >すべて見る →</a
+                  >
                 </div>
                 <div class="news-list" id="latest-news-grid">
                   <!-- 動的に生成される -->
@@ -123,7 +200,7 @@
       <div class="page" id="about" :class="{ active: currentPage === 'about' }">
         <section class="about">
           <div class="container">
-            <h1 class="page-title">About #生成AIママ部</h1>
+            <h1 class="page-title">#生成AIママ部とは</h1>
             <div class="about-content">
               <div class="about-text">
                 <h2>コミュニティについて</h2>
@@ -150,19 +227,23 @@
       </div>
 
       <!-- Products Page - 元の静的サイトのレイアウトを正確に再現 -->
-      <div class="page" id="products" :class="{ active: currentPage === 'products' }">
+      <div
+        class="page"
+        id="products"
+        :class="{ active: currentPage === 'products' }"
+      >
         <section class="products">
           <div class="container">
             <h1 class="page-title">成果物一覧</h1>
-            
+
             <!-- Filters - レスポンシブ対応 -->
             <div class="filters">
               <div class="filters-inner">
                 <div class="filter-tabs">
-                  <button 
+                  <button
                     v-for="category in categories"
                     :key="category.id"
-                    class="filter-tab" 
+                    class="filter-tab"
                     :class="{ active: currentFilter === category.id }"
                     :data-filter="category.id"
                     @click="setFilter(category.id)"
@@ -170,10 +251,15 @@
                     {{ category.name }}
                   </button>
                 </div>
-                
+
                 <div class="sort-section">
                   <div class="sort-options">
-                    <select class="sort-select" id="sort-select" v-model="currentSort" @change="handleSortChange">
+                    <select
+                      class="sort-select"
+                      id="sort-select"
+                      v-model="currentSort"
+                      @change="handleSortChange"
+                    >
                       <option value="likes">いいね数順</option>
                       <option value="comments">コメント数順</option>
                       <option value="date">新着順</option>
@@ -207,18 +293,18 @@
         <section class="admin">
           <div class="container">
             <h1 class="page-title">🛠️ 生成AIママ部：成果物 & ニュース管理</h1>
-            
+
             <!-- タブ切り替え -->
             <div class="admin-tabs">
-              <button 
-                class="admin-tab" 
+              <button
+                class="admin-tab"
                 :class="{ active: currentAdminTab === 'products' }"
                 @click="setAdminTab('products')"
               >
                 成果物管理
               </button>
-              <button 
-                class="admin-tab" 
+              <button
+                class="admin-tab"
                 :class="{ active: currentAdminTab === 'news' }"
                 @click="setAdminTab('news')"
               >
@@ -230,8 +316,11 @@
             <div v-if="currentAdminTab === 'products'" class="admin-content">
               <div class="admin-header">
                 <h2>成果物一覧</h2>
-                <button class="btn-primary" @click="showProductForm = !showProductForm">
-                  {{ showProductForm ? 'フォームを閉じる' : '新規追加' }}
+                <button
+                  class="btn-primary"
+                  @click="showProductForm = !showProductForm"
+                >
+                  {{ showProductForm ? "フォームを閉じる" : "新規追加" }}
                 </button>
               </div>
 
@@ -241,40 +330,58 @@
                 <form @submit.prevent="handleAddProduct" :key="showProductForm">
                   <div class="form-group">
                     <label>タイトル</label>
-                    <input type="text" v-model="newProduct.title" required>
+                    <input type="text" v-model="newProduct.title" required />
                   </div>
                   <div class="form-group">
                     <label>カテゴリ</label>
                     <select v-model="newProduct.category" required>
                       <option value="仕事効率化">仕事効率化</option>
                       <option value="学校">学校</option>
-                      <option value="コミュニケーション">コミュニケーション</option>
+                      <option value="コミュニケーション">
+                        コミュニケーション
+                      </option>
                       <option value="学習">学習</option>
                     </select>
                   </div>
                   <div class="form-group">
                     <label>説明</label>
-                    <textarea v-model="newProduct.description" required rows="4"></textarea>
+                    <textarea
+                      v-model="newProduct.description"
+                      required
+                      rows="4"
+                    ></textarea>
                   </div>
                   <div class="form-group">
                     <label>タグ（カンマ区切り）</label>
-                    <input type="text" v-model="newProduct.tagsString" placeholder="SNS, 効率化, スケジュール">
+                    <input
+                      type="text"
+                      v-model="newProduct.tagsString"
+                      placeholder="SNS, 効率化, スケジュール"
+                    />
                   </div>
                   <div class="form-group">
                     <label>作者名</label>
-                    <input type="text" v-model="newProduct.authorName" required>
+                    <input
+                      type="text"
+                      v-model="newProduct.authorName"
+                      required
+                    />
                   </div>
                   <div class="form-group">
                     <label>作者の役割</label>
-                    <input type="text" v-model="newProduct.authorRole" required>
+                    <input
+                      type="text"
+                      v-model="newProduct.authorRole"
+                      required
+                    />
                   </div>
                   <div class="form-group">
                     <label>URL</label>
-                    <input type="url" v-model="newProduct.url" required>
+                    <input type="url" v-model="newProduct.url" required />
                   </div>
                   <div class="form-group">
                     <label>
-                      <input type="checkbox" v-model="newProduct.featured">
+                      <input type="checkbox" v-model="newProduct.featured" />
                       注目の成果物として表示
                     </label>
                   </div>
@@ -284,7 +391,11 @@
 
               <!-- 成果物一覧 -->
               <div class="admin-list">
-                <div v-for="product in products" :key="product.id" class="admin-item">
+                <div
+                  v-for="product in products"
+                  :key="product.id"
+                  class="admin-item"
+                >
                   <h4>{{ product.title }}</h4>
                   <p>{{ product.category }} | {{ product.author.name }}</p>
                   <p>{{ product.description }}</p>
@@ -296,8 +407,11 @@
             <div v-if="currentAdminTab === 'news'" class="admin-content">
               <div class="admin-header">
                 <h2>ニュース一覧</h2>
-                <button class="btn-primary" @click="showNewsForm = !showNewsForm">
-                  {{ showNewsForm ? 'フォームを閉じる' : '新規追加' }}
+                <button
+                  class="btn-primary"
+                  @click="showNewsForm = !showNewsForm"
+                >
+                  {{ showNewsForm ? "フォームを閉じる" : "新規追加" }}
                 </button>
               </div>
 
@@ -307,15 +421,19 @@
                 <form @submit.prevent="handleAddNews" :key="showNewsForm">
                   <div class="form-group">
                     <label>タイトル</label>
-                    <input type="text" v-model="newNews.title" required>
+                    <input type="text" v-model="newNews.title" required />
                   </div>
                   <div class="form-group">
                     <label>抜粋</label>
-                    <textarea v-model="newNews.excerpt" required rows="4"></textarea>
+                    <textarea
+                      v-model="newNews.excerpt"
+                      required
+                      rows="4"
+                    ></textarea>
                   </div>
                   <div class="form-group">
                     <label>URL</label>
-                    <input type="url" v-model="newNews.url" required>
+                    <input type="url" v-model="newNews.url" required />
                   </div>
                   <button type="submit" class="btn-primary">追加</button>
                 </form>
@@ -323,7 +441,11 @@
 
               <!-- ニュース一覧 -->
               <div class="admin-list">
-                <div v-for="newsItem in news" :key="newsItem.id" class="admin-item">
+                <div
+                  v-for="newsItem in news"
+                  :key="newsItem.id"
+                  class="admin-item"
+                >
                   <h4>{{ newsItem.title }}</h4>
                   <p>{{ formatDate(newsItem.date) }}</p>
                   <p>{{ newsItem.excerpt }}</p>
@@ -345,152 +467,162 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, nextTick, watch } from 'vue'
-import { useFirestore } from './composables/useFirestore'
+import { ref, onMounted, nextTick, watch } from "vue";
+import { useFirestore } from "./composables/useFirestore";
 
 // State
-const currentPage = ref('home')
-const mobileMenuOpen = ref(false)
-const mobileSearchActive = ref(false)
-const searchQuery = ref('')
-const currentFilter = ref('all')
-const currentSort = ref('likes')
-const likedProducts = ref<Set<number>>(new Set())
-let searchTimeout: number | null = null
+const currentPage = ref("home");
+const mobileMenuOpen = ref(false);
+const mobileSearchActive = ref(false);
+const searchQuery = ref("");
+const currentFilter = ref("all");
+const currentSort = ref("likes");
+const likedProducts = ref<Set<number>>(new Set());
+let searchTimeout: number | null = null;
 
 // Admin State
-const currentAdminTab = ref('products')
-const showProductForm = ref(false)
-const showNewsForm = ref(false)
+const currentAdminTab = ref("products");
+const showProductForm = ref(false);
+const showNewsForm = ref(false);
 
 // New Item Forms
 const newProduct = ref({
-  title: '',
-  category: '仕事効率化',
-  description: '',
-  tagsString: '',
-  authorName: '',
-  authorRole: '',
-  url: '',
-  featured: false
-})
+  title: "",
+  category: "仕事効率化",
+  description: "",
+  tagsString: "",
+  authorName: "",
+  authorRole: "",
+  url: "",
+  featured: false,
+});
 
 const newNews = ref({
-  title: '',
-  excerpt: '',
-  url: ''
-})
+  title: "",
+  excerpt: "",
+  url: "",
+});
 
 // Firestore使用
-const { products, news, loading, error, addProduct, addNews, initialize } = useFirestore()
+const { products, news, loading, error, addProduct, addNews, initialize } =
+  useFirestore();
 
 // Stats（Firestoreから計算）
 const stats = ref({
   totalMembers: 127,
   totalProducts: 4,
   activeDays: 156,
-  totalLikes: 105
-})
+  totalLikes: 105,
+});
 
 const categories = ref([
-  { id: 'all', name: 'すべて', count: 4 },
-  { id: '仕事効率化', name: '仕事効率化', count: 1 },
-  { id: '学校', name: '学校', count: 1 },
-  { id: 'コミュニケーション', name: 'コミュニケーション', count: 1 },
-  { id: '学習', name: '学習', count: 1 }
-])
+  { id: "all", name: "すべて", count: 4 },
+  { id: "仕事効率化", name: "仕事効率化", count: 1 },
+  { id: "学校", name: "学校", count: 1 },
+  { id: "コミュニケーション", name: "コミュニケーション", count: 1 },
+  { id: "学習", name: "学習", count: 1 },
+]);
 
 // Methods
 const navigateToPage = async (page: string) => {
-  currentPage.value = page
-  mobileMenuOpen.value = false
-  
-  await nextTick()
-  
+  currentPage.value = page;
+  mobileMenuOpen.value = false;
+
+  await nextTick();
+
   // Firestoreデータが読み込まれていない場合は初期化
   if (products.value.length === 0 || news.value.length === 0) {
     try {
-      await initialize()
-      console.log('Firestore re-initialized for navigation')
+      await initialize();
+      console.log("Firestore re-initialized for navigation");
     } catch (error) {
-      console.error('Failed to re-initialize Firestore:', error)
+      console.error("Failed to re-initialize Firestore:", error);
     }
   }
-  
-  if (page === 'home') {
-    initializePage('home')
-  } else if (page === 'products') {
-    initializePage('products')
-  } else if (page === 'news') {
-    initializePage('news')
-  } else if (page === 'admin') {
+
+  if (page === "home") {
+    initializePage("home");
+  } else if (page === "products") {
+    initializePage("products");
+  } else if (page === "news") {
+    initializePage("news");
+  } else if (page === "admin") {
     // 管理ページは特別な初期化不要
   }
-}
+};
 
 const toggleMobileMenu = () => {
-  mobileMenuOpen.value = !mobileMenuOpen.value
-}
+  mobileMenuOpen.value = !mobileMenuOpen.value;
+};
 
 const toggleMobileSearch = () => {
-  mobileSearchActive.value = !mobileSearchActive.value
+  mobileSearchActive.value = !mobileSearchActive.value;
   if (mobileSearchActive.value) {
     nextTick(() => {
-      const searchInput = document.getElementById('search-input') as HTMLInputElement
+      const searchInput = document.getElementById(
+        "search-input"
+      ) as HTMLInputElement;
       if (searchInput) {
-        searchInput.focus()
+        searchInput.focus();
       }
-    })
+    });
   }
-}
+};
 
 const handleSearchKeypress = (e: KeyboardEvent) => {
-  if (e.key === 'Enter') {
-    handleSearch()
+  if (e.key === "Enter") {
+    handleSearch();
   }
-}
+};
 
 const handleSearch = () => {
-  if (currentPage.value !== 'products') {
-    navigateToPage('products')
+  if (currentPage.value !== "products") {
+    navigateToPage("products");
   }
   nextTick(() => {
-    renderProducts()
-  })
-}
+    renderProducts();
+  });
+};
 
 const debounceSearch = () => {
-  if (searchTimeout) clearTimeout(searchTimeout)
+  if (searchTimeout) clearTimeout(searchTimeout);
   searchTimeout = setTimeout(() => {
-    handleSearch()
-  }, 300)
-}
+    handleSearch();
+  }, 300);
+};
 
 const handleJoinClick = () => {
-  const discordInvite = "https://discord.gg/genai-mama"
-  alert(`Discordコミュニティへの参加はこちら: ${discordInvite}`)
-}
+  const discordInvite = "https://discord.gg/genai-mama";
+  alert(`Discordコミュニティへの参加はこちら: ${discordInvite}`);
+};
 
 // Admin Methods
 const setAdminTab = (tab: string) => {
-  currentAdminTab.value = tab
-  showProductForm.value = false
-  showNewsForm.value = false
-}
+  currentAdminTab.value = tab;
+  showProductForm.value = false;
+  showNewsForm.value = false;
+};
 
 const handleAddProduct = async () => {
-  console.log('handleAddProduct called')
-  console.log('newProduct.value:', newProduct.value)
-  
-  if (!newProduct.value.title || !newProduct.value.description || !newProduct.value.authorName) {
-    alert('必須項目を入力してください')
-    return
+  console.log("handleAddProduct called");
+  console.log("newProduct.value:", newProduct.value);
+
+  if (
+    !newProduct.value.title ||
+    !newProduct.value.description ||
+    !newProduct.value.authorName
+  ) {
+    alert("必須項目を入力してください");
+    return;
   }
-  
+
   try {
-    const tags = newProduct.value.tagsString.split(',').map(tag => tag.trim()).filter(tag => tag)
-    
-    console.log('Calling addProduct...')
+    const tags = newProduct.value.tagsString
+      .split(",")
+      .map((tag) => tag.trim())
+      .filter((tag) => tag);
+
+    console.log("Calling addProduct...");
     await addProduct({
       title: newProduct.value.title,
       category: newProduct.value.category,
@@ -499,128 +631,135 @@ const handleAddProduct = async () => {
       author: {
         name: newProduct.value.authorName,
         avatar: newProduct.value.authorName.charAt(0).toUpperCase(),
-        role: newProduct.value.authorRole
+        role: newProduct.value.authorRole,
       },
-      date: new Date().toISOString().split('T')[0],
+      date: new Date().toISOString().split("T")[0],
       likes: 0,
       comments: 0,
-      thumbnail: `https://via.placeholder.com/300x200/9B7BD8/FFFFFF?text=${encodeURIComponent(newProduct.value.title)}`,
+      thumbnail: `https://via.placeholder.com/300x200/9B7BD8/FFFFFF?text=${encodeURIComponent(
+        newProduct.value.title
+      )}`,
       featured: newProduct.value.featured,
-      url: newProduct.value.url
-    })
-    
-    console.log('Product added successfully')
-    
+      url: newProduct.value.url,
+    });
+
+    console.log("Product added successfully");
+
     // フォームをリセット
     newProduct.value = {
-      title: '',
-      category: '仕事効率化',
-      description: '',
-      tagsString: '',
-      authorName: '',
-      authorRole: '',
-      url: '',
-      featured: false
-    }
-    
-    showProductForm.value = false
-    alert('成果物をFirestoreに追加しました！')
+      title: "",
+      category: "仕事効率化",
+      description: "",
+      tagsString: "",
+      authorName: "",
+      authorRole: "",
+      url: "",
+      featured: false,
+    };
+
+    showProductForm.value = false;
+    alert("成果物をFirestoreに追加しました！");
   } catch (err) {
-    console.error('Error adding product:', err)
-    alert('エラーが発生しました: ' + err)
+    console.error("Error adding product:", err);
+    alert("エラーが発生しました: " + err);
   }
-}
+};
 
 const handleAddNews = async () => {
   try {
     await addNews({
       title: newNews.value.title,
       excerpt: newNews.value.excerpt,
-      date: new Date().toISOString().split('T')[0],
-      url: newNews.value.url
-    })
-    
+      date: new Date().toISOString().split("T")[0],
+      url: newNews.value.url,
+    });
+
     // フォームをリセット
     newNews.value = {
-      title: '',
-      excerpt: '',
-      url: ''
-    }
-    
-    showNewsForm.value = false
-    alert('ニュースをFirestoreに追加しました！')
+      title: "",
+      excerpt: "",
+      url: "",
+    };
+
+    showNewsForm.value = false;
+    alert("ニュースをFirestoreに追加しました！");
   } catch (err) {
-    alert('エラーが発生しました: ' + err)
+    alert("エラーが発生しました: " + err);
   }
-}
+};
 
 const setFilter = (filter: string) => {
-  currentFilter.value = filter
-  renderProducts()
-}
+  currentFilter.value = filter;
+  renderProducts();
+};
 
 const handleSortChange = () => {
-  renderProducts()
-}
+  renderProducts();
+};
 
 // Utility functions
 const formatDate = (dateString: string) => {
-  const date = new Date(dateString)
-  return date.toLocaleDateString('ja-JP', { 
-    year: 'numeric', 
-    month: 'long', 
-    day: 'numeric' 
-  })
-}
+  const date = new Date(dateString);
+  return date.toLocaleDateString("ja-JP", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+};
 
 const getFeaturedProducts = () => {
-  return products.value.filter(product => product.featured)
-}
+  return products.value.filter((product) => product.featured);
+};
 
 const getLatestNews = (count = 3) => {
-  return news.value.slice(0, count)
-}
+  return news.value.slice(0, count);
+};
 
 const filterProducts = (products: any[], category: string) => {
-  if (category === 'all') {
-    return products
+  if (category === "all") {
+    return products;
   }
-  return products.filter(product => product.category === category)
-}
+  return products.filter((product) => product.category === category);
+};
 
 const sortProducts = (products: any[], sortBy: string) => {
-  const sorted = [...products]
-  
+  const sorted = [...products];
+
   switch (sortBy) {
-    case 'likes':
-      return sorted.sort((a, b) => b.likes - a.likes)
-    case 'comments':
-      return sorted.sort((a, b) => b.comments - a.comments)
-    case 'date':
-      return sorted.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    case "likes":
+      return sorted.sort((a, b) => b.likes - a.likes);
+    case "comments":
+      return sorted.sort((a, b) => b.comments - a.comments);
+    case "date":
+      return sorted.sort(
+        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+      );
     default:
-      return sorted
+      return sorted;
   }
-}
+};
 
 const searchProducts = (products: any[], query: string) => {
-  if (!query) return products
-  
-  const lowerQuery = query.toLowerCase()
-  return products.filter(product => 
-    product.title.toLowerCase().includes(lowerQuery) ||
-    product.description.toLowerCase().includes(lowerQuery) ||
-    product.category.toLowerCase().includes(lowerQuery) ||
-    product.tags.some((tag: string) => tag.toLowerCase().includes(lowerQuery)) ||
-    product.author.name.toLowerCase().includes(lowerQuery)
-  )
-}
+  if (!query) return products;
+
+  const lowerQuery = query.toLowerCase();
+  return products.filter(
+    (product) =>
+      product.title.toLowerCase().includes(lowerQuery) ||
+      product.description.toLowerCase().includes(lowerQuery) ||
+      product.category.toLowerCase().includes(lowerQuery) ||
+      product.tags.some((tag: string) =>
+        tag.toLowerCase().includes(lowerQuery)
+      ) ||
+      product.author.name.toLowerCase().includes(lowerQuery)
+  );
+};
 
 // Create elements
 const createProductCard = (product: any, delay = 0) => {
-  const card = document.createElement("div")
-  card.className = "product-card animate-fade-in-up"
-  card.style.animationDelay = `${delay}ms`
+  const card = document.createElement("div");
+  card.className = "product-card animate-fade-in-up";
+  card.style.animationDelay = `${delay}ms`;
 
   card.innerHTML = `
     <div class="product-header">
@@ -645,181 +784,195 @@ const createProductCard = (product: any, delay = 0) => {
         </div>
       </div>
     </div>
-  `
+  `;
 
   card.addEventListener("click", () => {
-    window.open(product.url, "_blank")
-  })
+    window.open(product.url, "_blank");
+  });
 
-  return card
-}
+  return card;
+};
 
 const createNewsCard = (newsItem: any, delay = 0) => {
-  const card = document.createElement("a")
-  card.href = newsItem.url
-  card.target = "_blank"
-  card.className = "news-card animate-fade-in-up"
-  card.style.animationDelay = `${delay}ms`
+  const card = document.createElement("a");
+  card.href = newsItem.url;
+  card.target = "_blank";
+  card.className = "news-card animate-fade-in-up";
+  card.style.animationDelay = `${delay}ms`;
 
   card.innerHTML = `
     <h3 class="news-title">${newsItem.title}</h3>
     <p class="news-excerpt">${newsItem.excerpt}</p>
     <div class="news-date">${formatDate(newsItem.date)}</div>
-  `
+  `;
 
-  return card
-}
+  return card;
+};
 
 // Render functions
 const renderFeaturedProducts = () => {
-  const container = document.getElementById("featured-products-grid")
-  if (!container) return
+  const container = document.getElementById("featured-products-grid");
+  if (!container) return;
 
-  const featuredProducts = getFeaturedProducts()
-  container.innerHTML = ""
+  const featuredProducts = getFeaturedProducts();
+  container.innerHTML = "";
 
   if (featuredProducts.length === 0) {
-    container.innerHTML = '<div class="no-results">データを読み込み中...</div>'
-    return
+    container.innerHTML = '<div class="no-results">データを読み込み中...</div>';
+    return;
   }
 
   featuredProducts.forEach((product, index) => {
-    const productCard = createProductCard(product, index * 100)
-    container.appendChild(productCard)
-  })
-}
+    const productCard = createProductCard(product, index * 100);
+    container.appendChild(productCard);
+  });
+};
 
 const renderLatestNews = () => {
-  const container = document.getElementById("latest-news-grid")
-  if (!container) return
+  const container = document.getElementById("latest-news-grid");
+  if (!container) return;
 
-  const latestNews = getLatestNews(3)
-  container.innerHTML = ""
+  const latestNews = getLatestNews(3);
+  container.innerHTML = "";
 
   if (latestNews.length === 0) {
-    container.innerHTML = '<div class="no-results">データを読み込み中...</div>'
-    return
+    container.innerHTML = '<div class="no-results">データを読み込み中...</div>';
+    return;
   }
 
   latestNews.forEach((newsItem, index) => {
-    const newsCard = createNewsCard(newsItem, index * 100)
-    container.appendChild(newsCard)
-  })
-}
+    const newsCard = createNewsCard(newsItem, index * 100);
+    container.appendChild(newsCard);
+  });
+};
 
 const renderProducts = () => {
-  const container = document.getElementById("products-grid")
-  if (!container) return
+  const container = document.getElementById("products-grid");
+  if (!container) return;
 
-  let filteredProducts = filterProducts(products.value, currentFilter.value)
+  let filteredProducts = filterProducts(products.value, currentFilter.value);
 
   if (searchQuery.value) {
-    filteredProducts = searchProducts(filteredProducts, searchQuery.value)
+    filteredProducts = searchProducts(filteredProducts, searchQuery.value);
   }
 
-  const sortedProducts = sortProducts(filteredProducts, currentSort.value)
+  const sortedProducts = sortProducts(filteredProducts, currentSort.value);
 
-  container.innerHTML = ""
+  container.innerHTML = "";
 
   if (sortedProducts.length === 0) {
     container.innerHTML =
-      '<div class="no-results">該当する成果物が見つかりませんでした。</div>'
-    return
+      '<div class="no-results">該当する成果物が見つかりませんでした。</div>';
+    return;
   }
 
   sortedProducts.forEach((product, index) => {
-    const productCard = createProductCard(product, index * 50)
-    container.appendChild(productCard)
-  })
-}
+    const productCard = createProductCard(product, index * 50);
+    container.appendChild(productCard);
+  });
+};
 
 const renderNews = () => {
-  const container = document.getElementById("news-grid")
-  if (!container) return
+  const container = document.getElementById("news-grid");
+  if (!container) return;
 
-  container.innerHTML = ""
+  container.innerHTML = "";
 
   news.value.forEach((newsItem, index) => {
-    const newsCard = createNewsCard(newsItem, index * 100)
-    container.appendChild(newsCard)
-  })
-}
+    const newsCard = createNewsCard(newsItem, index * 100);
+    container.appendChild(newsCard);
+  });
+};
 
 const initializePage = (page: string) => {
   switch (page) {
     case "home":
-      renderFeaturedProducts()
-      renderLatestNews()
-      break
+      renderFeaturedProducts();
+      renderLatestNews();
+      break;
     case "products":
-      renderProducts()
-      break
+      renderProducts();
+      break;
     case "news":
-      renderNews()
-      break
+      renderNews();
+      break;
   }
-}
+};
 
 // Global keyboard shortcuts
 const handleKeyDown = (e: KeyboardEvent) => {
-  const target = e.target as HTMLElement
+  const target = e.target as HTMLElement;
   // テキスト入力要素（input, textarea, contenteditable）では無効化
-  if (target && (
-    target.tagName === 'INPUT' || 
-    target.tagName === 'TEXTAREA' || 
-    target.contentEditable === 'true'
-  )) {
-    return
+  if (
+    target &&
+    (target.tagName === "INPUT" ||
+      target.tagName === "TEXTAREA" ||
+      target.contentEditable === "true")
+  ) {
+    return;
   }
-  
+
   if (e.key === "/") {
-    e.preventDefault()
-    const searchInput = document.getElementById("search-input") as HTMLInputElement
+    e.preventDefault();
+    const searchInput = document.getElementById(
+      "search-input"
+    ) as HTMLInputElement;
     if (searchInput) {
-      searchInput.focus()
+      searchInput.focus();
     }
   }
 
   if (e.key === "Escape") {
-    const searchInput = document.getElementById("search-input") as HTMLInputElement
+    const searchInput = document.getElementById(
+      "search-input"
+    ) as HTMLInputElement;
     if (searchInput && document.activeElement === searchInput) {
-      searchInput.blur()
-      searchInput.value = ""
-      searchQuery.value = ""
-      renderProducts()
+      searchInput.blur();
+      searchInput.value = "";
+      searchQuery.value = "";
+      renderProducts();
     }
   }
-}
+};
 
 onMounted(async () => {
-  document.addEventListener("keydown", handleKeyDown)
+  document.addEventListener("keydown", handleKeyDown);
   // Firestoreからデータを読み込み
   try {
-    await initialize()
-    console.log('Firestore initialized, products:', products.value.length, 'news:', news.value.length)
+    await initialize();
+    console.log(
+      "Firestore initialized, products:",
+      products.value.length,
+      "news:",
+      news.value.length
+    );
   } catch (error) {
-    console.error('Failed to initialize Firestore:', error)
+    console.error("Failed to initialize Firestore:", error);
   }
   // データ読み込み後にページを初期化
-  initializePage("home")
-})
+  initializePage("home");
+});
 
 // Firestoreデータの変更を監視してレンダリング更新
-watch([products, news], () => {
-  if (currentPage.value === 'home') {
-    renderFeaturedProducts()
-    renderLatestNews()
-  } else if (currentPage.value === 'products') {
-    renderProducts()
-  } else if (currentPage.value === 'news') {
-    renderNews()
-  }
-}, { deep: true })
+watch(
+  [products, news],
+  () => {
+    if (currentPage.value === "home") {
+      renderFeaturedProducts();
+      renderLatestNews();
+    } else if (currentPage.value === "products") {
+      renderProducts();
+    } else if (currentPage.value === "news") {
+      renderNews();
+    }
+  },
+  { deep: true }
+);
 </script>
 
 <style>
 /* 元のstyle.cssとresponsive.cssの内容をそのまま適用 */
-@import './assets/styles/original-style.css';
+@import "./assets/styles/original-style.css";
 
 /* 追加スタイル - ホバーアニメーション、レイアウト改善、レスポンシブ対応 */
 
@@ -1069,11 +1222,11 @@ watch([products, news], () => {
     justify-content: space-between;
     align-items: center;
   }
-  
+
   .filter-tabs {
     justify-content: flex-start;
   }
-  
+
   .sort-section {
     justify-content: flex-end;
   }
@@ -1116,7 +1269,7 @@ watch([products, news], () => {
     grid-template-columns: repeat(3, 1fr);
     gap: var(--spacing-6);
   }
-  
+
   /* ホームページの注目の成果物は横にニュースがある時は1列 */
   #featured-products-grid {
     grid-template-columns: 1fr;
@@ -1130,7 +1283,7 @@ watch([products, news], () => {
     grid-template-columns: repeat(2, 1fr);
     gap: var(--spacing-5);
   }
-  
+
   /* ホームページの注目の成果物は横にニュースがある時は1列 */
   #featured-products-grid {
     grid-template-columns: 1fr;
@@ -1145,7 +1298,7 @@ watch([products, news], () => {
     grid-template-columns: 1fr;
     gap: var(--spacing-4);
   }
-  
+
   /* フィルターをモバイル対応 - 縦に配置 */
   .filter-tabs {
     display: grid;
@@ -1154,29 +1307,29 @@ watch([products, news], () => {
     width: 100%;
     justify-content: stretch;
   }
-  
+
   .filter-tab {
     padding: var(--spacing-2) var(--spacing-3);
     font-size: var(--font-size-xs);
   }
-  
+
   /* ソートセクション調整 - カテゴリタブの下に */
   .sort-section {
     width: 100%;
     margin-top: var(--spacing-4);
   }
-  
+
   .sort-select {
     width: 100%;
     max-width: 200px;
   }
-  
+
   /* プロダクトグリッドを1列に */
   .products-grid {
     grid-template-columns: 1fr !important;
     gap: var(--spacing-4);
   }
-  
+
   /* ホームページの注目の成果物も1列 */
   #featured-products-grid {
     grid-template-columns: 1fr !important;
@@ -1189,11 +1342,11 @@ watch([products, news], () => {
   .filter-tabs {
     grid-template-columns: 1fr;
   }
-  
+
   .filters {
     padding: var(--spacing-3);
   }
-  
+
   .sort-section {
     margin: var(--spacing-4) 0;
   }
@@ -1254,7 +1407,7 @@ watch([products, news], () => {
     grid-template-columns: 1fr;
     gap: var(--spacing-8);
   }
-  
+
   .news-section {
     position: static;
     order: 2;
@@ -1262,17 +1415,17 @@ watch([products, news], () => {
     padding: var(--spacing-8);
     border-radius: var(--radius-xl);
   }
-  
+
   .featured-products {
     order: 1;
   }
-  
+
   /* 注目の成果物を2列表示 */
   #featured-products-grid {
     grid-template-columns: repeat(2, 1fr) !important;
     gap: var(--spacing-5);
   }
-  
+
   /* ニュースは常に1列表示 */
   .news-list {
     display: flex;
@@ -1287,7 +1440,7 @@ watch([products, news], () => {
     grid-template-columns: 1fr;
     gap: var(--spacing-6);
   }
-  
+
   .news-section {
     position: static;
     order: 2;
@@ -1295,17 +1448,17 @@ watch([products, news], () => {
     padding: var(--spacing-6);
     border-radius: var(--radius-xl);
   }
-  
+
   .featured-products {
     order: 1;
   }
-  
+
   /* 注目の成果物を1列表示 */
   #featured-products-grid {
     grid-template-columns: 1fr !important;
     gap: var(--spacing-4);
   }
-  
+
   /* ニュースを1列表示 */
   .news-list {
     display: flex;
@@ -1483,17 +1636,17 @@ watch([products, news], () => {
     gap: var(--spacing-4);
     align-items: stretch;
   }
-  
+
   .admin-tabs {
     flex-direction: column;
   }
-  
+
   .admin-tab {
     text-align: center;
     border-bottom: none;
     border-left: 3px solid transparent;
   }
-  
+
   .admin-tab.active {
     border-left-color: var(--primary-purple);
     border-bottom-color: transparent;

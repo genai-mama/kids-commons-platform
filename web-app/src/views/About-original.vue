@@ -3,7 +3,7 @@
   <main class="main">
     <section class="about">
       <div class="container">
-        <h1 class="page-title">About #生成AIママ部</h1>
+        <h1 class="page-title">#生成AIママ部とは</h1>
         <div class="about-content">
           <div class="about-text">
             <h2>コミュニティについて</h2>
