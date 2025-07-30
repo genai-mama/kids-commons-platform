@@ -316,12 +316,32 @@
             <div v-if="currentAdminTab === 'products'" class="admin-content">
               <div class="admin-header">
                 <h2>成果物一覧</h2>
-                <button
-                  class="btn-primary"
-                  @click="showProductForm = !showProductForm"
-                >
-                  {{ showProductForm ? "フォームを閉じる" : "新規追加" }}
-                </button>
+                <div class="admin-actions">
+                  <div class="csv-actions">
+                    <button
+                      class="btn-csv"
+                      @click="exportProductsCSV"
+                      title="CSVエクスポート"
+                    >
+                      📥 エクスポート
+                    </button>
+                    <label class="btn-csv csv-import">
+                      📤 インポート
+                      <input
+                        type="file"
+                        accept=".csv"
+                        @change="importProductsCSV"
+                        style="display: none"
+                      />
+                    </label>
+                  </div>
+                  <button
+                    class="btn-primary"
+                    @click="showProductForm = !showProductForm"
+                  >
+                    {{ showProductForm ? "フォームを閉じる" : "新規追加" }}
+                  </button>
+                </div>
               </div>
 
               <!-- 新規追加フォーム -->
@@ -502,12 +522,32 @@
             <div v-if="currentAdminTab === 'news'" class="admin-content">
               <div class="admin-header">
                 <h2>ニュース一覧</h2>
-                <button
-                  class="btn-primary"
-                  @click="showNewsForm = !showNewsForm"
-                >
-                  {{ showNewsForm ? "フォームを閉じる" : "新規追加" }}
-                </button>
+                <div class="admin-actions">
+                  <div class="csv-actions">
+                    <button
+                      class="btn-csv"
+                      @click="exportNewsCSV"
+                      title="CSVエクスポート"
+                    >
+                      📥 エクスポート
+                    </button>
+                    <label class="btn-csv csv-import">
+                      📤 インポート
+                      <input
+                        type="file"
+                        accept=".csv"
+                        @change="importNewsCSV"
+                        style="display: none"
+                      />
+                    </label>
+                  </div>
+                  <button
+                    class="btn-primary"
+                    @click="showNewsForm = !showNewsForm"
+                  >
+                    {{ showNewsForm ? "フォームを閉じる" : "新規追加" }}
+                  </button>
+                </div>
               </div>
 
               <!-- 新規追加フォーム -->
@@ -616,6 +656,7 @@
 <script setup lang="ts">
 import { ref, onMounted, nextTick, watch } from "vue";
 import { useFirestore } from "./composables/useFirestore";
+import { arrayToCSV, csvToArray, downloadCSV, readCSVFile } from "./utils/csvUtils";
 
 // State
 const currentPage = ref("home");
@@ -958,6 +999,159 @@ const handleDuplicateNews = async (newsId: number) => {
     alert("ニュースを複製しました！");
   } catch (err) {
     alert("エラーが発生しました: " + err);
+  }
+};
+
+// CSV Export/Import Methods
+const exportProductsCSV = () => {
+  try {
+    const headers = [
+      'title',
+      'category', 
+      'description',
+      'tags',
+      'author.name',
+      'author.role',
+      'date',
+      'likes',
+      'comments',
+      'url',
+      'featured'
+    ];
+    
+    // tagsを文字列に変換
+    const exportData = products.value.map(product => ({
+      ...product,
+      tags: product.tags.join('; ')
+    }));
+    
+    const csvContent = arrayToCSV(exportData, headers);
+    const filename = `products_${new Date().toISOString().split('T')[0]}.csv`;
+    downloadCSV(csvContent, filename);
+    
+    alert('成果物データをCSVで出力しました！');
+  } catch (err) {
+    alert('エクスポートエラー: ' + err);
+  }
+};
+
+const importProductsCSV = async (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  const file = target.files?.[0];
+  
+  if (!file) return;
+  
+  try {
+    const csvContent = await readCSVFile(file);
+    const headers = [
+      'title',
+      'category',
+      'description', 
+      'tags',
+      'author.name',
+      'author.role',
+      'date',
+      'likes',
+      'comments',
+      'url',
+      'featured'
+    ];
+    
+    const importedData = csvToArray(csvContent, headers);
+    
+    for (const item of importedData) {
+      if (!item.title || !item.description || !item['author.name']) {
+        continue; // 必須項目がない行はスキップ
+      }
+      
+      // tagsを配列に変換
+      const tags = item.tags ? item.tags.split(';').map((tag: string) => tag.trim()).filter((tag: string) => tag) : [];
+      
+      // Firestoreに追加
+      await addProduct({
+        title: item.title,
+        category: item.category || '仕事効率化',
+        description: item.description,
+        tags: tags,
+        author: {
+          name: item['author.name'],
+          avatar: item['author.name'].charAt(0).toUpperCase(),
+          role: item['author.role'] || 'メンバー'
+        },
+        date: item.date || new Date().toISOString().split('T')[0],
+        likes: item.likes || 0,
+        comments: item.comments || 0,
+        thumbnail: `https://via.placeholder.com/300x200/9B7BD8/FFFFFF?text=${encodeURIComponent(item.title)}`,
+        featured: item.featured || false,
+        url: item.url || '#'
+      });
+    }
+    
+    alert(`${importedData.length}件の成果物をインポートしました！`);
+  } catch (err) {
+    alert('インポートエラー: ' + err);
+  } finally {
+    // ファイル入力をリセット
+    target.value = '';
+  }
+};
+
+const exportNewsCSV = () => {
+  try {
+    const headers = [
+      'title',
+      'excerpt',
+      'date',
+      'url'
+    ];
+    
+    const csvContent = arrayToCSV(news.value, headers);
+    const filename = `news_${new Date().toISOString().split('T')[0]}.csv`;
+    downloadCSV(csvContent, filename);
+    
+    alert('ニュースデータをCSVで出力しました！');
+  } catch (err) {
+    alert('エクスポートエラー: ' + err);
+  }
+};
+
+const importNewsCSV = async (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  const file = target.files?.[0];
+  
+  if (!file) return;
+  
+  try {
+    const csvContent = await readCSVFile(file);
+    const headers = [
+      'title',
+      'excerpt',
+      'date',
+      'url'
+    ];
+    
+    const importedData = csvToArray(csvContent, headers);
+    
+    for (const item of importedData) {
+      if (!item.title || !item.excerpt) {
+        continue; // 必須項目がない行はスキップ
+      }
+      
+      // Firestoreに追加
+      await addNews({
+        title: item.title,
+        excerpt: item.excerpt,
+        date: item.date || new Date().toISOString().split('T')[0],
+        url: item.url || '#'
+      });
+    }
+    
+    alert(`${importedData.length}件のニュースをインポートしました！`);
+  } catch (err) {
+    alert('インポートエラー: ' + err);
+  } finally {
+    // ファイル入力をリセット
+    target.value = '';
   }
 };
 
@@ -1827,6 +2021,42 @@ watch(
   color: var(--gray-800);
 }
 
+.admin-actions {
+  display: flex;
+  gap: var(--spacing-4);
+  align-items: center;
+}
+
+.csv-actions {
+  display: flex;
+  gap: var(--spacing-2);
+}
+
+.btn-csv {
+  background: var(--gray-100);
+  color: var(--gray-700);
+  border: 1px solid var(--gray-300);
+  padding: var(--spacing-2) var(--spacing-4);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  text-decoration: none;
+  transition: all var(--transition-base);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-1);
+}
+
+.btn-csv:hover {
+  background: var(--gray-200);
+  transform: translateY(-1px);
+}
+
+.csv-import {
+  position: relative;
+}
+
 .admin-form {
   background: var(--gray-50);
   padding: var(--spacing-6);
@@ -1986,6 +2216,15 @@ watch(
     flex-direction: column;
     gap: var(--spacing-4);
     align-items: stretch;
+  }
+
+  .admin-actions {
+    flex-direction: column;
+    gap: var(--spacing-3);
+  }
+
+  .csv-actions {
+    justify-content: center;
   }
 
   .admin-tabs {
