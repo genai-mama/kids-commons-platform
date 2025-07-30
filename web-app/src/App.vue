@@ -316,12 +316,32 @@
             <div v-if="currentAdminTab === 'products'" class="admin-content">
               <div class="admin-header">
                 <h2>成果物一覧</h2>
-                <button
-                  class="btn-primary"
-                  @click="showProductForm = !showProductForm"
-                >
-                  {{ showProductForm ? "フォームを閉じる" : "新規追加" }}
-                </button>
+                <div class="admin-actions">
+                  <div class="csv-actions">
+                    <button
+                      class="btn-csv"
+                      @click="exportProductsCSV"
+                      title="CSVエクスポート"
+                    >
+                      📥 エクスポート
+                    </button>
+                    <label class="btn-csv csv-import">
+                      📤 インポート
+                      <input
+                        type="file"
+                        accept=".csv"
+                        @change="importProductsCSV"
+                        style="display: none"
+                      />
+                    </label>
+                  </div>
+                  <button
+                    class="btn-primary"
+                    @click="showProductForm = !showProductForm"
+                  >
+                    {{ showProductForm ? "フォームを閉じる" : "新規追加" }}
+                  </button>
+                </div>
               </div>
 
               <!-- 新規追加フォーム -->
@@ -389,6 +409,72 @@
                 </form>
               </div>
 
+              <!-- 編集フォーム -->
+              <div v-if="editingProduct" class="admin-form">
+                <h3>成果物を編集</h3>
+                <form @submit.prevent="handleUpdateProduct">
+                  <div class="form-group">
+                    <label>タイトル</label>
+                    <input type="text" v-model="editingProduct.title" required />
+                  </div>
+                  <div class="form-group">
+                    <label>カテゴリ</label>
+                    <select v-model="editingProduct.category" required>
+                      <option value="仕事効率化">仕事効率化</option>
+                      <option value="学校">学校</option>
+                      <option value="コミュニケーション">コミュニケーション</option>
+                      <option value="学習">学習</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label>説明</label>
+                    <textarea
+                      v-model="editingProduct.description"
+                      required
+                      rows="4"
+                    ></textarea>
+                  </div>
+                  <div class="form-group">
+                    <label>タグ（カンマ区切り）</label>
+                    <input
+                      type="text"
+                      v-model="editingProduct.tagsString"
+                      placeholder="SNS, 効率化, スケジュール"
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label>作者名</label>
+                    <input
+                      type="text"
+                      v-model="editingProduct.author.name"
+                      required
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label>作者の役割</label>
+                    <input
+                      type="text"
+                      v-model="editingProduct.author.role"
+                      required
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label>URL</label>
+                    <input type="url" v-model="editingProduct.url" required />
+                  </div>
+                  <div class="form-group">
+                    <label>
+                      <input type="checkbox" v-model="editingProduct.featured" />
+                      注目の成果物として表示
+                    </label>
+                  </div>
+                  <div class="form-actions">
+                    <button type="submit" class="btn-primary">更新</button>
+                    <button type="button" class="btn-secondary" @click="cancelEditProduct">キャンセル</button>
+                  </div>
+                </form>
+              </div>
+
               <!-- 成果物一覧 -->
               <div class="admin-list">
                 <div
@@ -396,9 +482,38 @@
                   :key="product.id"
                   class="admin-item"
                 >
-                  <h4>{{ product.title }}</h4>
-                  <p>{{ product.category }} | {{ product.author.name }}</p>
-                  <p>{{ product.description }}</p>
+                  <div class="admin-item-content">
+                    <h4>{{ product.title }}</h4>
+                    <p>{{ product.category }} | {{ product.author.name }}</p>
+                    <p>{{ product.description }}</p>
+                    <p class="admin-item-meta">
+                      いいね: {{ product.likes }} | コメント: {{ product.comments }} | 
+                      {{ product.featured ? '注目' : '通常' }}
+                    </p>
+                  </div>
+                  <div class="admin-item-actions">
+                    <button 
+                      class="btn-edit" 
+                      @click="startEditProduct(product)"
+                      title="編集"
+                    >
+                      ✏️
+                    </button>
+                    <button 
+                      class="btn-duplicate" 
+                      @click="handleDuplicateProduct(product.id)"
+                      title="複製"
+                    >
+                      📋
+                    </button>
+                    <button 
+                      class="btn-delete" 
+                      @click="handleDeleteProduct(product.id)"
+                      title="削除"
+                    >
+                      🗑️
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -407,12 +522,32 @@
             <div v-if="currentAdminTab === 'news'" class="admin-content">
               <div class="admin-header">
                 <h2>ニュース一覧</h2>
-                <button
-                  class="btn-primary"
-                  @click="showNewsForm = !showNewsForm"
-                >
-                  {{ showNewsForm ? "フォームを閉じる" : "新規追加" }}
-                </button>
+                <div class="admin-actions">
+                  <div class="csv-actions">
+                    <button
+                      class="btn-csv"
+                      @click="exportNewsCSV"
+                      title="CSVエクスポート"
+                    >
+                      📥 エクスポート
+                    </button>
+                    <label class="btn-csv csv-import">
+                      📤 インポート
+                      <input
+                        type="file"
+                        accept=".csv"
+                        @change="importNewsCSV"
+                        style="display: none"
+                      />
+                    </label>
+                  </div>
+                  <button
+                    class="btn-primary"
+                    @click="showNewsForm = !showNewsForm"
+                  >
+                    {{ showNewsForm ? "フォームを閉じる" : "新規追加" }}
+                  </button>
+                </div>
               </div>
 
               <!-- 新規追加フォーム -->
@@ -439,6 +574,33 @@
                 </form>
               </div>
 
+              <!-- ニュース編集フォーム -->
+              <div v-if="editingNews" class="admin-form">
+                <h3>ニュースを編集</h3>
+                <form @submit.prevent="handleUpdateNews">
+                  <div class="form-group">
+                    <label>タイトル</label>
+                    <input type="text" v-model="editingNews.title" required />
+                  </div>
+                  <div class="form-group">
+                    <label>抜粋</label>
+                    <textarea
+                      v-model="editingNews.excerpt"
+                      required
+                      rows="4"
+                    ></textarea>
+                  </div>
+                  <div class="form-group">
+                    <label>URL</label>
+                    <input type="url" v-model="editingNews.url" required />
+                  </div>
+                  <div class="form-actions">
+                    <button type="submit" class="btn-primary">更新</button>
+                    <button type="button" class="btn-secondary" @click="cancelEditNews">キャンセル</button>
+                  </div>
+                </form>
+              </div>
+
               <!-- ニュース一覧 -->
               <div class="admin-list">
                 <div
@@ -446,9 +608,34 @@
                   :key="newsItem.id"
                   class="admin-item"
                 >
-                  <h4>{{ newsItem.title }}</h4>
-                  <p>{{ formatDate(newsItem.date) }}</p>
-                  <p>{{ newsItem.excerpt }}</p>
+                  <div class="admin-item-content">
+                    <h4>{{ newsItem.title }}</h4>
+                    <p>{{ formatDate(newsItem.date) }}</p>
+                    <p>{{ newsItem.excerpt }}</p>
+                  </div>
+                  <div class="admin-item-actions">
+                    <button 
+                      class="btn-edit" 
+                      @click="startEditNews(newsItem)"
+                      title="編集"
+                    >
+                      ✏️
+                    </button>
+                    <button 
+                      class="btn-duplicate" 
+                      @click="handleDuplicateNews(newsItem.id)"
+                      title="複製"
+                    >
+                      📋
+                    </button>
+                    <button 
+                      class="btn-delete" 
+                      @click="handleDeleteNews(newsItem.id)"
+                      title="削除"
+                    >
+                      🗑️
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -469,6 +656,7 @@
 <script setup lang="ts">
 import { ref, onMounted, nextTick, watch } from "vue";
 import { useFirestore } from "./composables/useFirestore";
+import { arrayToCSV, csvToArray, downloadCSV, readCSVFile } from "./utils/csvUtils";
 
 // State
 const currentPage = ref("home");
@@ -484,6 +672,8 @@ let searchTimeout: number | null = null;
 const currentAdminTab = ref("products");
 const showProductForm = ref(false);
 const showNewsForm = ref(false);
+const editingProduct = ref<any>(null);
+const editingNews = ref<any>(null);
 
 // New Item Forms
 const newProduct = ref({
@@ -504,8 +694,21 @@ const newNews = ref({
 });
 
 // Firestore使用
-const { products, news, loading, error, addProduct, addNews, initialize } =
-  useFirestore();
+const { 
+  products, 
+  news, 
+  loading, 
+  error, 
+  addProduct, 
+  addNews, 
+  updateProduct, 
+  deleteProduct, 
+  duplicateProduct, 
+  updateNews, 
+  deleteNews, 
+  duplicateNews, 
+  initialize 
+} = useFirestore();
 
 // Stats（Firestoreから計算）
 const stats = ref({
@@ -601,6 +804,8 @@ const setAdminTab = (tab: string) => {
   currentAdminTab.value = tab;
   showProductForm.value = false;
   showNewsForm.value = false;
+  editingProduct.value = null;
+  editingNews.value = null;
 };
 
 const handleAddProduct = async () => {
@@ -685,6 +890,268 @@ const handleAddNews = async () => {
     alert("ニュースをFirestoreに追加しました！");
   } catch (err) {
     alert("エラーが発生しました: " + err);
+  }
+};
+
+// Product CRUD Methods
+const startEditProduct = (product: any) => {
+  editingProduct.value = {
+    ...product,
+    tagsString: product.tags.join(", "),
+    author: { ...product.author }
+  };
+  showProductForm.value = false;
+};
+
+const handleUpdateProduct = async () => {
+  if (!editingProduct.value) return;
+
+  try {
+    const tags = editingProduct.value.tagsString
+      .split(",")
+      .map((tag: string) => tag.trim())
+      .filter((tag: string) => tag);
+
+    editingProduct.value.author.avatar = editingProduct.value.author.name.charAt(0).toUpperCase();
+
+    await updateProduct(editingProduct.value.id, {
+      title: editingProduct.value.title,
+      category: editingProduct.value.category,
+      description: editingProduct.value.description,
+      tags: tags,
+      author: editingProduct.value.author,
+      url: editingProduct.value.url,
+      featured: editingProduct.value.featured
+    });
+
+    editingProduct.value = null;
+    alert("成果物を更新しました！");
+  } catch (err) {
+    alert("エラーが発生しました: " + err);
+  }
+};
+
+const cancelEditProduct = () => {
+  editingProduct.value = null;
+};
+
+const handleDeleteProduct = async (productId: number) => {
+  if (!confirm("この成果物を削除してもよろしいですか？")) return;
+
+  try {
+    await deleteProduct(productId);
+    alert("成果物を削除しました！");
+  } catch (err) {
+    alert("エラーが発生しました: " + err);
+  }
+};
+
+const handleDuplicateProduct = async (productId: number) => {
+  try {
+    await duplicateProduct(productId);
+    alert("成果物を複製しました！");
+  } catch (err) {
+    alert("エラーが発生しました: " + err);
+  }
+};
+
+// News CRUD Methods
+const startEditNews = (newsItem: any) => {
+  editingNews.value = { ...newsItem };
+  showNewsForm.value = false;
+};
+
+const handleUpdateNews = async () => {
+  if (!editingNews.value) return;
+
+  try {
+    await updateNews(editingNews.value.id, {
+      title: editingNews.value.title,
+      excerpt: editingNews.value.excerpt,
+      url: editingNews.value.url
+    });
+
+    editingNews.value = null;
+    alert("ニュースを更新しました！");
+  } catch (err) {
+    alert("エラーが発生しました: " + err);
+  }
+};
+
+const cancelEditNews = () => {
+  editingNews.value = null;
+};
+
+const handleDeleteNews = async (newsId: number) => {
+  if (!confirm("このニュースを削除してもよろしいですか？")) return;
+
+  try {
+    await deleteNews(newsId);
+    alert("ニュースを削除しました！");
+  } catch (err) {
+    alert("エラーが発生しました: " + err);
+  }
+};
+
+const handleDuplicateNews = async (newsId: number) => {
+  try {
+    await duplicateNews(newsId);
+    alert("ニュースを複製しました！");
+  } catch (err) {
+    alert("エラーが発生しました: " + err);
+  }
+};
+
+// CSV Export/Import Methods
+const exportProductsCSV = () => {
+  try {
+    const headers = [
+      'title',
+      'category', 
+      'description',
+      'tags',
+      'author.name',
+      'author.role',
+      'date',
+      'likes',
+      'comments',
+      'url',
+      'featured'
+    ];
+    
+    // tagsを文字列に変換
+    const exportData = products.value.map(product => ({
+      ...product,
+      tags: product.tags.join('; ')
+    }));
+    
+    const csvContent = arrayToCSV(exportData, headers);
+    const filename = `products_${new Date().toISOString().split('T')[0]}.csv`;
+    downloadCSV(csvContent, filename);
+    
+    alert('成果物データをCSVで出力しました！');
+  } catch (err) {
+    alert('エクスポートエラー: ' + err);
+  }
+};
+
+const importProductsCSV = async (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  const file = target.files?.[0];
+  
+  if (!file) return;
+  
+  try {
+    const csvContent = await readCSVFile(file);
+    const headers = [
+      'title',
+      'category',
+      'description', 
+      'tags',
+      'author.name',
+      'author.role',
+      'date',
+      'likes',
+      'comments',
+      'url',
+      'featured'
+    ];
+    
+    const importedData = csvToArray(csvContent, headers);
+    
+    for (const item of importedData) {
+      if (!item.title || !item.description || !item['author.name']) {
+        continue; // 必須項目がない行はスキップ
+      }
+      
+      // tagsを配列に変換
+      const tags = item.tags ? item.tags.split(';').map((tag: string) => tag.trim()).filter((tag: string) => tag) : [];
+      
+      // Firestoreに追加
+      await addProduct({
+        title: item.title,
+        category: item.category || '仕事効率化',
+        description: item.description,
+        tags: tags,
+        author: {
+          name: item['author.name'],
+          avatar: item['author.name'].charAt(0).toUpperCase(),
+          role: item['author.role'] || 'メンバー'
+        },
+        date: item.date || new Date().toISOString().split('T')[0],
+        likes: item.likes || 0,
+        comments: item.comments || 0,
+        thumbnail: `https://via.placeholder.com/300x200/9B7BD8/FFFFFF?text=${encodeURIComponent(item.title)}`,
+        featured: item.featured || false,
+        url: item.url || '#'
+      });
+    }
+    
+    alert(`${importedData.length}件の成果物をインポートしました！`);
+  } catch (err) {
+    alert('インポートエラー: ' + err);
+  } finally {
+    // ファイル入力をリセット
+    target.value = '';
+  }
+};
+
+const exportNewsCSV = () => {
+  try {
+    const headers = [
+      'title',
+      'excerpt',
+      'date',
+      'url'
+    ];
+    
+    const csvContent = arrayToCSV(news.value, headers);
+    const filename = `news_${new Date().toISOString().split('T')[0]}.csv`;
+    downloadCSV(csvContent, filename);
+    
+    alert('ニュースデータをCSVで出力しました！');
+  } catch (err) {
+    alert('エクスポートエラー: ' + err);
+  }
+};
+
+const importNewsCSV = async (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  const file = target.files?.[0];
+  
+  if (!file) return;
+  
+  try {
+    const csvContent = await readCSVFile(file);
+    const headers = [
+      'title',
+      'excerpt',
+      'date',
+      'url'
+    ];
+    
+    const importedData = csvToArray(csvContent, headers);
+    
+    for (const item of importedData) {
+      if (!item.title || !item.excerpt) {
+        continue; // 必須項目がない行はスキップ
+      }
+      
+      // Firestoreに追加
+      await addNews({
+        title: item.title,
+        excerpt: item.excerpt,
+        date: item.date || new Date().toISOString().split('T')[0],
+        url: item.url || '#'
+      });
+    }
+    
+    alert(`${importedData.length}件のニュースをインポートしました！`);
+  } catch (err) {
+    alert('インポートエラー: ' + err);
+  } finally {
+    // ファイル入力をリセット
+    target.value = '';
   }
 };
 
@@ -1554,6 +2021,42 @@ watch(
   color: var(--gray-800);
 }
 
+.admin-actions {
+  display: flex;
+  gap: var(--spacing-4);
+  align-items: center;
+}
+
+.csv-actions {
+  display: flex;
+  gap: var(--spacing-2);
+}
+
+.btn-csv {
+  background: var(--gray-100);
+  color: var(--gray-700);
+  border: 1px solid var(--gray-300);
+  padding: var(--spacing-2) var(--spacing-4);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  text-decoration: none;
+  transition: all var(--transition-base);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-1);
+}
+
+.btn-csv:hover {
+  background: var(--gray-200);
+  transform: translateY(-1px);
+}
+
+.csv-import {
+  position: relative;
+}
+
 .admin-form {
   background: var(--gray-50);
   padding: var(--spacing-6);
@@ -1629,12 +2132,99 @@ watch(
   font-size: var(--font-size-sm);
 }
 
+/* Admin Item Layout */
+.admin-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--spacing-4);
+}
+
+.admin-item-content {
+  flex: 1;
+}
+
+.admin-item-meta {
+  font-size: var(--font-size-xs);
+  color: var(--gray-500);
+  margin-top: var(--spacing-2);
+}
+
+.admin-item-actions {
+  display: flex;
+  gap: var(--spacing-2);
+  flex-shrink: 0;
+}
+
+.btn-edit,
+.btn-duplicate,
+.btn-delete {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: var(--spacing-2);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-base);
+  transition: all var(--transition-base);
+  min-width: 40px;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-edit:hover {
+  background: var(--primary-purple-lighter);
+}
+
+.btn-duplicate:hover {
+  background: var(--gray-100);
+}
+
+.btn-delete:hover {
+  background: #fee;
+  color: #d63384;
+}
+
+.form-actions {
+  display: flex;
+  gap: var(--spacing-3);
+  margin-top: var(--spacing-4);
+}
+
+.btn-secondary {
+  background: var(--gray-200);
+  color: var(--gray-700);
+  border: 1px solid var(--gray-300);
+  padding: var(--spacing-3) var(--spacing-6);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  font-size: var(--font-size-base);
+  font-weight: 500;
+  text-decoration: none;
+  transition: all var(--transition-base);
+}
+
+.btn-secondary:hover {
+  background: var(--gray-300);
+  transform: translateY(-1px);
+}
+
 /* レスポンシブ対応 */
 @media (max-width: 768px) {
   .admin-header {
     flex-direction: column;
     gap: var(--spacing-4);
     align-items: stretch;
+  }
+
+  .admin-actions {
+    flex-direction: column;
+    gap: var(--spacing-3);
+  }
+
+  .csv-actions {
+    justify-content: center;
   }
 
   .admin-tabs {
