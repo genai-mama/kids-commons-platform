@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firestore接続テスト</title>
+</head>
+<body>
+    <h1>🔥 Firestore接続テスト</h1>
+    <div id="status">テスト準備中...</div>
+    <div id="results"></div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js'
+        import { getFirestore, collection, addDoc, getDocs } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js'
+
+        // Firebase設定
+        const firebaseConfig = {
+            apiKey: "AIzaSyCSoIySPtnNJHz_lN5bLSLhJrDFPfCbRsY",
+            authDomain: "gemaimamastoreproject.firebaseapp.com",
+            projectId: "gemaimamastoreproject",
+            storageBucket: "gemaimamastoreproject.firebasestorage.app",
+            messagingSenderId: "727225892227",
+            appId: "1:727225892227:web:0958adf8c85a3487b30ab6",
+            measurementId: "G-M3VBTG516S"
+        }
+
+        // Firebase初期化
+        const app = initializeApp(firebaseConfig)
+        const db = getFirestore(app)
+
+        const statusDiv = document.getElementById('status')
+        const resultsDiv = document.getElementById('results')
+
+        async function testFirestore() {
+            try {
+                statusDiv.innerHTML = '🔗 Firestore接続中...'
+                
+                // テストデータ
+                const testProduct = {
+                    id: Date.now(),
+                    title: 'テスト成果物 ' + new Date().toLocaleTimeString(),
+                    category: 'テスト',
+                    description: 'Firestore接続テスト用のデータです',
+                    tags: ['テスト', 'Firestore'],
+                    author: {
+                        name: 'テストユーザー',
+                        avatar: 'T',
+                        role: 'テスター'
+                    },
+                    date: new Date().toISOString().split('T')[0],
+                    likes: 0,
+                    comments: 0,
+                    thumbnail: 'https://via.placeholder.com/300x200/9B7BD8/FFFFFF?text=Test',
+                    featured: false,
+                    url: 'https://example.com'
+                }
+
+                // 1. データ追加テスト
+                statusDiv.innerHTML = '📝 データ追加中...'
+                const docRef = await addDoc(collection(db, 'products'), testProduct)
+                
+                statusDiv.innerHTML = '✅ データ追加成功！'
+                resultsDiv.innerHTML += `<p>✅ 追加されたドキュメントID: ${docRef.id}</p>`
+
+                // 2. データ読み込みテスト
+                statusDiv.innerHTML = '📖 データ読み込み中...'
+                const querySnapshot = await getDocs(collection(db, 'products'))
+                
+                resultsDiv.innerHTML += `<p>📄 productsコレクション内のドキュメント数: ${querySnapshot.size}</p>`
+                resultsDiv.innerHTML += '<h3>📋 現在のデータ一覧:</h3><ul>'
+                
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data()
+                    resultsDiv.innerHTML += `<li><strong>${data.title}</strong> - ${data.category}</li>`
+                })
+                
+                resultsDiv.innerHTML += '</ul>'
+                statusDiv.innerHTML = '🎉 すべてのテスト完了！Firestoreとの接続が正常に動作しています。'
+
+            } catch (error) {
+                statusDiv.innerHTML = '❌ エラーが発生しました'
+                resultsDiv.innerHTML = `<p style="color: red;">エラー: ${error.message}</p>`
+                console.error('Firestore接続エラー:', error)
+            }
+        }
+
+        // テスト実行
+        testFirestore()
+    </script>
+</body>
+</html>

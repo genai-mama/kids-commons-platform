@@ -3,10 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>#生成AIママ部 - 生成AIを活用するママのためのコミュニティ</title>
+    <title>#生成AIママ部</title>
     <meta
       name="description"
-      content="家事育児の効率化からコーディングまで、生成AIを活用するママのためのDiscordコミュニティです。エンジニアでも、そうでなくても、経験問わずママさんなら大歓迎！"
+      content="家事育児の効率化からコーディングまで、生成AIを活用するママのためのDiscordコミュニティです。"
     />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -14,149 +14,10 @@
       href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="css/style.css" />
-    <link rel="stylesheet" href="css/responsive.css" />
+    <link rel="icon" type="image/svg+xml" href="/images/logo/genai-mama-logo.svg" />
   </head>
   <body>
-    <!-- Navigation -->
-    <header class="header">
-      <div class="container">
-        <div class="logo">
-          <img
-            src="images/logo/genai-mama-logo.svg"
-            alt="#生成AIママ部"
-            class="logo-image"
-          />
-        </div>
-        <nav class="nav" id="nav">
-          <ul class="nav-list">
-            <li>
-              <a href="index.html" class="nav-link active">ホーム</a>
-            </li>
-            <li>
-              <a href="about.html" class="nav-link">About</a>
-            </li>
-            <li>
-              <a href="products.html" class="nav-link">Products</a>
-            </li>
-            <li><a href="news.html" class="nav-link">News</a></li>
-          </ul>
-        </nav>
-        <div class="header-actions">
-          <div class="search-bar">
-            <input
-              type="text"
-              placeholder="成果物を検索"
-              class="search-input"
-              id="search-input"
-            />
-            <button class="search-btn" id="search-btn">🔍</button>
-          </div>
-          <a href="#" class="btn-join" id="join-btn">参加する</a>
-        </div>
-        <button class="mobile-menu-toggle" id="mobile-menu-toggle">
-          <span></span>
-          <span></span>
-          <span></span>
-        </button>
-      </div>
-    </header>
-
-    <!-- Main Content -->
-    <main class="main">
-        <div class="home-layout">
-          <!-- Left Column: Hero + Content Section -->
-          <div class="left-column">
-            <!-- Hero Section -->
-            <section class="hero">
-              <div class="container">
-                <div class="hero-content">
-                  <h1 class="hero-title">#生成AIママ部</h1>
-                  <p class="hero-subtitle">
-                    家事育児の効率化からコーディングまで、生成AIを活用するママのためのDiscordコミュニティです🎵<br />
-                    エンジニアでも、そうでなくても、経験問わずママさんなら大歓迎🙆‍♀️✨<br />
-                    ぜひみんなで生成AI活用していきましょう〜！
-                  </p>
-                  <div class="hero-actions">
-                    <a href="#" class="btn-primary" id="hero-join-btn"
-                      >コミュニティに参加</a
-                    >
-                    <a href="products.html" class="btn-secondary">成果物を見る</a>
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            <!-- Content Section -->
-            <section class="content-section">
-              <div class="container">
-                <!-- Featured Products -->
-                <div class="products-section">
-                  <div class="section-header">
-                    <h2 class="section-title">注目の成果物</h2>
-                    <a href="products.html" class="view-all">すべて見る →</a>
-                  </div>
-                  <div class="products-grid" id="featured-products-grid">
-                    <!-- Featured products will be injected here -->
-                    <div style="padding: 20px; text-align: center; color: #666;">
-                      成果物を読み込み中...
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </section>
-          </div>
-
-          <!-- Right Column: News -->
-          <div class="right-column">
-            <div class="news-section">
-              <div class="section-header">
-                <h2 class="section-title">最新ニュース</h2>
-                <a href="news.html" class="view-all">すべて見る →</a>
-              </div>
-              <div class="news-list" id="latest-news-grid">
-                <!-- Latest news will be injected here -->
-                <div style="padding: 20px; text-align: center; color: #666;">
-                  ニュースを読み込み中...
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-    </main>
-
-    <!-- Footer -->
-    <footer class="footer">
-      <div class="container">
-        <p>&copy; 2024 #生成AIママ部. All rights reserved.</p>
-      </div>
-    </footer>
-
-    <!-- Scripts -->
-    <script src="js/data.js"></script>
-    <script>
-      // Test if data is loaded
-      setTimeout(() => {
-        console.log('=== Data Loading Test ===');
-        console.log('products available:', typeof products !== 'undefined', products ? products.length : 'undefined');
-        console.log('news available:', typeof news !== 'undefined', news ? news.length : 'undefined');
-        console.log('getFeaturedProducts available:', typeof getFeaturedProducts !== 'undefined');
-        console.log('getLatestNews available:', typeof getLatestNews !== 'undefined');
-        
-        if (typeof getFeaturedProducts !== 'undefined') {
-          console.log('Featured products:', getFeaturedProducts());
-        }
-        if (typeof getLatestNews !== 'undefined') {
-          console.log('Latest news:', getLatestNews());
-        }
-        
-        // Check DOM elements
-        console.log('featured-products-grid element:', document.getElementById('featured-products-grid'));
-        console.log('latest-news-grid element:', document.getElementById('latest-news-grid'));
-      }, 100);
-    </script>
-    <script src="js/mobile-menu.js"></script>
-    <script src="js/home.js"></script>
+    <div id="app"></div>
+    <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
