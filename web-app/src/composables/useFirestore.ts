@@ -4,9 +4,13 @@ import {
   collection, 
   addDoc, 
   getDocs, 
+  updateDoc,
+  deleteDoc,
+  doc,
   orderBy,
   query,
-  onSnapshot
+  onSnapshot,
+  where
 } from 'firebase/firestore'
 import { db } from '../firebase'
 
@@ -160,6 +164,183 @@ export function useFirestore() {
     }
   }
 
+  // Product更新
+  const updateProduct = async (productId: number, productData: Partial<Product>) => {
+    try {
+      loading.value = true
+      
+      // Firestoreドキュメントを探す
+      const q = query(collection(db, 'products'), where('id', '==', productId))
+      const querySnapshot = await getDocs(q)
+      
+      if (querySnapshot.empty) {
+        throw new Error('Product not found')
+      }
+      
+      const docRef = querySnapshot.docs[0].ref
+      await updateDoc(docRef, productData)
+      
+      // ローカルデータも更新
+      const index = products.value.findIndex(p => p.id === productId)
+      if (index !== -1) {
+        products.value[index] = { ...products.value[index], ...productData }
+      }
+      
+      console.log('Product updated:', productId)
+    } catch (err) {
+      error.value = `Product更新エラー: ${err}`
+      console.error('Error updating product:', err)
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // Product削除
+  const deleteProduct = async (productId: number) => {
+    try {
+      loading.value = true
+      
+      // Firestoreドキュメントを探す
+      const q = query(collection(db, 'products'), where('id', '==', productId))
+      const querySnapshot = await getDocs(q)
+      
+      if (querySnapshot.empty) {
+        throw new Error('Product not found')
+      }
+      
+      const docRef = querySnapshot.docs[0].ref
+      await deleteDoc(docRef)
+      
+      // ローカルデータからも削除
+      products.value = products.value.filter(p => p.id !== productId)
+      
+      console.log('Product deleted:', productId)
+    } catch (err) {
+      error.value = `Product削除エラー: ${err}`
+      console.error('Error deleting product:', err)
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // Product複製
+  const duplicateProduct = async (productId: number) => {
+    try {
+      const originalProduct = products.value.find(p => p.id === productId)
+      if (!originalProduct) {
+        throw new Error('Product not found')
+      }
+      
+      const duplicatedProduct = {
+        ...originalProduct,
+        title: `${originalProduct.title} (コピー)`,
+        date: new Date().toISOString().split('T')[0],
+        likes: 0,
+        comments: 0,
+        featured: false
+      }
+      
+      // idを除外してから追加
+      const { id, ...productDataWithoutId } = duplicatedProduct
+      await addProduct(productDataWithoutId)
+      
+      console.log('Product duplicated:', productId)
+    } catch (err) {
+      error.value = `Product複製エラー: ${err}`
+      console.error('Error duplicating product:', err)
+      throw err
+    }
+  }
+
+  // News更新
+  const updateNews = async (newsId: number, newsData: Partial<NewsItem>) => {
+    try {
+      loading.value = true
+      
+      // Firestoreドキュメントを探す
+      const q = query(collection(db, 'news'), where('id', '==', newsId))
+      const querySnapshot = await getDocs(q)
+      
+      if (querySnapshot.empty) {
+        throw new Error('News not found')
+      }
+      
+      const docRef = querySnapshot.docs[0].ref
+      await updateDoc(docRef, newsData)
+      
+      // ローカルデータも更新
+      const index = news.value.findIndex(n => n.id === newsId)
+      if (index !== -1) {
+        news.value[index] = { ...news.value[index], ...newsData }
+      }
+      
+      console.log('News updated:', newsId)
+    } catch (err) {
+      error.value = `News更新エラー: ${err}`
+      console.error('Error updating news:', err)
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // News削除
+  const deleteNews = async (newsId: number) => {
+    try {
+      loading.value = true
+      
+      // Firestoreドキュメントを探す
+      const q = query(collection(db, 'news'), where('id', '==', newsId))
+      const querySnapshot = await getDocs(q)
+      
+      if (querySnapshot.empty) {
+        throw new Error('News not found')
+      }
+      
+      const docRef = querySnapshot.docs[0].ref
+      await deleteDoc(docRef)
+      
+      // ローカルデータからも削除
+      news.value = news.value.filter(n => n.id !== newsId)
+      
+      console.log('News deleted:', newsId)
+    } catch (err) {
+      error.value = `News削除エラー: ${err}`
+      console.error('Error deleting news:', err)
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // News複製
+  const duplicateNews = async (newsId: number) => {
+    try {
+      const originalNews = news.value.find(n => n.id === newsId)
+      if (!originalNews) {
+        throw new Error('News not found')
+      }
+      
+      const duplicatedNews = {
+        ...originalNews,
+        title: `${originalNews.title} (コピー)`,
+        date: new Date().toISOString().split('T')[0]
+      }
+      
+      // idを除外してから追加
+      const { id, ...newsDataWithoutId } = duplicatedNews
+      await addNews(newsDataWithoutId)
+      
+      console.log('News duplicated:', newsId)
+    } catch (err) {
+      error.value = `News複製エラー: ${err}`
+      console.error('Error duplicating news:', err)
+      throw err
+    }
+  }
+
   // 初期化
   const initialize = async () => {
     try {
@@ -176,6 +357,12 @@ export function useFirestore() {
     error,
     addProduct,
     addNews,
+    updateProduct,
+    deleteProduct,
+    duplicateProduct,
+    updateNews,
+    deleteNews,
+    duplicateNews,
     initialize
   }
 }

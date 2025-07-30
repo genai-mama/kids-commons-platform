@@ -389,6 +389,72 @@
                 </form>
               </div>
 
+              <!-- 編集フォーム -->
+              <div v-if="editingProduct" class="admin-form">
+                <h3>成果物を編集</h3>
+                <form @submit.prevent="handleUpdateProduct">
+                  <div class="form-group">
+                    <label>タイトル</label>
+                    <input type="text" v-model="editingProduct.title" required />
+                  </div>
+                  <div class="form-group">
+                    <label>カテゴリ</label>
+                    <select v-model="editingProduct.category" required>
+                      <option value="仕事効率化">仕事効率化</option>
+                      <option value="学校">学校</option>
+                      <option value="コミュニケーション">コミュニケーション</option>
+                      <option value="学習">学習</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label>説明</label>
+                    <textarea
+                      v-model="editingProduct.description"
+                      required
+                      rows="4"
+                    ></textarea>
+                  </div>
+                  <div class="form-group">
+                    <label>タグ（カンマ区切り）</label>
+                    <input
+                      type="text"
+                      v-model="editingProduct.tagsString"
+                      placeholder="SNS, 効率化, スケジュール"
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label>作者名</label>
+                    <input
+                      type="text"
+                      v-model="editingProduct.author.name"
+                      required
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label>作者の役割</label>
+                    <input
+                      type="text"
+                      v-model="editingProduct.author.role"
+                      required
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label>URL</label>
+                    <input type="url" v-model="editingProduct.url" required />
+                  </div>
+                  <div class="form-group">
+                    <label>
+                      <input type="checkbox" v-model="editingProduct.featured" />
+                      注目の成果物として表示
+                    </label>
+                  </div>
+                  <div class="form-actions">
+                    <button type="submit" class="btn-primary">更新</button>
+                    <button type="button" class="btn-secondary" @click="cancelEditProduct">キャンセル</button>
+                  </div>
+                </form>
+              </div>
+
               <!-- 成果物一覧 -->
               <div class="admin-list">
                 <div
@@ -396,9 +462,38 @@
                   :key="product.id"
                   class="admin-item"
                 >
-                  <h4>{{ product.title }}</h4>
-                  <p>{{ product.category }} | {{ product.author.name }}</p>
-                  <p>{{ product.description }}</p>
+                  <div class="admin-item-content">
+                    <h4>{{ product.title }}</h4>
+                    <p>{{ product.category }} | {{ product.author.name }}</p>
+                    <p>{{ product.description }}</p>
+                    <p class="admin-item-meta">
+                      いいね: {{ product.likes }} | コメント: {{ product.comments }} | 
+                      {{ product.featured ? '注目' : '通常' }}
+                    </p>
+                  </div>
+                  <div class="admin-item-actions">
+                    <button 
+                      class="btn-edit" 
+                      @click="startEditProduct(product)"
+                      title="編集"
+                    >
+                      ✏️
+                    </button>
+                    <button 
+                      class="btn-duplicate" 
+                      @click="handleDuplicateProduct(product.id)"
+                      title="複製"
+                    >
+                      📋
+                    </button>
+                    <button 
+                      class="btn-delete" 
+                      @click="handleDeleteProduct(product.id)"
+                      title="削除"
+                    >
+                      🗑️
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -439,6 +534,33 @@
                 </form>
               </div>
 
+              <!-- ニュース編集フォーム -->
+              <div v-if="editingNews" class="admin-form">
+                <h3>ニュースを編集</h3>
+                <form @submit.prevent="handleUpdateNews">
+                  <div class="form-group">
+                    <label>タイトル</label>
+                    <input type="text" v-model="editingNews.title" required />
+                  </div>
+                  <div class="form-group">
+                    <label>抜粋</label>
+                    <textarea
+                      v-model="editingNews.excerpt"
+                      required
+                      rows="4"
+                    ></textarea>
+                  </div>
+                  <div class="form-group">
+                    <label>URL</label>
+                    <input type="url" v-model="editingNews.url" required />
+                  </div>
+                  <div class="form-actions">
+                    <button type="submit" class="btn-primary">更新</button>
+                    <button type="button" class="btn-secondary" @click="cancelEditNews">キャンセル</button>
+                  </div>
+                </form>
+              </div>
+
               <!-- ニュース一覧 -->
               <div class="admin-list">
                 <div
@@ -446,9 +568,34 @@
                   :key="newsItem.id"
                   class="admin-item"
                 >
-                  <h4>{{ newsItem.title }}</h4>
-                  <p>{{ formatDate(newsItem.date) }}</p>
-                  <p>{{ newsItem.excerpt }}</p>
+                  <div class="admin-item-content">
+                    <h4>{{ newsItem.title }}</h4>
+                    <p>{{ formatDate(newsItem.date) }}</p>
+                    <p>{{ newsItem.excerpt }}</p>
+                  </div>
+                  <div class="admin-item-actions">
+                    <button 
+                      class="btn-edit" 
+                      @click="startEditNews(newsItem)"
+                      title="編集"
+                    >
+                      ✏️
+                    </button>
+                    <button 
+                      class="btn-duplicate" 
+                      @click="handleDuplicateNews(newsItem.id)"
+                      title="複製"
+                    >
+                      📋
+                    </button>
+                    <button 
+                      class="btn-delete" 
+                      @click="handleDeleteNews(newsItem.id)"
+                      title="削除"
+                    >
+                      🗑️
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -484,6 +631,8 @@ let searchTimeout: number | null = null;
 const currentAdminTab = ref("products");
 const showProductForm = ref(false);
 const showNewsForm = ref(false);
+const editingProduct = ref<any>(null);
+const editingNews = ref<any>(null);
 
 // New Item Forms
 const newProduct = ref({
@@ -504,8 +653,21 @@ const newNews = ref({
 });
 
 // Firestore使用
-const { products, news, loading, error, addProduct, addNews, initialize } =
-  useFirestore();
+const { 
+  products, 
+  news, 
+  loading, 
+  error, 
+  addProduct, 
+  addNews, 
+  updateProduct, 
+  deleteProduct, 
+  duplicateProduct, 
+  updateNews, 
+  deleteNews, 
+  duplicateNews, 
+  initialize 
+} = useFirestore();
 
 // Stats（Firestoreから計算）
 const stats = ref({
@@ -601,6 +763,8 @@ const setAdminTab = (tab: string) => {
   currentAdminTab.value = tab;
   showProductForm.value = false;
   showNewsForm.value = false;
+  editingProduct.value = null;
+  editingNews.value = null;
 };
 
 const handleAddProduct = async () => {
@@ -683,6 +847,115 @@ const handleAddNews = async () => {
 
     showNewsForm.value = false;
     alert("ニュースをFirestoreに追加しました！");
+  } catch (err) {
+    alert("エラーが発生しました: " + err);
+  }
+};
+
+// Product CRUD Methods
+const startEditProduct = (product: any) => {
+  editingProduct.value = {
+    ...product,
+    tagsString: product.tags.join(", "),
+    author: { ...product.author }
+  };
+  showProductForm.value = false;
+};
+
+const handleUpdateProduct = async () => {
+  if (!editingProduct.value) return;
+
+  try {
+    const tags = editingProduct.value.tagsString
+      .split(",")
+      .map((tag: string) => tag.trim())
+      .filter((tag: string) => tag);
+
+    editingProduct.value.author.avatar = editingProduct.value.author.name.charAt(0).toUpperCase();
+
+    await updateProduct(editingProduct.value.id, {
+      title: editingProduct.value.title,
+      category: editingProduct.value.category,
+      description: editingProduct.value.description,
+      tags: tags,
+      author: editingProduct.value.author,
+      url: editingProduct.value.url,
+      featured: editingProduct.value.featured
+    });
+
+    editingProduct.value = null;
+    alert("成果物を更新しました！");
+  } catch (err) {
+    alert("エラーが発生しました: " + err);
+  }
+};
+
+const cancelEditProduct = () => {
+  editingProduct.value = null;
+};
+
+const handleDeleteProduct = async (productId: number) => {
+  if (!confirm("この成果物を削除してもよろしいですか？")) return;
+
+  try {
+    await deleteProduct(productId);
+    alert("成果物を削除しました！");
+  } catch (err) {
+    alert("エラーが発生しました: " + err);
+  }
+};
+
+const handleDuplicateProduct = async (productId: number) => {
+  try {
+    await duplicateProduct(productId);
+    alert("成果物を複製しました！");
+  } catch (err) {
+    alert("エラーが発生しました: " + err);
+  }
+};
+
+// News CRUD Methods
+const startEditNews = (newsItem: any) => {
+  editingNews.value = { ...newsItem };
+  showNewsForm.value = false;
+};
+
+const handleUpdateNews = async () => {
+  if (!editingNews.value) return;
+
+  try {
+    await updateNews(editingNews.value.id, {
+      title: editingNews.value.title,
+      excerpt: editingNews.value.excerpt,
+      url: editingNews.value.url
+    });
+
+    editingNews.value = null;
+    alert("ニュースを更新しました！");
+  } catch (err) {
+    alert("エラーが発生しました: " + err);
+  }
+};
+
+const cancelEditNews = () => {
+  editingNews.value = null;
+};
+
+const handleDeleteNews = async (newsId: number) => {
+  if (!confirm("このニュースを削除してもよろしいですか？")) return;
+
+  try {
+    await deleteNews(newsId);
+    alert("ニュースを削除しました！");
+  } catch (err) {
+    alert("エラーが発生しました: " + err);
+  }
+};
+
+const handleDuplicateNews = async (newsId: number) => {
+  try {
+    await duplicateNews(newsId);
+    alert("ニュースを複製しました！");
   } catch (err) {
     alert("エラーが発生しました: " + err);
   }
@@ -1627,6 +1900,84 @@ watch(
   margin: var(--spacing-2) 0;
   color: var(--gray-600);
   font-size: var(--font-size-sm);
+}
+
+/* Admin Item Layout */
+.admin-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--spacing-4);
+}
+
+.admin-item-content {
+  flex: 1;
+}
+
+.admin-item-meta {
+  font-size: var(--font-size-xs);
+  color: var(--gray-500);
+  margin-top: var(--spacing-2);
+}
+
+.admin-item-actions {
+  display: flex;
+  gap: var(--spacing-2);
+  flex-shrink: 0;
+}
+
+.btn-edit,
+.btn-duplicate,
+.btn-delete {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: var(--spacing-2);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-base);
+  transition: all var(--transition-base);
+  min-width: 40px;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-edit:hover {
+  background: var(--primary-purple-lighter);
+}
+
+.btn-duplicate:hover {
+  background: var(--gray-100);
+}
+
+.btn-delete:hover {
+  background: #fee;
+  color: #d63384;
+}
+
+.form-actions {
+  display: flex;
+  gap: var(--spacing-3);
+  margin-top: var(--spacing-4);
+}
+
+.btn-secondary {
+  background: var(--gray-200);
+  color: var(--gray-700);
+  border: 1px solid var(--gray-300);
+  padding: var(--spacing-3) var(--spacing-6);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  font-size: var(--font-size-base);
+  font-weight: 500;
+  text-decoration: none;
+  transition: all var(--transition-base);
+}
+
+.btn-secondary:hover {
+  background: var(--gray-300);
+  transform: translateY(-1px);
 }
 
 /* レスポンシブ対応 */
