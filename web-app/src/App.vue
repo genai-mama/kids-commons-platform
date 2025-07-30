@@ -757,6 +757,67 @@
                 </form>
               </div>
 
+              <!-- メンバー編集フォーム -->
+              <div v-if="editingMember" class="admin-form">
+                <h3>メンバーを編集</h3>
+                <form @submit.prevent="handleUpdateMember">
+                  <div class="form-group">
+                    <label>名前</label>
+                    <input type="text" v-model="editingMember.name" required />
+                  </div>
+                  <div class="form-group">
+                    <label>役割</label>
+                    <input type="text" v-model="editingMember.role" required />
+                  </div>
+                  <div class="form-group">
+                    <label>自己紹介</label>
+                    <textarea
+                      v-model="editingMember.bio"
+                      required
+                      rows="4"
+                    ></textarea>
+                  </div>
+                  <div class="form-group">
+                    <label>アバターURL</label>
+                    <input type="url" v-model="editingMember.avatar" />
+                  </div>
+                  <div class="form-group">
+                    <label>スキル（カンマ区切り）</label>
+                    <input
+                      type="text"
+                      v-model="editingMember.skillsString"
+                      placeholder="Vue.js, TypeScript, デザイン"
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label>所在地</label>
+                    <input type="text" v-model="editingMember.location" />
+                  </div>
+                  <div class="form-group">
+                    <label>WebサイトURL</label>
+                    <input type="url" v-model="editingMember.website" />
+                  </div>
+                  <div class="form-group">
+                    <label>TwitterURL</label>
+                    <input type="url" v-model="editingMember.twitter" />
+                  </div>
+                  <div class="form-group">
+                    <label>GitHubURL</label>
+                    <input type="url" v-model="editingMember.github" />
+                  </div>
+                  <div class="form-group">
+                    <label>
+                      <input type="checkbox" v-model="editingMember.featured" />
+                      コアメンバーとして表示
+                    </label>
+                  </div>
+                  <div class="form-actions">
+                    <button type="submit" class="btn-primary">更新</button>
+                    <button type="button" class="btn-secondary" @click="cancelEditMember">キャンセル</button>
+                  </div>
+                </form>
+              </div>
+
               <!-- メンバー一覧 -->
               <div class="admin-list">
                 <div
@@ -780,6 +841,13 @@
                       title="編集"
                     >
                       ✏️
+                    </button>
+                    <button 
+                      class="btn-duplicate" 
+                      @click="handleDuplicateMember(member.id)"
+                      title="複製"
+                    >
+                      📋
                     </button>
                     <button 
                       class="btn-delete" 
@@ -1232,6 +1300,73 @@ const startEditMember = (member: any) => {
     skillsString: member.skills.join(", ")
   };
   showMemberForm.value = false;
+};
+
+const handleUpdateMember = async () => {
+  if (!editingMember.value) return;
+
+  if (!editingMember.value.name || !editingMember.value.role || !editingMember.value.bio) {
+    alert("必須項目を入力してください");
+    return;
+  }
+
+  try {
+    const skills = editingMember.value.skillsString
+      .split(",")
+      .map((skill: string) => skill.trim())
+      .filter((skill: string) => skill);
+
+    await updateMember(editingMember.value.id, {
+      name: editingMember.value.name,
+      role: editingMember.value.role,
+      bio: editingMember.value.bio,
+      avatar: editingMember.value.avatar || `https://via.placeholder.com/150/9B7BD8/FFFFFF?text=${encodeURIComponent(editingMember.value.name.charAt(0))}`,
+      skills: skills,
+      location: editingMember.value.location,
+      website: editingMember.value.website,
+      twitter: editingMember.value.twitter,
+      github: editingMember.value.github,
+      featured: editingMember.value.featured
+    });
+
+    editingMember.value = null;
+    alert("メンバー情報を更新しました！");
+  } catch (err) {
+    alert("エラーが発生しました: " + err);
+  }
+};
+
+const cancelEditMember = () => {
+  editingMember.value = null;
+};
+
+const handleDuplicateMember = async (memberId: number) => {
+  try {
+    const originalMember = members.value.find(m => m.id === memberId);
+    if (!originalMember) {
+      throw new Error('Member not found');
+    }
+
+    // 複製用のデータを作成（idを除外し、名前に(コピー)を追加）
+    const duplicatedData = {
+      name: `${originalMember.name} (コピー)`,
+      role: originalMember.role,
+      bio: originalMember.bio,
+      avatar: originalMember.avatar,
+      skills: [...originalMember.skills],
+      joinDate: new Date().toISOString().split('T')[0],
+      location: originalMember.location,
+      website: originalMember.website,
+      twitter: originalMember.twitter,
+      github: originalMember.github,
+      featured: false // 複製時は通常メンバーに
+    };
+
+    await addMember(duplicatedData);
+    alert("メンバーを複製しました！");
+  } catch (err) {
+    alert("エラーが発生しました: " + err);
+  }
 };
 
 const handleDeleteMember = async (memberId: number) => {
