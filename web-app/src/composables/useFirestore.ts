@@ -42,9 +42,25 @@ interface NewsItem {
   url: string
 }
 
+interface Member {
+  id: number
+  name: string
+  role: string
+  bio: string
+  avatar: string
+  skills: string[]
+  joinDate: string
+  location?: string
+  website?: string
+  twitter?: string
+  github?: string
+  featured: boolean
+}
+
 export function useFirestore() {
   const products = ref<Product[]>([])
   const news = ref<NewsItem[]>([])
+  const members = ref<Member[]>([])
   const loading = ref(false)
   const error = ref<string | null>(null)
 
@@ -341,10 +357,129 @@ export function useFirestore() {
     }
   }
 
+  // Members読み込み
+  const loadMembers = async () => {
+    try {
+      loading.value = true
+      const q = query(collection(db, 'members'), orderBy('joinDate', 'desc'))
+      const querySnapshot = await getDocs(q)
+      
+      const loadedMembers = querySnapshot.docs.map(doc => {
+        const data = doc.data()
+        return {
+          id: data.id || parseInt(doc.id),
+          ...data
+        }
+      }) as Member[]
+      
+      members.value = loadedMembers
+      console.log('Members loaded:', members.value.length)
+    } catch (err) {
+      error.value = `Members読み込みエラー: ${err}`
+      console.error('Error loading members:', err)
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // Member追加
+  const addMember = async (memberData: Omit<Member, 'id'>) => {
+    try {
+      loading.value = true
+      
+      // 新しいIDを生成
+      const newId = members.value.length > 0 
+        ? Math.max(...members.value.map(m => m.id)) + 1 
+        : 1
+
+      const docRef = await addDoc(collection(db, 'members'), {
+        ...memberData,
+        id: newId
+      })
+      
+      console.log('Member added with ID: ', docRef.id)
+      
+      // ローカルデータも更新
+      members.value.unshift({
+        id: newId,
+        ...memberData
+      })
+      
+      return docRef.id
+    } catch (err) {
+      error.value = `Member追加エラー: ${err}`
+      console.error('Error adding member:', err)
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // Member更新
+  const updateMember = async (memberId: number, memberData: Partial<Member>) => {
+    try {
+      loading.value = true
+      
+      // Firestoreドキュメントを探す
+      const q = query(collection(db, 'members'), where('id', '==', memberId))
+      const querySnapshot = await getDocs(q)
+      
+      if (querySnapshot.empty) {
+        throw new Error('Member not found')
+      }
+      
+      const docRef = querySnapshot.docs[0].ref
+      await updateDoc(docRef, memberData)
+      
+      // ローカルデータも更新
+      const index = members.value.findIndex(m => m.id === memberId)
+      if (index !== -1) {
+        members.value[index] = { ...members.value[index], ...memberData }
+      }
+      
+      console.log('Member updated:', memberId)
+    } catch (err) {
+      error.value = `Member更新エラー: ${err}`
+      console.error('Error updating member:', err)
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // Member削除
+  const deleteMember = async (memberId: number) => {
+    try {
+      loading.value = true
+      
+      // Firestoreドキュメントを探す
+      const q = query(collection(db, 'members'), where('id', '==', memberId))
+      const querySnapshot = await getDocs(q)
+      
+      if (querySnapshot.empty) {
+        throw new Error('Member not found')
+      }
+      
+      const docRef = querySnapshot.docs[0].ref
+      await deleteDoc(docRef)
+      
+      // ローカルデータからも削除
+      members.value = members.value.filter(m => m.id !== memberId)
+      
+      console.log('Member deleted:', memberId)
+    } catch (err) {
+      error.value = `Member削除エラー: ${err}`
+      console.error('Error deleting member:', err)
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
   // 初期化
   const initialize = async () => {
     try {
-      await Promise.all([loadProducts(), loadNews()])
+      await Promise.all([loadProducts(), loadNews(), loadMembers()])
     } catch (err) {
       console.error('Firestore initialization error:', err)
     }
@@ -353,16 +488,20 @@ export function useFirestore() {
   return {
     products,
     news,
+    members,
     loading,
     error,
     addProduct,
     addNews,
+    addMember,
     updateProduct,
     deleteProduct,
     duplicateProduct,
     updateNews,
     deleteNews,
     duplicateNews,
+    updateMember,
+    deleteMember,
     initialize
   }
 }

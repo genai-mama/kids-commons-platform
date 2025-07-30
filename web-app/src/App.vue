@@ -35,6 +35,15 @@
             <li>
               <a
                 href="#"
+                @click="navigateToPage('members')"
+                class="nav-link"
+                :class="{ active: currentPage === 'members' }"
+                >Members</a
+              >
+            </li>
+            <li>
+              <a
+                href="#"
                 @click="navigateToPage('products')"
                 class="nav-link"
                 :class="{ active: currentPage === 'products' }"
@@ -226,6 +235,35 @@
         </section>
       </div>
 
+      <!-- Members Page -->
+      <div class="page" id="members" :class="{ active: currentPage === 'members' }">
+        <section class="members">
+          <div class="container">
+            <h1 class="page-title">メンバー紹介</h1>
+            <p class="page-subtitle">
+              #生成AIママ部で活動するメンバーの皆さんをご紹介します。<br>
+              様々なバックグラウンドを持つママたちが、生成AIを活用して日々の生活を豊かにしています。
+            </p>
+
+            <!-- Featured Members -->
+            <div class="featured-members" v-if="getFeaturedMembers().length > 0">
+              <h2 class="section-title">コアメンバー</h2>
+              <div class="members-grid featured-grid" id="featured-members-grid">
+                <!-- 動的に生成される -->
+              </div>
+            </div>
+
+            <!-- All Members -->
+            <div class="all-members">
+              <h2 class="section-title">メンバー一覧</h2>
+              <div class="members-grid" id="members-grid">
+                <!-- 動的に生成される -->
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
       <!-- Products Page - 元の静的サイトのレイアウトを正確に再現 -->
       <div
         class="page"
@@ -302,6 +340,13 @@
                 @click="setAdminTab('products')"
               >
                 成果物管理
+              </button>
+              <button
+                class="admin-tab"
+                :class="{ active: currentAdminTab === 'members' }"
+                @click="setAdminTab('members')"
+              >
+                メンバー管理
               </button>
               <button
                 class="admin-tab"
@@ -639,6 +684,114 @@
                 </div>
               </div>
             </div>
+
+            <!-- メンバー管理 -->
+            <div v-if="currentAdminTab === 'members'" class="admin-content">
+              <div class="admin-header">
+                <h2>メンバー一覧</h2>
+                <div class="admin-actions">
+                  <button
+                    class="btn-primary"
+                    @click="showMemberForm = !showMemberForm"
+                  >
+                    {{ showMemberForm ? "フォームを閉じる" : "新規追加" }}
+                  </button>
+                </div>
+              </div>
+
+              <!-- 新規追加フォーム -->
+              <div v-if="showMemberForm" class="admin-form">
+                <h3>新しいメンバーを追加</h3>
+                <form @submit.prevent="handleAddMember" :key="showMemberForm">
+                  <div class="form-group">
+                    <label>名前</label>
+                    <input type="text" v-model="newMember.name" required />
+                  </div>
+                  <div class="form-group">
+                    <label>役割</label>
+                    <input type="text" v-model="newMember.role" required />
+                  </div>
+                  <div class="form-group">
+                    <label>自己紹介</label>
+                    <textarea
+                      v-model="newMember.bio"
+                      required
+                      rows="4"
+                    ></textarea>
+                  </div>
+                  <div class="form-group">
+                    <label>アバターURL</label>
+                    <input type="url" v-model="newMember.avatar" />
+                  </div>
+                  <div class="form-group">
+                    <label>スキル（カンマ区切り）</label>
+                    <input
+                      type="text"
+                      v-model="newMember.skillsString"
+                      placeholder="Vue.js, TypeScript, デザイン"
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label>所在地</label>
+                    <input type="text" v-model="newMember.location" />
+                  </div>
+                  <div class="form-group">
+                    <label>WebサイトURL</label>
+                    <input type="url" v-model="newMember.website" />
+                  </div>
+                  <div class="form-group">
+                    <label>TwitterURL</label>
+                    <input type="url" v-model="newMember.twitter" />
+                  </div>
+                  <div class="form-group">
+                    <label>GitHubURL</label>
+                    <input type="url" v-model="newMember.github" />
+                  </div>
+                  <div class="form-group">
+                    <label>
+                      <input type="checkbox" v-model="newMember.featured" />
+                      コアメンバーとして表示
+                    </label>
+                  </div>
+                  <button type="submit" class="btn-primary">追加</button>
+                </form>
+              </div>
+
+              <!-- メンバー一覧 -->
+              <div class="admin-list">
+                <div
+                  v-for="member in members"
+                  :key="member.id"
+                  class="admin-item"
+                >
+                  <div class="admin-item-content">
+                    <h4>{{ member.name }}</h4>
+                    <p>{{ member.role }} | {{ formatDate(member.joinDate) }}</p>
+                    <p>{{ member.bio }}</p>
+                    <p class="admin-item-meta">
+                      スキル: {{ member.skills.join(', ') }} | 
+                      {{ member.featured ? 'コアメンバー' : '通常メンバー' }}
+                    </p>
+                  </div>
+                  <div class="admin-item-actions">
+                    <button 
+                      class="btn-edit" 
+                      @click="startEditMember(member)"
+                      title="編集"
+                    >
+                      ✏️
+                    </button>
+                    <button 
+                      class="btn-delete" 
+                      @click="handleDeleteMember(member.id)"
+                      title="削除"
+                    >
+                      🗑️
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
       </div>
@@ -672,8 +825,10 @@ let searchTimeout: number | null = null;
 const currentAdminTab = ref("products");
 const showProductForm = ref(false);
 const showNewsForm = ref(false);
+const showMemberForm = ref(false);
 const editingProduct = ref<any>(null);
 const editingNews = ref<any>(null);
+const editingMember = ref<any>(null);
 
 // New Item Forms
 const newProduct = ref({
@@ -693,20 +848,37 @@ const newNews = ref({
   url: "",
 });
 
+const newMember = ref({
+  name: "",
+  role: "",
+  bio: "",
+  avatar: "",
+  skillsString: "",
+  location: "",
+  website: "",
+  twitter: "",
+  github: "",
+  featured: false,
+});
+
 // Firestore使用
 const { 
   products, 
   news, 
+  members,
   loading, 
   error, 
   addProduct, 
   addNews, 
+  addMember,
   updateProduct, 
   deleteProduct, 
   duplicateProduct, 
   updateNews, 
   deleteNews, 
   duplicateNews, 
+  updateMember,
+  deleteMember,
   initialize 
 } = useFirestore();
 
@@ -734,7 +906,7 @@ const navigateToPage = async (page: string) => {
   await nextTick();
 
   // Firestoreデータが読み込まれていない場合は初期化
-  if (products.value.length === 0 || news.value.length === 0) {
+  if (products.value.length === 0 || news.value.length === 0 || members.value.length === 0) {
     try {
       await initialize();
       console.log("Firestore re-initialized for navigation");
@@ -745,6 +917,8 @@ const navigateToPage = async (page: string) => {
 
   if (page === "home") {
     initializePage("home");
+  } else if (page === "members") {
+    initializePage("members");
   } else if (page === "products") {
     initializePage("products");
   } else if (page === "news") {
@@ -804,8 +978,10 @@ const setAdminTab = (tab: string) => {
   currentAdminTab.value = tab;
   showProductForm.value = false;
   showNewsForm.value = false;
+  showMemberForm.value = false;
   editingProduct.value = null;
   editingNews.value = null;
+  editingMember.value = null;
 };
 
 const handleAddProduct = async () => {
@@ -1002,6 +1178,73 @@ const handleDuplicateNews = async (newsId: number) => {
   }
 };
 
+// Member Admin Methods
+const handleAddMember = async () => {
+  if (!newMember.value.name || !newMember.value.role || !newMember.value.bio) {
+    alert("必須項目を入力してください");
+    return;
+  }
+
+  try {
+    const skills = newMember.value.skillsString
+      .split(",")
+      .map((skill) => skill.trim())
+      .filter((skill) => skill);
+
+    await addMember({
+      name: newMember.value.name,
+      role: newMember.value.role,
+      bio: newMember.value.bio,
+      avatar: newMember.value.avatar || `https://via.placeholder.com/150/9B7BD8/FFFFFF?text=${encodeURIComponent(newMember.value.name.charAt(0))}`,
+      skills: skills,
+      joinDate: new Date().toISOString().split('T')[0],
+      location: newMember.value.location,
+      website: newMember.value.website,
+      twitter: newMember.value.twitter,
+      github: newMember.value.github,
+      featured: newMember.value.featured
+    });
+
+    // フォームをリセット
+    newMember.value = {
+      name: "",
+      role: "",
+      bio: "",
+      avatar: "",
+      skillsString: "",
+      location: "",
+      website: "",
+      twitter: "",
+      github: "",
+      featured: false,
+    };
+
+    showMemberForm.value = false;
+    alert("メンバーをFirestoreに追加しました！");
+  } catch (err) {
+    alert("エラーが発生しました: " + err);
+  }
+};
+
+const startEditMember = (member: any) => {
+  editingMember.value = {
+    ...member,
+    skillsString: member.skills.join(", ")
+  };
+  showMemberForm.value = false;
+};
+
+const handleDeleteMember = async (memberId: number) => {
+  if (!confirm("このメンバーを削除してもよろしいですか？")) return;
+
+  try {
+    await deleteMember(memberId);
+    alert("メンバーを削除しました！");
+  } catch (err) {
+    alert("エラーが発生しました: " + err);
+  }
+};
+
 // CSV Export/Import Methods
 const exportProductsCSV = () => {
   try {
@@ -1182,6 +1425,14 @@ const getLatestNews = (count = 3) => {
   return news.value.slice(0, count);
 };
 
+const getFeaturedMembers = () => {
+  return members.value.filter((member) => member.featured);
+};
+
+const getAllMembers = () => {
+  return members.value.filter((member) => !member.featured);
+};
+
 const filterProducts = (products: any[], category: string) => {
   if (category === "all") {
     return products;
@@ -1276,6 +1527,49 @@ const createNewsCard = (newsItem: any, delay = 0) => {
   return card;
 };
 
+const createMemberCard = (member: any, delay = 0) => {
+  const card = document.createElement("div");
+  card.className = "member-card animate-fade-in-up";
+  card.style.animationDelay = `${delay}ms`;
+
+  const socialLinks = [];
+  if (member.website) {
+    socialLinks.push(`<a href="${member.website}" target="_blank" title="Website">🌐</a>`);
+  }
+  if (member.twitter) {
+    socialLinks.push(`<a href="${member.twitter}" target="_blank" title="Twitter">🐦</a>`);
+  }
+  if (member.github) {
+    socialLinks.push(`<a href="${member.github}" target="_blank" title="GitHub">💻</a>`);
+  }
+
+  card.innerHTML = `
+    <div class="member-avatar">
+      <img src="${member.avatar}" alt="${member.name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+      <div class="member-avatar-fallback" style="display: none;">${member.name.charAt(0)}</div>
+    </div>
+    <div class="member-info">
+      <h3 class="member-name">${member.name}</h3>
+      <p class="member-role">${member.role}</p>
+      <p class="member-bio">${member.bio}</p>
+      ${member.skills.length > 0 ? `
+        <div class="member-skills">
+          ${member.skills.map(skill => `<span class="skill-tag">${skill}</span>`).join('')}
+        </div>
+      ` : ''}
+      ${member.location ? `<p class="member-location">📍 ${member.location}</p>` : ''}
+      ${socialLinks.length > 0 ? `
+        <div class="member-social">
+          ${socialLinks.join('')}
+        </div>
+      ` : ''}
+      <p class="member-join-date">参加: ${formatDate(member.joinDate)}</p>
+    </div>
+  `;
+
+  return card;
+};
+
 // Render functions
 const renderFeaturedProducts = () => {
   const container = document.getElementById("featured-products-grid");
@@ -1351,11 +1645,51 @@ const renderNews = () => {
   });
 };
 
+const renderFeaturedMembers = () => {
+  const container = document.getElementById("featured-members-grid");
+  if (!container) return;
+
+  const featuredMembers = getFeaturedMembers();
+  container.innerHTML = "";
+
+  if (featuredMembers.length === 0) {
+    container.innerHTML = '<div class="no-results">データを読み込み中...</div>';
+    return;
+  }
+
+  featuredMembers.forEach((member, index) => {
+    const memberCard = createMemberCard(member, index * 100);
+    container.appendChild(memberCard);
+  });
+};
+
+const renderMembers = () => {
+  const container = document.getElementById("members-grid");
+  if (!container) return;
+
+  const allMembers = getAllMembers();
+  container.innerHTML = "";
+
+  if (allMembers.length === 0) {
+    container.innerHTML = '<div class="no-results">メンバーが見つかりませんでした。</div>';
+    return;
+  }
+
+  allMembers.forEach((member, index) => {
+    const memberCard = createMemberCard(member, index * 50);
+    container.appendChild(memberCard);
+  });
+};
+
 const initializePage = (page: string) => {
   switch (page) {
     case "home":
       renderFeaturedProducts();
       renderLatestNews();
+      break;
+    case "members":
+      renderFeaturedMembers();
+      renderMembers();
       break;
     case "products":
       renderProducts();
@@ -1422,11 +1756,14 @@ onMounted(async () => {
 
 // Firestoreデータの変更を監視してレンダリング更新
 watch(
-  [products, news],
+  [products, news, members],
   () => {
     if (currentPage.value === "home") {
       renderFeaturedProducts();
       renderLatestNews();
+    } else if (currentPage.value === "members") {
+      renderFeaturedMembers();
+      renderMembers();
     } else if (currentPage.value === "products") {
       renderProducts();
     } else if (currentPage.value === "news") {
@@ -2240,6 +2577,189 @@ watch(
   .admin-tab.active {
     border-left-color: var(--primary-purple);
     border-bottom-color: transparent;
+  }
+}
+
+/* Members Page Styles */
+.members {
+  padding: var(--spacing-12) 0;
+}
+
+.page-subtitle {
+  text-align: center;
+  font-size: var(--font-size-lg);
+  color: var(--gray-600);
+  margin-bottom: var(--spacing-12);
+  line-height: 1.6;
+}
+
+.featured-members {
+  margin-bottom: var(--spacing-16);
+}
+
+.members-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: var(--spacing-8);
+  margin-top: var(--spacing-8);
+}
+
+.featured-grid {
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: var(--spacing-10);
+}
+
+.member-card {
+  background: var(--white);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-8);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--gray-200);
+  transition: all var(--transition-base);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.member-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px rgba(155, 123, 216, 0.15);
+  border-color: var(--primary-purple-light);
+}
+
+.member-avatar {
+  width: 120px;
+  height: 120px;
+  margin-bottom: var(--spacing-6);
+  position: relative;
+}
+
+.featured-grid .member-avatar {
+  width: 140px;
+  height: 140px;
+}
+
+.member-avatar img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid var(--primary-purple-lighter);
+}
+
+.member-avatar-fallback {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: var(--primary-purple);
+  color: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-3xl);
+  font-weight: 600;
+}
+
+.member-info {
+  width: 100%;
+}
+
+.member-name {
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  color: var(--gray-800);
+  margin: 0 0 var(--spacing-2) 0;
+}
+
+.featured-grid .member-name {
+  font-size: var(--font-size-2xl);
+}
+
+.member-role {
+  font-size: var(--font-size-base);
+  color: var(--primary-purple);
+  font-weight: 500;
+  margin: 0 0 var(--spacing-4) 0;
+}
+
+.member-bio {
+  font-size: var(--font-size-sm);
+  color: var(--gray-600);
+  line-height: 1.5;
+  margin: 0 0 var(--spacing-4) 0;
+}
+
+.member-skills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-2);
+  justify-content: center;
+  margin-bottom: var(--spacing-4);
+}
+
+.skill-tag {
+  background: var(--primary-purple-lighter);
+  color: var(--primary-purple);
+  padding: var(--spacing-1) var(--spacing-3);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+}
+
+.member-location {
+  font-size: var(--font-size-sm);
+  color: var(--gray-500);
+  margin: var(--spacing-2) 0;
+}
+
+.member-social {
+  display: flex;
+  gap: var(--spacing-3);
+  justify-content: center;
+  margin: var(--spacing-4) 0;
+}
+
+.member-social a {
+  font-size: var(--font-size-lg);
+  text-decoration: none;
+  transition: transform var(--transition-base);
+}
+
+.member-social a:hover {
+  transform: scale(1.2);
+}
+
+.member-join-date {
+  font-size: var(--font-size-xs);
+  color: var(--gray-400);
+  margin: var(--spacing-4) 0 0 0;
+}
+
+/* Responsive adjustments for members */
+@media (max-width: 768px) {
+  .members-grid {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-6);
+  }
+  
+  .featured-grid {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-8);
+  }
+  
+  .member-avatar {
+    width: 100px;
+    height: 100px;
+  }
+  
+  .featured-grid .member-avatar {
+    width: 120px;
+    height: 120px;
+  }
+  
+  .member-card {
+    padding: var(--spacing-6);
   }
 }
 </style>
