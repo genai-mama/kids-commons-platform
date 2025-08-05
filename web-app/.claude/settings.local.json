@@ -46,7 +46,8 @@
       "Bash(cp:*)",
       "Bash(true)",
       "Bash(npx tsx:*)",
-      "Bash(rg:*)"
+      "Bash(rg:*)",
+      "Bash(git pull:*)"
     ],
     "deny": []
   }
