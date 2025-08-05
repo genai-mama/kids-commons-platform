@@ -55,6 +55,11 @@ interface Member {
   twitter?: string
   github?: string
   featured: boolean
+  // 左エリア用のProfile情報
+  photos?: string[] // 写真カルーセル用（Base64またはURL）
+  personalWebsite?: string // PERSONAL WEBSITEバナー用のURL
+  icons?: string[] // アイコン表示用（6個まで、ファイル名やURL）
+  iconDescriptions?: string[] // アイコンの説明（ホバー時表示用）
 }
 
 export function useFirestore() {

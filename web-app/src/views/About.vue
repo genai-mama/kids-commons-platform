@@ -1,9 +1,13 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useDataStore } from '../stores/data'
+import { computed, ref } from 'vue'
 
-const dataStore = useDataStore()
-const stats = computed(() => dataStore.stats)
+// 統計データ（固定値）
+const stats = ref({
+  totalMembers: 127,
+  totalProducts: 4,
+  totalCategories: 4,
+  activeDays: 200
+})
 </script>
 
 <template>
@@ -11,9 +15,9 @@ const stats = computed(() => dataStore.stats)
     <!-- Hero Section -->
     <section class="hero">
       <div class="container">
-        <h1 class="hero-title">#生成AIママ部について</h1>
+        <h1 class="hero-title">#生成AIママ部とは</h1>
         <p class="hero-subtitle">
-          家事育児からコーディングまで、生成AIを活用して新しい働き方を創造するママたちのコミュニティです
+          家事育児の効率化からコーディングまで、生成AIを活用するママのためのDiscordコミュニティです
         </p>
       </div>
     </section>
@@ -23,14 +27,23 @@ const stats = computed(() => dataStore.stats)
       <div class="container">
         <div class="section-content">
           <div class="text-content">
-            <h2 class="section-title">私たちのミッション</h2>
+            <h2 class="section-title">コミュニティについて</h2>
             <p class="section-text">
-              生成AIの力で、ママたちの日常をもっと豊かに、もっと効率的に。
-              家事や育児の合間に、新しいスキルを身につけ、創造的な活動に取り組むママたちを支援します。
+              #生成AIママ部は、家事育児の効率化からコーディングまで、生成AIを活用するママのためのDiscordコミュニティです。
+              エンジニアでも、そうでなくても、経験問わずママさんなら大歓迎です。
             </p>
             <p class="section-text">
-              技術の力で子育てと仕事の両立を実現し、ママ一人ひとりが持つ可能性を最大限に引き出すことを目指しています。
+              日々の生活で生成AIを活用する方法を共有し、お互いに学び合い、サポートし合うコミュニティを目指しています。
             </p>
+            
+            <h3 class="activity-title">活動内容</h3>
+            <ul class="activity-list">
+              <li>生成AIツールの活用法共有</li>
+              <li>家事・育児の効率化アイデア交換</li>
+              <li>プログラミング・デザインの学習サポート</li>
+              <li>成果物の発表・フィードバック</li>
+              <li>ママ同士の情報交換・相談</li>
+            </ul>
           </div>
           <div class="image-content">
             <div class="mission-image">
@@ -132,7 +145,7 @@ const stats = computed(() => dataStore.stats)
 /* Hero Section */
 .hero {
   background: linear-gradient(135deg, var(--primary-purple-lighter), var(--white));
-  padding: var(--spacing-16) 0;
+  padding: 0 0 var(--spacing-16) 0;
   text-align: center;
 }
 
@@ -140,7 +153,7 @@ const stats = computed(() => dataStore.stats)
   font-size: var(--font-size-4xl);
   font-weight: 700;
   color: var(--gray-900);
-  margin-bottom: var(--spacing-6);
+  margin: var(--spacing-12) 0 var(--spacing-6) 0;
   background: var(--purple-gradient);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -184,6 +197,36 @@ const stats = computed(() => dataStore.stats)
   color: var(--gray-600);
   line-height: 1.7;
   margin-bottom: var(--spacing-4);
+}
+
+.activity-title {
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  color: var(--gray-900);
+  margin: var(--spacing-6) 0 var(--spacing-4) 0;
+}
+
+.activity-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.activity-list li {
+  color: var(--gray-600);
+  font-size: var(--font-size-base);
+  line-height: 1.6;
+  margin-bottom: var(--spacing-3);
+  padding-left: var(--spacing-6);
+  position: relative;
+}
+
+.activity-list li::before {
+  content: '✨';
+  font-size: 1rem;
+  position: absolute;
+  left: 0;
+  top: 0;
 }
 
 .mission-image {

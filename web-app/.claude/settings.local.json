@@ -35,7 +35,18 @@
       "Bash(git add:*)",
       "Bash(git push:*)",
       "Bash(gh pr create:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(pkill:*)",
+      "Bash(npm install:*)",
+      "WebFetch(domain:localhost)",
+      "Bash(firebase apps:list:*)",
+      "Bash(firebase apps:sdkconfig:*)",
+      "Bash(node:*)",
+      "Bash(grep:*)",
+      "Bash(cp:*)",
+      "Bash(true)",
+      "Bash(npx tsx:*)",
+      "Bash(rg:*)"
     ],
     "deny": []
   }

@@ -26,14 +26,15 @@
         :news="news" 
         :members="members"
         :discord-stats="discordStats"
-        :stats="stats"
         @navigate="navigateToPage"
       />
 
       <!-- About Page -->
       <div v-else-if="currentPage === 'about'" class="page-content">
         <About />
+        <p>アバウトページ</p>
       </div>
+      
 
       <!-- Members Page -->
       <MembersPage 
@@ -46,7 +47,6 @@
       <ProductsPage 
         v-else-if="currentPage === 'products'"
         :products="products"
-        :categories="categories"
         :active-filter="currentFilter"
         :current-sort="currentSort"
         @filter-change="handleFilterChange"
@@ -55,11 +55,9 @@
       />
 
       <!-- News Page -->
-      <News 
-        v-else-if="currentPage === 'news'"
-        :news="news"
-        @navigate="navigateToPage"
-      />
+      <div v-else-if="currentPage === 'news'" class="page-content">
+        <News />
+      </div>
 
       <!-- Admin Page -->
       <AdminPage 
@@ -169,7 +167,7 @@
       :is-x-auth-loading="isXAuthLoading"
       :is-x-auth-available="isXAuthAvailable"
       @close="closeLoginModal"
-      @login="handleLoginWithForm"
+      @login="handleLogin"
       @x-login="handleXLogin"
       @show-signup="showSignupModal = true; showLoginModal = false"
     />
@@ -283,14 +281,13 @@ const userProfile = ref({
   avatar: "",
   skills: [],
   location: "",
-  website: "", // 既存のwebsite（フォーム用）
-  personalWebsite: "https://example.com", // バナー表示用の個人サイトURL
+  website: "",
+  personalWebsite: "",
   twitter: "",
   github: "",
-  visible: true,
   email: "",
   skillsString: "",
-  photos: [], // 写真データは別途読み込み
+  photos: [],
   icons: [],
   iconDescriptions: [],
   photosString: "",
@@ -298,13 +295,7 @@ const userProfile = ref({
   iconDescriptionsString: "",
   joinDate: new Date().toISOString(),
   featured: false,
-  iconList: [
-    // サンプルデータ
-    { id: "mom", emoji: "🧸", label: "MOM", link: "/mom" },
-    { id: "diy", emoji: "🌷", label: "DIY", link: "/diy" },
-    { id: "book", emoji: "📘", label: "BOOK", link: "/book" },
-    { id: "travel", emoji: "🧳", label: "TRAVEL", link: "/travel" }
-  ]
+  visible: true
 });
 
 const currentPhotoIndex = ref(0);
@@ -337,66 +328,23 @@ const newProduct = ref({
 
 const newNews = ref({
   title: "",
-  excerpt: "",
-  url: "",
+  content: "",
+  image: "",
+  date: new Date().toISOString(),
+  url: ""
 });
 
 // X Authentication
 const isXAuthLoading = ref(false);
 
 // Discord Stats
-const discordServerId = "1384414582621081620"; // 提供されたサーバーID
 const discordStats = ref({
-  memberCount: 127, // デフォルト値
-  onlineCount: 0,
-  serverName: "#生成AIママ部",
+  memberCount: null,
   isLoading: false,
-  lastUpdated: null as Date | null,
-  error: null as string | null,
+  error: null
 });
 
 let discordDataFetcher: any = null;
-
-// Stats（Firestoreから計算）
-// コミュニティ開始日から活動日数を計算
-const calculateActiveDays = () => {
-  const startDate = new Date('2025-06-24'); // コミュニティ開始日
-  const currentDate = new Date();
-  const diffTime = Math.abs(currentDate.getTime() - startDate.getTime());
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  return diffDays;
-};
-
-const stats = ref({
-  totalMembers: 127,
-  totalProducts: 4,
-  activeDays: calculateActiveDays(),
-  totalLikes: 105,
-});
-
-const categories = ref([
-  { id: "all", name: "すべて", count: 4 },
-  { id: "仕事効率化", name: "仕事効率化", count: 1 },
-  { id: "学校", name: "学校", count: 1 },
-  { id: "コミュニケーション", name: "コミュニケーション", count: 1 },
-  { id: "学習", name: "学習", count: 1 },
-]);
-
-// Available icons for profile cards
-const availableIcons = ref([
-  { id: "mom", emoji: "🧸", label: "MOM", link: "/family" },
-  { id: "diy", emoji: "🌷", label: "DIY", link: "/diy" },
-  { id: "book", emoji: "📘", label: "BOOK", link: "/books" },
-  { id: "travel", emoji: "🧳", label: "TRAVEL", link: "/travel" },
-  { id: "cooking", emoji: "🥘", label: "COOKING", link: "/cooking" },
-  { id: "fitness", emoji: "💪", label: "FITNESS", link: "/fitness" },
-  { id: "music", emoji: "🎵", label: "MUSIC", link: "/music" },
-  { id: "art", emoji: "🎨", label: "ART", link: "/art" },
-  { id: "tech", emoji: "💻", label: "TECH", link: "/tech" },
-  { id: "learning", emoji: "📚", label: "LEARNING", link: "/learning" },
-  { id: "photography", emoji: "📸", label: "PHOTO", link: "/photography" },
-  { id: "garden", emoji: "🌱", label: "GARDEN", link: "/garden" }
-]);
 
 // Navigation
 const navigateToPage = async (page: string) => {
@@ -434,8 +382,31 @@ const navigateToPage = async (page: string) => {
     }
   }
 
-  // Vue.jsコンポーネントが自動的にデータを表示するため、
-  // 手動でのレンダリング処理は不要
+  // Firestoreの再初期化
+  if (page !== "home") {
+    try {
+      await initialize();
+      console.log("Firestore re-initialized for navigation");
+    } catch (error) {
+      console.error("Failed to re-initialize Firestore:", error);
+    }
+  }
+
+  if (page === "home") {
+    await nextTick();
+    renderFeaturedProducts();
+    renderLatestNews();
+  } else if (page === "members") {
+    await nextTick();
+    renderFeaturedMembers();
+    renderMembers();
+  } else if (page === "products") {
+    await nextTick();
+    renderProducts();
+  } else if (page === "news") {
+    await nextTick();
+    renderNews();
+  }
 };
 
 // Event Handlers
@@ -510,101 +481,9 @@ const closeSignupModal = () => {
   signupForm.value = { name: "", email: "", password: "", passwordConfirm: "" };
 };
 
-const handleLoginWithForm = async (formData: { email: string, password: string }) => {
-  // フォームデータを更新
-  loginForm.value.email = formData.email;
-  loginForm.value.password = formData.password;
-  
-  // 実際のログイン処理を実行
-  await handleLogin();
-};
-
 const handleLogin = async () => {
-  if (!loginForm.value.email || !loginForm.value.password) {
-    alert("メールアドレスとパスワードを入力してください");
-    return;
-  }
-
-  try {
-    // 簡単なログイン検証（実際の実装では認証サーバーと通信）
-    if (loginForm.value.email && loginForm.value.password) {
-      isLoggedIn.value = true;
-      
-      // ユーザープロフィールをローカルストレージから読み込み
-      console.log("ログイン処理:", loginForm.value.email);
-      const savedProfile = localStorage.getItem(`profile_${loginForm.value.email}`);
-      console.log("保存されたプロフィール:", savedProfile ? "見つかった" : "見つからない");
-      
-      if (savedProfile) {
-        userProfile.value = JSON.parse(savedProfile);
-        console.log("プロフィール読み込み完了:", userProfile.value.name);
-      } else {
-        // 新規ユーザーの場合、デフォルトプロフィールを作成
-        userProfile.value = {
-          id: Date.now(),
-          name: loginForm.value.email.split('@')[0],
-          role: "メンバー",
-          bio: "よろしくお願いします！",
-          avatar: "",
-          skills: [],
-          skillsString: "",
-          location: "",
-          website: "",
-          personalWebsite: "",
-          twitter: "",
-          github: "",
-          visible: true,
-          email: loginForm.value.email,
-          photos: [],
-          icons: [],
-          iconDescriptions: [],
-          photosString: "",
-          iconsString: "",
-          iconDescriptionsString: "",
-          joinDate: new Date().toISOString(),
-          featured: false,
-          iconList: []
-        };
-        
-        // 新規ユーザーのプロフィールを保存
-        localStorage.setItem(`profile_${loginForm.value.email}`, JSON.stringify(userProfile.value));
-      }
-      
-      currentUser.value = userProfile.value;
-      
-      // ログイン状態をローカルストレージに保存
-      localStorage.setItem('isLoggedIn', 'true');
-      localStorage.setItem('currentUserEmail', loginForm.value.email);
-      
-      // 既存メンバーデータから最新情報を取得
-      const existingMember = members.value.find(member => member.email === loginForm.value.email);
-      if (existingMember) {
-        // 既存メンバーの情報でプロフィールを更新
-        userProfile.value = {
-          ...userProfile.value,
-          ...existingMember,
-          skillsString: existingMember.skills ? existingMember.skills.join(", ") : ""
-        };
-        currentUser.value = userProfile.value;
-        
-        // ローカルストレージも更新
-        localStorage.setItem(`profile_${loginForm.value.email}`, JSON.stringify(userProfile.value));
-        console.log('Profile synced with existing member data on login');
-      }
-      
-      // 写真データを別途読み込み
-      userProfile.value.photos = loadUserPhotos(loginForm.value.email);
-      
-      // ログイン時にもメンバーデータを同期
-      await updateMemberProfile();
-      
-      closeLoginModal();
-      alert("ログインしました！");
-    }
-  } catch (error) {
-    console.error('Login failed:', error);
-    alert("ログインに失敗しました。");
-  }
+  // Login logic here
+  console.log("Login:", loginForm.value);
 };
 
 const handleSignup = async () => {
@@ -691,65 +570,8 @@ const updateProfile = async () => {
 };
 
 const updateMemberProfile = async () => {
-  if (!userProfile.value.email) {
-    console.warn('No email found in user profile, skipping member profile update');
-    return;
-  }
-
-  try {
-    console.log('Updating member profile for:', userProfile.value.email);
-    
-    // 既存メンバーを検索
-    const existingMember = members.value.find(member => member.email === userProfile.value.email);
-    
-    if (existingMember) {
-      // 既存メンバーを更新
-      await updateMember(existingMember.id, {
-        name: userProfile.value.name,
-        role: userProfile.value.role,
-        bio: userProfile.value.bio,
-        avatar: userProfile.value.avatar || `https://via.placeholder.com/150/9B7BD8/FFFFFF?text=${encodeURIComponent(userProfile.value.name.charAt(0))}`,
-        skills: userProfile.value.skills || [],
-        location: userProfile.value.location,
-        website: userProfile.value.website,
-        personalWebsite: userProfile.value.personalWebsite,
-        twitter: userProfile.value.twitter,
-        github: userProfile.value.github,
-        visible: userProfile.value.visible,
-        email: userProfile.value.email,
-        photos: userProfile.value.photos || [],
-        icons: userProfile.value.icons || [],
-        iconDescriptions: userProfile.value.iconDescriptions || []
-      });
-      console.log('Member profile updated successfully');
-    } else {
-      // 新規メンバーを追加
-      const memberData = {
-        name: userProfile.value.name,
-        role: userProfile.value.role,
-        bio: userProfile.value.bio,
-        avatar: userProfile.value.avatar || `https://via.placeholder.com/150/9B7BD8/FFFFFF?text=${encodeURIComponent(userProfile.value.name.charAt(0))}`,
-        skills: userProfile.value.skills || [],
-        location: userProfile.value.location,
-        website: userProfile.value.website,
-        personalWebsite: userProfile.value.personalWebsite,
-        twitter: userProfile.value.twitter,
-        github: userProfile.value.github,
-        visible: userProfile.value.visible,
-        email: userProfile.value.email,
-        photos: userProfile.value.photos || [],
-        icons: userProfile.value.icons || [],
-        iconDescriptions: userProfile.value.iconDescriptions || [],
-        joinDate: userProfile.value.joinDate || new Date().toISOString(),
-        featured: userProfile.value.featured || false
-      };
-      
-      await addMember(memberData);
-      console.log('New member profile created successfully');
-    }
-  } catch (error) {
-    console.error('Failed to update member profile:', error);
-  }
+  // Member profile update logic
+  console.log("Update member profile");
 };
 
 // Photo handlers
@@ -770,86 +592,13 @@ const handlePhotoGoto = (index: number) => {
 };
 
 const handlePhotoUpload = (event: Event) => {
-  const input = event.target as HTMLInputElement;
-  const file = input.files?.[0];
-  
-  if (!file) return;
-  
-  // ファイルサイズ制限 (5MB)
-  const maxSize = 5 * 1024 * 1024;
-  if (file.size > maxSize) {
-    alert('ファイルサイズは5MB以下にしてください');
-    return;
-  }
-  
-  // ファイル形式チェック
-  if (!file.type.startsWith('image/')) {
-    alert('画像ファイルを選択してください');
-    return;
-  }
-  
-  // 最大4枚まで
-  if (userProfile.value.photos && userProfile.value.photos.length >= 4) {
-    alert('写真は最大4枚まで追加できます');
-    return;
-  }
-  
-  // FileReaderで画像を読み込み
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    const imageUrl = e.target?.result as string;
-    
-    if (!userProfile.value.photos) {
-      userProfile.value.photos = [];
-    }
-    
-    // 写真を追加
-    userProfile.value.photos.push(imageUrl);
-    
-    // ローカルストレージに保存
-    saveUserPhotos(userProfile.value.email, userProfile.value.photos);
-    
-    // 新しく追加した写真にインデックスを移動
-    currentPhotoIndex.value = userProfile.value.photos.length - 1;
-    
-    console.log('Photo uploaded successfully');
-  };
-  
-  reader.onerror = () => {
-    alert('画像の読み込みに失敗しました');
-  };
-  
-  reader.readAsDataURL(file);
-  
-  // inputをリセット
-  input.value = '';
+  // Photo upload logic
+  console.log("Photo upload:", event);
 };
 
 const handlePhotoRemove = (photoNumber: number) => {
-  if (!userProfile.value.photos || userProfile.value.photos.length === 0) {
-    return;
-  }
-  
-  const photoIndex = photoNumber - 1; // 1-based to 0-based
-  
-  if (photoIndex < 0 || photoIndex >= userProfile.value.photos.length) {
-    return;
-  }
-  
-  if (confirm(`Photo${photoNumber}を削除しますか？`)) {
-    // 写真を削除
-    userProfile.value.photos.splice(photoIndex, 1);
-    
-    // カレントインデックスを調整
-    if (currentPhotoIndex.value >= userProfile.value.photos.length) {
-      currentPhotoIndex.value = Math.max(0, userProfile.value.photos.length - 1);
-    }
-    
-    // ローカルストレージに保存
-    saveUserPhotos(userProfile.value.email, userProfile.value.photos);
-    
-    console.log(`Photo ${photoNumber} removed successfully`);
-  }
+  // Photo remove logic
+  console.log("Remove photo:", photoNumber);
 };
 
 // Admin handlers
@@ -934,73 +683,30 @@ const loadUserPhotos = (email: string) => {
   }
 };
 
-const saveUserPhotos = (email: string, photos: string[]) => {
-  try {
-    const photoKey = `photos_${email}`;
-    localStorage.setItem(photoKey, JSON.stringify(photos));
-    console.log('Photos saved to localStorage');
-  } catch (error) {
-    console.error('Failed to save user photos:', error);
-  }
+// Render functions (これらは実際のDOM操作ロジックが必要)
+const renderFeaturedProducts = () => {
+  console.log("Render featured products");
 };
 
-// Helper functions for data filtering and processing
-const getFeaturedProducts = () => {
-  return products.value.filter((product) => product.featured);
+const renderLatestNews = () => {
+  console.log("Render latest news");
 };
 
-const getLatestNews = (count = 3) => {
-  return news.value.slice(0, count);
+const renderFeaturedMembers = () => {
+  console.log("Render featured members");
 };
 
-const getFeaturedMembers = () => {
-  return members.value.filter((member) => member.featured);
+const renderMembers = () => {
+  console.log("Render members");
 };
 
-const getAllMembers = () => {
-  return members.value.filter((member) => !member.featured);
+const renderProducts = () => {
+  console.log("Render products");
 };
 
-const filterProducts = (products: any[], category: string) => {
-  if (category === "all") {
-    return products;
-  }
-  return products.filter((product) => product.category === category);
+const renderNews = () => {
+  console.log("Render news");
 };
-
-const sortProducts = (products: any[], sortBy: string) => {
-  const sorted = [...products];
-
-  switch (sortBy) {
-    case "likes":
-      return sorted.sort((a, b) => b.likes - a.likes);
-    case "comments":
-      return sorted.sort((a, b) => b.comments - a.comments);
-    case "date":
-      return sorted.sort(
-        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-      );
-    default:
-      return sorted;
-  }
-};
-
-const searchProducts = (products: any[], query: string) => {
-  if (!query) return products;
-
-  const lowerQuery = query.toLowerCase();
-  return products.filter(
-    (product) =>
-      product.title.toLowerCase().includes(lowerQuery) ||
-      product.description.toLowerCase().includes(lowerQuery) ||
-      product.author.name.toLowerCase().includes(lowerQuery) ||
-      (product.tags && product.tags.some((tag: string) => 
-        tag.toLowerCase().includes(lowerQuery)))
-  );
-};
-
-// Vue.jsコンポーネントベースなので、レンダー関数は不要
-// データは自動的にリアクティブに表示される
 
 // Initialization
 onMounted(async () => {
@@ -1035,7 +741,7 @@ onMounted(async () => {
   try {
     discordStats.value.isLoading = true;
     discordDataFetcher = createDiscordDataFetcher(
-      import.meta.env.VITE_DISCORD_GUILD_ID || discordServerId
+      import.meta.env.VITE_DISCORD_GUILD_ID || "1234567890123456789"
     );
     
     if (discordDataFetcher) {
@@ -1071,22 +777,42 @@ onUnmounted(() => {
 });
 
 const initializePage = (page: string) => {
-  // Vue.jsコンポーネントが自動的にデータを表示するため、
-  // 特別な初期化処理は不要
-  console.log(`Page initialized: ${page}`);
+  switch (page) {
+    case "home":
+      renderFeaturedProducts();
+      renderLatestNews();
+      break;
+    case "members":
+      renderFeaturedMembers();
+      renderMembers();
+      break;
+    case "products":
+      renderProducts();
+      break;
+    case "news":
+      renderNews();
+      break;
+  }
 };
 
-// Firestoreデータの変更を監視
+// Firestoreデータの変更を監視してレンダリング更新
 watch(
   [products, news, members],
   () => {
-    // Vue.jsのリアクティブシステムが自動的にUIを更新するため、
-    // 手動でのレンダリング処理は不要
-    console.log(`Data updated - Products: ${products.value.length}, News: ${news.value.length}, Members: ${members.value.length}`);
-    
-    // プロフィール画面でスキル配列を文字列に変換
-    if (currentPage.value === "profile" && userProfile.value.skills && Array.isArray(userProfile.value.skills)) {
-      userProfile.value.skillsString = userProfile.value.skills.join(", ");
+    if (currentPage.value === "home") {
+      renderFeaturedProducts();
+      renderLatestNews();
+    } else if (currentPage.value === "members") {
+      renderFeaturedMembers();
+      renderMembers();
+    } else if (currentPage.value === "products") {
+      renderProducts();
+    } else if (currentPage.value === "news") {
+      renderNews();
+    } else if (currentPage.value === "profile") {
+      if (userProfile.value.skills && Array.isArray(userProfile.value.skills)) {
+        userProfile.value.skillsString = userProfile.value.skills.join(", ");
+      }
     }
   },
   { deep: true }
