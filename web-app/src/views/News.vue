@@ -1,18 +1,26 @@
 <script setup lang="ts">
-import { computed, onMounted } from "vue";
-import { useDataStore } from "../stores/data";
+// Props - 親コンポーネントから受け取るデータ
+interface Props {
+  news: any[]
+}
 
-const dataStore = useDataStore();
-const news = computed(() => dataStore.news);
+defineProps<Props>()
 
-onMounted(async () => {
-  // Firestoreからデータを読み込む
-  try {
-    await dataStore.initializeFirestore();
-  } catch (error) {
-    console.error("Failed to initialize Firestore:", error);
-  }
-});
+// Events - 親コンポーネントに送信するイベント
+defineEmits<{
+  navigate: [page: string]
+}>()
+
+// 日付フォーマット関数
+const formatDate = (dateString: string) => {
+  if (!dateString) return ''
+  const date = new Date(dateString)
+  return date.toLocaleDateString('ja-JP', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  })
+}
 </script>
 
 <template>
@@ -30,7 +38,7 @@ onMounted(async () => {
     <!-- News Grid -->
     <section class="news-section">
       <div class="container">
-        <div class="news-grid">
+        <div v-if="news.length > 0" class="news-grid">
           <article
             v-for="newsItem in news"
             :key="newsItem.id"
@@ -39,13 +47,14 @@ onMounted(async () => {
             <div class="news-content">
               <div class="news-meta">
                 <time class="news-date">{{
-                  dataStore.formatDate(newsItem.date)
+                  formatDate(newsItem.date)
                 }}</time>
               </div>
               <h2 class="news-title">{{ newsItem.title }}</h2>
               <p class="news-summary">{{ newsItem.excerpt }}</p>
               <div class="news-footer">
                 <a
+                  v-if="newsItem.url"
                   :href="newsItem.url"
                   class="read-more-btn"
                   target="_blank"
@@ -56,6 +65,13 @@ onMounted(async () => {
               </div>
             </div>
           </article>
+        </div>
+        <div v-else class="no-news">
+          <div class="no-news-content">
+            <div class="no-news-icon">📰</div>
+            <h3 class="no-news-title">ニュースを読み込み中...</h3>
+            <p class="no-news-description">最新のニュースとお知らせをお待ちください。</p>
+          </div>
         </div>
 
         <!-- Call to Action -->
@@ -312,5 +328,37 @@ onMounted(async () => {
 
 .news-card:nth-child(6) {
   animation-delay: 0.5s;
+}
+
+/* No News State */
+.no-news {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+  padding: var(--spacing-16);
+}
+
+.no-news-content {
+  text-align: center;
+  max-width: 400px;
+}
+
+.no-news-icon {
+  font-size: 4rem;
+  margin-bottom: var(--spacing-6);
+  opacity: 0.6;
+}
+
+.no-news-title {
+  font-size: var(--font-size-2xl);
+  font-weight: 600;
+  color: var(--gray-700);
+  margin-bottom: var(--spacing-4);
+}
+
+.no-news-description {
+  color: var(--gray-500);
+  line-height: 1.6;
 }
 </style>

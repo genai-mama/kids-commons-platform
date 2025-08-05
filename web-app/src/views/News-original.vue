@@ -1,9 +1,16 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useDataStore } from '../stores/data'
+import { ref, onMounted } from 'vue'
+import { useFirestore } from '../composables/useFirestore'
 
-const dataStore = useDataStore()
-const news = computed(() => dataStore.news)
+const { news, loadNews } = useFirestore()
+
+onMounted(async () => {
+  try {
+    await loadNews()
+  } catch (error) {
+    console.error('Failed to load news:', error)
+  }
+})
 </script>
 
 <template>

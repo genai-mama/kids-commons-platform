@@ -1,6 +1,7 @@
 import { createApp } from 'vue'
 import './assets/styles/original-style.css'
 import App from './App.vue'
+import router from './router'
 
 console.log('Starting Vue app...')
 
@@ -11,6 +12,7 @@ try {
     console.error('Vue Error:', err, info)
   }
   
+  app.use(router)
   app.mount('#app')
   console.log('Vue app mounted successfully')
 } catch (error) {

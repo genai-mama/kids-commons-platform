@@ -1,0 +1,30 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // メンバー情報は読み書き可能
+    match /members/{document} {
+      allow read, write: if true;
+    }
+    
+    // 商品情報は読み書き可能
+    match /products/{document} {
+      allow read, write: if true;
+    }
+    
+    // ニュース情報は読み書き可能
+    match /news/{document} {
+      allow read, write: if true;
+    }
+    
+    // コメント情報は読み書き可能
+    match /comments/{document} {
+      allow read, write: if true;
+    }
+    
+    // その他のコレクションは読み書き可能（開発用）
+    match /{document=**} {
+      allow read, write: if true;
+    }
+  }
+}
