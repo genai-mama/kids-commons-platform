@@ -55,11 +55,23 @@ interface Member {
   twitter?: string
   github?: string
   featured: boolean
-  // 左エリア用のProfile情報
+  
+  // Profile連携用
+  email: string // Profile連携用（必須）
+  visible: boolean // 公開/非表示フラグ
+  
+  // Profile拡張情報
   photos?: string[] // 写真カルーセル用（Base64またはURL）
   personalWebsite?: string // PERSONAL WEBSITEバナー用のURL
-  icons?: string[] // アイコン表示用（6個まで、ファイル名やURL）
-  iconDescriptions?: string[] // アイコンの説明（ホバー時表示用）
+  
+  // アイコン情報（詳細化）
+  icons?: {
+    id: string // アイコンID（例: "vue", "react", "typescript"）
+    name: string // アイコン表示名（例: "Vue.js", "React", "TypeScript"）
+    thumbnailUrl: string // サムネイルURL
+    description?: string // アイコンの説明
+    link?: string // クリック時のリンクURL
+  }[]
 }
 
 export function useFirestore() {
@@ -373,6 +385,8 @@ export function useFirestore() {
         const data = doc.data()
         return {
           id: data.id || parseInt(doc.id),
+          email: data.email || `member${data.id || parseInt(doc.id)}@example.com`, // デフォルトemail
+          visible: data.visible !== undefined ? data.visible : true, // デフォルトtrue
           ...data
         }
       }) as Member[]

@@ -76,22 +76,13 @@
       </div>
       
       <div class="form-group">
-        <label>アイコン（カンマ区切り、最大6個）</label>
+        <label>技術アイコン（カンマ区切り、最大6個）</label>
         <input 
           type="text" 
           v-model="localMember.iconsString" 
-          placeholder="vue.svg, typescript.svg, figma.svg"
+          placeholder="vue, react, typescript, figma, nodejs, python"
         />
         <small class="form-help">利用可能: vue, react, typescript, javascript, python, figma, sketch, photoshop, illustrator, nodejs, docker, git, github, aws, firebase</small>
-      </div>
-      
-      <div class="form-group">
-        <label>アイコンの説明（カンマ区切り、アイコンと同じ順序）</label>
-        <input 
-          type="text" 
-          v-model="localMember.iconDescriptionsString" 
-          placeholder="Vue.js, TypeScript, Figma"
-        />
       </div>
       
       <div class="form-group">
@@ -175,6 +166,28 @@ const emit = defineEmits<{
 // Local state for form
 const localMember = ref({ ...props.member })
 
+// Predefined icon configurations
+const getIconConfig = (iconId: string) => {
+  const iconConfigs = {
+    vue: { name: 'Vue.js', thumbnailUrl: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vuejs/vuejs-original.svg' },
+    react: { name: 'React', thumbnailUrl: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg' },
+    typescript: { name: 'TypeScript', thumbnailUrl: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/typescript/typescript-original.svg' },
+    javascript: { name: 'JavaScript', thumbnailUrl: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg' },
+    python: { name: 'Python', thumbnailUrl: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg' },
+    nodejs: { name: 'Node.js', thumbnailUrl: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg' },
+    figma: { name: 'Figma', thumbnailUrl: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/figma/figma-original.svg' },
+    sketch: { name: 'Sketch', thumbnailUrl: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/sketch/sketch-original.svg' },
+    photoshop: { name: 'Photoshop', thumbnailUrl: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/photoshop/photoshop-plain.svg' },
+    illustrator: { name: 'Illustrator', thumbnailUrl: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/illustrator/illustrator-plain.svg' },
+    docker: { name: 'Docker', thumbnailUrl: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/docker/docker-original.svg' },
+    git: { name: 'Git', thumbnailUrl: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/git/git-original.svg' },
+    github: { name: 'GitHub', thumbnailUrl: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/github/github-original.svg' },
+    aws: { name: 'AWS', thumbnailUrl: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/amazonwebservices/amazonwebservices-original.svg' },
+    firebase: { name: 'Firebase', thumbnailUrl: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/firebase/firebase-plain.svg' }
+  }
+  return iconConfigs[iconId] || { name: iconId, thumbnailUrl: `https://via.placeholder.com/32/9B7BD8/FFFFFF?text=${iconId.charAt(0).toUpperCase()}` }
+}
+
 // Handle form submission
 const handleSubmit = () => {
   // Process skills
@@ -185,21 +198,18 @@ const handleSubmit = () => {
       .filter(skill => skill)
   }
 
-  // Process icons
+  // Process icons with new format
   if (localMember.value.iconsString) {
-    localMember.value.icons = localMember.value.iconsString
+    const iconIds = localMember.value.iconsString
       .split(',')
       .map(icon => icon.trim())
       .filter(icon => icon)
       .slice(0, 6) // Maximum 6 icons
-  }
-
-  // Process icon descriptions
-  if (localMember.value.iconDescriptionsString) {
-    localMember.value.iconDescriptions = localMember.value.iconDescriptionsString
-      .split(',')
-      .map(desc => desc.trim())
-      .filter(desc => desc)
+    
+    localMember.value.icons = iconIds.map(iconId => ({
+      id: iconId,
+      ...getIconConfig(iconId)
+    }))
   }
 
   // Process photos
@@ -227,14 +237,9 @@ const initializeStringFields = () => {
     localMember.value.skillsString = localMember.value.skills.join(', ')
   }
 
-  // Initialize iconsString from icons array
+  // Initialize iconsString from icons array (new format)
   if (localMember.value.icons && !localMember.value.iconsString) {
-    localMember.value.iconsString = localMember.value.icons.join(', ')
-  }
-
-  // Initialize iconDescriptionsString from iconDescriptions array
-  if (localMember.value.iconDescriptions && !localMember.value.iconDescriptionsString) {
-    localMember.value.iconDescriptionsString = localMember.value.iconDescriptions.join(', ')
+    localMember.value.iconsString = localMember.value.icons.map(icon => icon.id || icon).join(', ')
   }
 
   // Initialize photosString from photos array

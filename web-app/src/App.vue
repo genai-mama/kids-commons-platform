@@ -291,11 +291,9 @@ const userProfile = ref({
   email: "",
   skillsString: "",
   photos: [], // 写真データは別途読み込み
-  icons: [],
-  iconDescriptions: [],
+  icons: [], // 新形式: {id, name, thumbnailUrl, description?, link?}[]
   photosString: "",
   iconsString: "",
-  iconDescriptionsString: "",
   joinDate: new Date().toISOString(),
   featured: false,
   iconList: [
@@ -718,8 +716,7 @@ const updateMemberProfile = async () => {
         visible: userProfile.value.visible,
         email: userProfile.value.email,
         photos: userProfile.value.photos || [],
-        icons: userProfile.value.icons || [],
-        iconDescriptions: userProfile.value.iconDescriptions || []
+        icons: userProfile.value.icons || []
       });
       console.log('Member profile updated successfully');
     } else {
@@ -739,7 +736,6 @@ const updateMemberProfile = async () => {
         email: userProfile.value.email,
         photos: userProfile.value.photos || [],
         icons: userProfile.value.icons || [],
-        iconDescriptions: userProfile.value.iconDescriptions || [],
         joinDate: userProfile.value.joinDate || new Date().toISOString(),
         featured: userProfile.value.featured || false
       };
