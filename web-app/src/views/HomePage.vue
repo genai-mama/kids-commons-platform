@@ -48,35 +48,25 @@
               <button class="btn-link" @click="$emit('navigate', 'products')">すべて見る →</button>
             </div>
             <div class="featured-products-grid">
-              <div v-for="product in featuredProducts" :key="product.id" class="product-card featured">
-                <div class="product-image">
-                  <img :src="product.thumbnail || product.image || `https://via.placeholder.com/300x200/9B7BD8/FFFFFF?text=${encodeURIComponent(product.title)}`" 
-                       :alt="product.title" />
-                  <div class="product-likes">
-                    <span class="like-icon">❤️</span>
-                    <span class="like-count">{{ product.likes || 0 }}</span>
+              <div v-for="product in featuredProducts" :key="product.id" class="product-card featured" @click="window.open(product.url, '_blank')">
+                <div class="product-header">
+                  <div class="product-info">
+                    <div class="product-category">{{ product.category }}</div>
+                    <h3 class="product-title">{{ product.title }}</h3>
+                    <p class="product-description">{{ product.description }}</p>
                   </div>
                 </div>
-                <div class="product-content">
-                  <div class="product-header">
-                    <h3 class="product-title">{{ product.title }}</h3>
-                    <span class="product-category">{{ product.category }}</span>
-                  </div>
-                  <p class="product-description">{{ product.description }}</p>
-                  <div class="product-footer">
-                    <div class="product-author">
-                      <div class="author-avatar">
-                        <img :src="product.author.avatar || `https://via.placeholder.com/40/9B7BD8/FFFFFF?text=${product.author.name.charAt(0)}`" 
-                             :alt="product.author.name" />
-                      </div>
-                      <div class="author-info">
-                        <div class="author-name">{{ product.author.name }}</div>
-                      </div>
+                
+                <div class="product-tags">
+                  <span v-for="tag in product.tags" :key="tag" class="product-tag">{{ tag }}</span>
+                </div>
+                
+                <div class="product-footer">
+                  <div class="product-author">
+                    <div class="author-avatar">{{ product.author.avatar }}</div>
+                    <div class="author-info">
+                      <div class="author-name">{{ product.author.name }}</div>
                     </div>
-                    <a v-if="product.url" :href="product.url" target="_blank" class="product-link">
-                      <span>詳細</span>
-                      <span class="link-icon">→</span>
-                    </a>
                   </div>
                 </div>
               </div>
@@ -345,46 +335,67 @@ const formatDate = (dateString: string) => {
   font-weight: 500;
 }
 
-.product-content {
-  padding: var(--spacing-4);
+.product-card {
+  background: var(--white);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-6);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--gray-200);
+  transition: all var(--transition-base);
+  cursor: pointer;
 }
 
 .product-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: var(--spacing-2);
+  margin-bottom: var(--spacing-4);
+}
+
+.product-info {
+  flex: 1;
+}
+
+.product-tags {
+  display: flex;
+  flex-wrap: wrap;
   gap: var(--spacing-2);
+  margin-bottom: var(--spacing-4);
+}
+
+.product-tag {
+  background: var(--primary-purple);
+  color: var(--white);
+  padding: var(--spacing-2) var(--spacing-4);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
 }
 
 .product-title {
-  font-size: var(--font-size-lg);
-  font-weight: 600;
+  font-size: var(--font-size-xl);
+  font-weight: 700;
   color: var(--gray-900);
-  margin: 0;
-  flex: 1;
+  margin: 0 0 var(--spacing-3) 0;
   line-height: 1.3;
 }
 
 .product-category {
-  background: var(--primary-purple-lighter);
-  color: var(--primary-purple-dark);
   font-size: var(--font-size-xs);
-  padding: var(--spacing-1) var(--spacing-2);
+  color: var(--white);
+  background: var(--primary-purple);
+  padding: var(--spacing-1) var(--spacing-3);
   border-radius: var(--radius-full);
   font-weight: 500;
-  white-space: nowrap;
+  margin-bottom: var(--spacing-3);
+  display: inline-block;
 }
 
 .product-description {
   color: var(--gray-600);
-  font-size: var(--font-size-sm);
-  line-height: 1.4;
-  margin-bottom: var(--spacing-3);
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  font-size: var(--font-size-base);
+  line-height: 1.6;
+  margin-bottom: var(--spacing-5);
 }
 
 .product-footer {
@@ -403,12 +414,16 @@ const formatDate = (dateString: string) => {
 }
 
 .author-avatar {
-  width: 32px;
-  height: 32px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
-  overflow: hidden;
-  border: 2px solid var(--white);
-  box-shadow: var(--shadow-sm);
+  background: var(--purple-gradient);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--white);
+  font-weight: 600;
+  font-size: var(--font-size-base);
 }
 
 .author-avatar img {

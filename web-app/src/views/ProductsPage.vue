@@ -41,14 +41,14 @@
         <!-- Products Grid -->
         <div class="products-grid" v-if="filteredAndSortedProducts.length > 0">
           <div v-for="product in filteredAndSortedProducts" :key="product.id" class="product-card">
-            <div class="product-image">
+            <!-- <div class="product-image">
               <img :src="product.thumbnail || product.image || `https://via.placeholder.com/300x200/9B7BD8/FFFFFF?text=${encodeURIComponent(product.title)}`" 
                    :alt="product.title" />
               <div class="product-likes">
                 <span class="like-icon">❤️</span>
                 <span class="like-count">{{ product.likes || 0 }}</span>
               </div>
-            </div>
+            </div> -->
             <div class="product-content">
               <div class="product-header">
                 <h3 class="product-title">{{ product.title }}</h3>
