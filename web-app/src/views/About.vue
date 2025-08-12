@@ -56,84 +56,9 @@ const stats = ref({
       </div>
     </section>
 
-    <!-- Features Section -->
-    <section class="features-section">
-      <div class="container">
-        <h2 class="section-title center">コミュニティの特徴</h2>
-        <div class="features-grid">
-          <div class="feature-card">
-            <div class="feature-icon">🤝</div>
-            <h3 class="feature-title">サポート体制</h3>
-            <p class="feature-description">
-              初心者からエキスパートまで、レベルに応じたサポートを提供。質問や相談はいつでもOK！
-            </p>
-          </div>
-          <div class="feature-card">
-            <div class="feature-icon">🎯</div>
-            <h3 class="feature-title">実践的な学び</h3>
-            <p class="feature-description">
-              実際の生活に役立つツールやアプリを作りながら、楽しく生成AIを学べます。
-            </p>
-          </div>
-          <div class="feature-card">
-            <div class="feature-icon">🌟</div>
-            <h3 class="feature-title">成果の共有</h3>
-            <p class="feature-description">
-              作った作品をコミュニティで共有し、フィードバックをもらって更なる改善を。
-            </p>
-          </div>
-          <div class="feature-card">
-            <div class="feature-icon">🚀</div>
-            <h3 class="feature-title">キャリア支援</h3>
-            <p class="feature-description">
-              スキルアップから転職まで、ママたちの新しいキャリア形成をサポートします。
-            </p>
-          </div>
-        </div>
-      </div>
-    </section>
 
-    <!-- Stats Section -->
-    <section class="stats-section">
-      <div class="container">
-        <h2 class="section-title center">コミュニティの実績</h2>
-        <div class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-number">{{ stats.totalMembers.toLocaleString() }}</div>
-            <div class="stat-label">メンバー数</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-number">{{ stats.totalProducts }}</div>
-            <div class="stat-label">成果物</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-number">{{ stats.totalCategories }}</div>
-            <div class="stat-label">カテゴリ</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-number">15+</div>
-            <div class="stat-label">開催イベント</div>
-          </div>
-        </div>
-      </div>
-    </section>
 
-    <!-- CTA Section -->
-    <section class="cta-section">
-      <div class="container">
-        <div class="cta-content">
-          <h2 class="cta-title">一緒に始めませんか？</h2>
-          <p class="cta-description">
-            生成AIを活用して、新しい可能性を見つけましょう。
-            初心者歓迎、子育て中のママも安心して参加できます。
-          </p>
-          <a href="https://discord.gg/genai-mama" class="cta-button" target="_blank">
-            <span>💬</span>
-            Discordコミュニティに参加
-          </a>
-        </div>
-      </div>
-    </section>
+
   </div>
 </template>
 
