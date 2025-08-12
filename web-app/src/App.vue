@@ -849,8 +849,34 @@ const handlePhotoRemove = (photoNumber: number) => {
 };
 
 // Admin handlers
-const handleSaveProduct = (product: any) => {
+const handleSaveProduct = async (product: any) => {
   console.log("Save product:", product);
+  try {
+    if (editingProduct.value && editingProduct.value.id) {
+      // 編集モード：既存の成果物を更新
+      const productId = editingProduct.value.id;
+      const updateData = {
+        ...product,
+        updatedAt: new Date().toISOString()
+      };
+      await updateProduct(productId, updateData);
+      console.log("成果物が更新されました:", product.title);
+      editingProduct.value = null;
+    } else {
+      // 新規追加モード：新しい成果物を追加
+      const newProduct = {
+        ...product,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      await addProduct(newProduct);
+      console.log("新しい成果物が追加されました:", newProduct.title);
+    }
+    showProductForm.value = false;
+  } catch (error) {
+    console.error("成果物の保存に失敗しました:", error);
+    alert("保存に失敗しました。もう一度お試しください。");
+  }
 };
 
 const handleCancelProductEdit = () => {
@@ -862,12 +888,48 @@ const editProduct = (product: any) => {
   editingProduct.value = product;
 };
 
-const deleteProduct = (productId: number) => {
+const deleteProduct = async (productId: number) => {
   console.log("Delete product:", productId);
+  try {
+    await firestoreDeleteProduct(productId);
+    console.log("成果物が削除されました:", productId);
+  } catch (error) {
+    console.error("成果物の削除に失敗しました:", error);
+    alert("削除に失敗しました。もう一度お試しください。");
+  }
 };
 
-const handleDuplicateProduct = (productId: number) => {
+const handleDuplicateProduct = async (productId: number) => {
   console.log("Duplicate product:", productId);
+  try {
+    // 元の成果物を見つける
+    const originalProduct = products.value.find(p => p.id === productId);
+    if (!originalProduct) {
+      alert("複製する成果物が見つかりませんでした。");
+      return;
+    }
+
+    // 複製データを作成（IDを除外し、タイトルに「（コピー）」を追加）
+    const duplicatedProduct = {
+      ...originalProduct,
+      title: `${originalProduct.title}（コピー）`,
+      featured: false, // 複製時は注目成果物にしない
+      likes: 0, // いいね数はリセット
+      comments: 0, // コメント数はリセット
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+
+    // IDを削除
+    delete duplicatedProduct.id;
+
+    // 新しい成果物として追加
+    await addProduct(duplicatedProduct);
+    console.log("成果物が複製されました:", duplicatedProduct.title);
+  } catch (error) {
+    console.error("成果物の複製に失敗しました:", error);
+    alert("複製に失敗しました。もう一度お試しください。");
+  }
 };
 
 const handleSaveNews = (newsItem: any) => {
