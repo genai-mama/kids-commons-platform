@@ -1,6 +1,7 @@
 // Firebase設定ファイル
 import { initializeApp } from 'firebase/app'
 import { getFirestore } from 'firebase/firestore'
+import { getAuth } from 'firebase/auth'
 
 // Firebase設定オブジェクト
 const firebaseConfig = {
@@ -17,5 +18,8 @@ const app = initializeApp(firebaseConfig)
 
 // Firestore初期化
 export const db = getFirestore(app)
+
+// Firebase Authentication初期化
+export const auth = getAuth(app)
 
 export default app

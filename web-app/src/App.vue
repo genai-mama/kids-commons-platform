@@ -168,7 +168,7 @@
       v-if="showLoginModal"
       :login-form="loginForm"
       :is-x-auth-loading="isXAuthLoading"
-      :is-x-auth-available="isXAuthAvailable"
+      :is-x-auth-available="isXAuthAvailable()"
       @close="closeLoginModal"
       @login="handleLoginWithForm"
       @x-login="handleXLogin"
@@ -179,11 +179,12 @@
       v-if="showSignupModal"
       :signup-form="signupForm"
       :is-x-auth-loading="isXAuthLoading"
-      :is-x-auth-available="isXAuthAvailable"
+      :is-x-auth-available="isXAuthAvailable()"
       @close="closeSignupModal"
       @signup="handleSignup"
       @x-login="handleXLogin"
       @show-login="showLoginModal = true; showSignupModal = false"
+      @update-form="handleSignupFormUpdate"
     />
   </div>
 </template>
@@ -191,6 +192,7 @@
 <script setup lang="ts">
 import { ref, onMounted, nextTick, watch, onUnmounted } from "vue";
 import { useFirestore } from "./composables/useFirestore";
+import { useAuth } from "./composables/useAuth";
 import { initiateXLogin, handleXCallback, mockXLogin, isXAuthAvailable } from "./utils/xAuth";
 import { getDiscordMemberCount, createDiscordDataFetcher } from "./utils/discordApi";
 
@@ -231,6 +233,7 @@ const {
   loadMembers,
   addProduct,
   addNews,
+  addMemberWithAuthId,
   updateProduct,
   updateNews,
   updateMember,
@@ -239,6 +242,18 @@ const {
   deleteMember: firestoreDeleteMember,
   initialize
 } = useFirestore();
+
+// Firebase Authentication
+const {
+  currentUser: authUser,
+  isLoading: authLoading,
+  error: authError,
+  login: firebaseLogin,
+  signup: firebaseSignup,
+  logout: firebaseLogout,
+  getUserProfile,
+  initializeAuth
+} = useAuth();
 
 // Core State
 const currentPage = ref("home");
@@ -525,23 +540,36 @@ const handleLogin = async () => {
   }
 
   try {
-    // 簡単なログイン検証（実際の実装では認証サーバーと通信）
-    if (loginForm.value.email && loginForm.value.password) {
+    // Firebase Authenticationでログイン
+    const user = await firebaseLogin(loginForm.value.email, loginForm.value.password);
+    
+    if (user) {
       isLoggedIn.value = true;
       
       // ユーザープロフィールをローカルストレージから読み込み
-      console.log("ログイン処理:", loginForm.value.email);
-      const savedProfile = localStorage.getItem(`profile_${loginForm.value.email}`);
+      console.log("ログイン処理:", user.email);
+      const savedProfile = localStorage.getItem(`profile_${user.email}`);
       console.log("保存されたプロフィール:", savedProfile ? "見つかった" : "見つからない");
+      
+      // membersコレクションからユーザー情報を検索
+      const existingMember = members.value.find(member => member.email === user.email);
       
       if (savedProfile) {
         userProfile.value = JSON.parse(savedProfile);
         console.log("プロフィール読み込み完了:", userProfile.value.name);
+      } else if (existingMember) {
+        // ローカルにないがメンバーコレクションにはある場合
+        userProfile.value = {
+          ...existingMember,
+          skillsString: existingMember.skills ? existingMember.skills.join(", ") : "",
+          iconDescriptionsString: existingMember.iconDescriptions?.join(", ") || ""
+        };
+        console.log('メンバーコレクションからプロフィールを復元:', userProfile.value.name);
       } else {
         // 新規ユーザーの場合、デフォルトプロフィールを作成
         userProfile.value = {
           id: Date.now(),
-          name: loginForm.value.email.split('@')[0],
+          name: user.email.split('@')[0],
           role: "メンバー",
           bio: "よろしくお願いします！",
           avatar: "",
@@ -553,7 +581,7 @@ const handleLogin = async () => {
           twitter: "",
           github: "",
           visible: true,
-          email: loginForm.value.email,
+          email: user.email,
           photos: [],
           icons: [],
           iconDescriptions: [],
@@ -565,34 +593,30 @@ const handleLogin = async () => {
           iconList: []
         };
         
-        // 新規ユーザーのプロフィールを保存
-        localStorage.setItem(`profile_${loginForm.value.email}`, JSON.stringify(userProfile.value));
+        console.log('新規ユーザープロフィールを作成:', userProfile.value.name);
       }
       
       currentUser.value = userProfile.value;
       
       // ログイン状態をローカルストレージに保存
       localStorage.setItem('isLoggedIn', 'true');
-      localStorage.setItem('currentUserEmail', loginForm.value.email);
+      localStorage.setItem('currentUserEmail', user.email);
       
-      // 既存メンバーデータから最新情報を取得
-      const existingMember = members.value.find(member => member.email === loginForm.value.email);
+      // 既存メンバーの情報でプロフィールを同期
       if (existingMember) {
         // 既存メンバーの情報でプロフィールを更新
         userProfile.value = {
           ...userProfile.value,
           ...existingMember,
-          skillsString: existingMember.skills ? existingMember.skills.join(", ") : ""
+          skillsString: existingMember.skills ? existingMember.skills.join(", ") : "",
+          iconDescriptionsString: existingMember.iconDescriptions?.join(", ") || ""
         };
         currentUser.value = userProfile.value;
-        
-        // ローカルストレージも更新
-        localStorage.setItem(`profile_${loginForm.value.email}`, JSON.stringify(userProfile.value));
         console.log('Profile synced with existing member data on login');
       }
       
       // 写真データを別途読み込み
-      userProfile.value.photos = loadUserPhotos(loginForm.value.email);
+      userProfile.value.photos = loadUserPhotos(user.email);
       
       // ログイン時にもメンバーデータを同期
       await updateMemberProfile();
@@ -602,13 +626,126 @@ const handleLogin = async () => {
     }
   } catch (error) {
     console.error('Login failed:', error);
-    alert("ログインに失敗しました。");
+    // Firebase Authエラーの場合は、useAuthが既に適切なメッセージを設定済み
+    if (authError.value) {
+      alert(authError.value);
+    } else {
+      // QuotaExceededError等のその他のエラー
+      if (error.name === 'QuotaExceededError') {
+        closeLoginModal();
+        alert("ログインしました！\n（ストレージ容量が不足しています。一部機能が制限される可能性があります）");
+      } else {
+        alert("ログインに失敗しました。");
+      }
+    }
   }
 };
 
+// サインアップフォーム更新関数
+const handleSignupFormUpdate = (field: string, value: string) => {
+  signupForm.value[field] = value;
+};
+
 const handleSignup = async () => {
-  // Signup logic here  
-  console.log("Signup:", signupForm.value);
+  // バリデーション
+  if (!signupForm.value.name || !signupForm.value.email || !signupForm.value.password) {
+    alert("すべての必須項目を入力してください");
+    return;
+  }
+  
+  if (signupForm.value.password !== signupForm.value.passwordConfirm) {
+    alert("パスワードが一致しません");
+    return;
+  }
+  
+  if (signupForm.value.password.length < 6) {
+    alert("パスワードは6文字以上で入力してください");
+    return;
+  }
+  
+  try {
+    // Firebase Authenticationでユーザー作成
+    const userData = {
+      name: signupForm.value.name
+    };
+    
+    const user = await firebaseSignup(signupForm.value.email, signupForm.value.password, userData);
+    
+    if (user) {
+      // ログイン状態に設定
+      isLoggedIn.value = true;
+      
+      // ユーザープロフィール作成
+      userProfile.value = {
+        id: Date.now(),
+        name: signupForm.value.name,
+        role: "メンバー",
+        bio: "よろしくお願いします！",
+        avatar: "",
+        skills: [],
+        skillsString: "",
+        location: "",
+        website: "",
+        personalWebsite: "",
+        twitter: "",
+        github: "",
+        visible: true,
+        email: user.email,
+        photos: [],
+        icons: [],
+        iconDescriptions: [],
+        photosString: "",
+        iconsString: "",
+        iconDescriptionsString: "",
+        joinDate: new Date().toISOString(),
+        featured: false,
+        iconList: []
+      };
+      
+      currentUser.value = userProfile.value;
+      
+      // ローカルストレージに保存
+      localStorage.setItem('isLoggedIn', 'true');
+      localStorage.setItem('currentUserEmail', user.email);
+      
+      // membersコレクションにFirebase Auth UUIDをドキュメントIDとして追加
+      try {
+        await addMemberWithAuthId(user.uid, {
+          name: signupForm.value.name,
+          role: "メンバー",
+          bio: "よろしくお願いします！",
+          avatar: "",
+          skills: [],
+          joinDate: new Date().toISOString(),
+          location: "",
+          website: "",
+          twitter: "",
+          github: "",
+          featured: false,
+          email: user.email,
+          visible: true,
+          photos: [],
+          personalWebsite: "",
+          icons: [],
+          iconDescriptions: []
+        });
+        console.log('Member added to members collection with Auth UID:', user.uid);
+      } catch (memberError) {
+        console.error('Failed to add to members collection:', memberError);
+        // メンバー追加エラーでもアカウント作成は成功とする
+      }
+      
+      closeSignupModal();
+      alert("アカウントが作成されました！");
+    }
+  } catch (error) {
+    console.error('Signup failed:', error);
+    if (authError.value) {
+      alert(authError.value);
+    } else {
+      alert("アカウント作成に失敗しました");
+    }
+  }
 };
 
 const handleLogout = () => {
@@ -670,9 +807,16 @@ const updateProfile = async () => {
         .filter((skill) => skill);
     }
 
-    const profileWithoutPhotos = { ...userProfile.value };
-    delete profileWithoutPhotos.photos;
-    localStorage.setItem(`profile_${userProfile.value.email}`, JSON.stringify(profileWithoutPhotos));
+    try {
+      const profileWithoutPhotos = { ...userProfile.value };
+      delete profileWithoutPhotos.photos;
+      localStorage.setItem(`profile_${userProfile.value.email}`, JSON.stringify(profileWithoutPhotos));
+    } catch (storageError) {
+      if (storageError.name === 'QuotaExceededError') {
+        console.warn('Storage quota exceeded when saving profile');
+        cleanupOldLocalStorageData();
+      }
+    }
     
     currentUser.value = { ...userProfile.value };
     
@@ -1001,7 +1145,39 @@ const saveUserPhotos = (email: string, photos: string[]) => {
     localStorage.setItem(photoKey, JSON.stringify(photos));
     console.log('Photos saved to localStorage');
   } catch (error) {
-    console.error('Failed to save user photos:', error);
+    if (error.name === 'QuotaExceededError') {
+      console.warn('LocalStorage quota exceeded. Attempting to clean up old data.');
+      cleanupOldLocalStorageData();
+      // 再試行
+      try {
+        localStorage.setItem(photoKey, JSON.stringify(photos));
+        console.log('Photos saved after cleanup');
+      } catch (retryError) {
+        console.error('Failed to save photos even after cleanup:', retryError);
+      }
+    } else {
+      console.error('Failed to save user photos:', error);
+    }
+  }
+};
+
+// LocalStorageの古いデータをクリーンアップ
+const cleanupOldLocalStorageData = () => {
+  try {
+    const keys = Object.keys(localStorage);
+    const now = Date.now();
+    const oneWeekAgo = now - 7 * 24 * 60 * 60 * 1000; // 1週間前
+    
+    // 古いデータを削除
+    keys.forEach(key => {
+      if (key.startsWith('temp_') || key.startsWith('cache_')) {
+        localStorage.removeItem(key);
+      }
+    });
+    
+    console.log('Old localStorage data cleaned up');
+  } catch (error) {
+    console.error('Failed to cleanup localStorage:', error);
   }
 };
 
@@ -1067,6 +1243,9 @@ const searchProducts = (products: any[], query: string) => {
 onMounted(async () => {
   try {
     console.log("アプリケーション初期化開始");
+    
+    // Firebase Authの初期化
+    initializeAuth();
     
     const savedComments = localStorage.getItem("memberComments");
     if (savedComments) {

@@ -7,6 +7,7 @@ import {
   updateDoc,
   deleteDoc,
   doc,
+  setDoc,
   orderBy,
   query,
   onSnapshot,
@@ -59,6 +60,7 @@ interface Member {
   // Profile連携用
   email: string // Profile連携用（必須）
   visible: boolean // 公開/非表示フラグ
+  authUid?: string // Firebase Auth UUID（新規ユーザーのみ）
   
   // Profile拡張情報
   photos?: string[] // 写真カルーセル用（Base64またはURL）
@@ -434,6 +436,37 @@ export function useFirestore() {
     }
   }
 
+  // Member追加 (Firebase Auth UUIDをドキュメントIDとして使用)
+  const addMemberWithAuthId = async (authUid: string, memberData: Omit<Member, 'id'>) => {
+    try {
+      loading.value = true
+      
+      // Firebase AuthのUUIDをドキュメントIDとして使用
+      const memberDocRef = doc(db, 'members', authUid)
+      
+      const memberWithId = {
+        ...memberData,
+        id: Date.now(), // 内部IDとして使用
+        authUid: authUid // Firebase Auth UIDを記録
+      }
+      
+      await setDoc(memberDocRef, memberWithId)
+      
+      console.log('Member added with Auth UID: ', authUid)
+      
+      // ローカルデータも更新
+      members.value.unshift(memberWithId)
+      
+      return authUid
+    } catch (err) {
+      error.value = `Member追加エラー: ${err}`
+      console.error('Error adding member with auth ID:', err)
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
   // Member更新
   const updateMember = async (memberId: number, memberData: Partial<Member>) => {
     try {
@@ -513,6 +546,7 @@ export function useFirestore() {
     addProduct,
     addNews,
     addMember,
+    addMemberWithAuthId,
     updateProduct,
     deleteProduct,
     duplicateProduct,

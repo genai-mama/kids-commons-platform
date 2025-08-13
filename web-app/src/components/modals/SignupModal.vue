@@ -106,17 +106,17 @@ interface Props {
 defineProps<Props>()
 
 // Events - 親コンポーネントに送信するイベント
-defineEmits<{
+const emit = defineEmits<{
   close: []
   signup: []
   'x-login': []
   'show-login': []
+  'update-form': [field: string, value: string]
 }>()
 
 // フォーム内容を更新する関数
 const updateForm = (field: string, value: string) => {
-  // 親コンポーネントでsignupFormを直接更新してもらう
-  // この実装では、親コンポーネント側でv-modelを使用する想定
+  emit('update-form', field, value)
 }
 </script>
 
