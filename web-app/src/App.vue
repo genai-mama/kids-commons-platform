@@ -39,6 +39,7 @@
       <MembersPage 
         v-else-if="currentPage === 'members'"
         :members="members"
+        :currentUser="currentUser"
         @navigate="navigateToPage"
       />
 
@@ -716,7 +717,8 @@ const updateMemberProfile = async () => {
         visible: userProfile.value.visible,
         email: userProfile.value.email,
         photos: userProfile.value.photos || [],
-        icons: userProfile.value.icons || []
+        icons: userProfile.value.icons || [],
+        bannerImage: userProfile.value.bannerImage || null
       });
       console.log('Member profile updated successfully');
     } else {
@@ -736,6 +738,7 @@ const updateMemberProfile = async () => {
         email: userProfile.value.email,
         photos: userProfile.value.photos || [],
         icons: userProfile.value.icons || [],
+        bannerImage: userProfile.value.bannerImage || null,
         joinDate: userProfile.value.joinDate || new Date().toISOString(),
         featured: userProfile.value.featured || false
       };

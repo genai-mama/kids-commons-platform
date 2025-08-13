@@ -37,6 +37,82 @@
         <label>所在地</label>
         <input type="text" v-model="localProfile.location" placeholder="東京都" />
       </div>
+      
+      <div class="form-group">
+        <label>プロフィール画像</label>
+        <div class="avatar-upload">
+          <div class="avatar-preview">
+            <img 
+              v-if="localProfile.avatar" 
+              :src="localProfile.avatar" 
+              :alt="localProfile.name" 
+              class="avatar-image"
+            />
+            <div v-else class="avatar-placeholder">
+              {{ localProfile.name ? localProfile.name.charAt(0) : '?' }}
+            </div>
+          </div>
+          <div class="upload-actions">
+            <input 
+              type="file" 
+              ref="fileInput" 
+              @change="handleImageUpload" 
+              accept="image/*" 
+              style="display: none"
+            />
+            <button type="button" class="btn-upload" @click="$refs.fileInput?.click()">
+              画像を選択
+            </button>
+            <button 
+              v-if="localProfile.avatar" 
+              type="button" 
+              class="btn-remove" 
+              @click="removeAvatar"
+            >
+              削除
+            </button>
+          </div>
+        </div>
+        <small class="form-help">JPG、PNG形式の画像をアップロードできます（最大5MB）</small>
+      </div>
+      
+      <div class="form-group">
+        <label>バナー画像</label>
+        <div class="banner-upload">
+          <div class="banner-preview">
+            <img 
+              v-if="localProfile.bannerImage" 
+              :src="localProfile.bannerImage" 
+              :alt="localProfile.name" 
+              class="banner-image"
+            />
+            <div v-else class="banner-placeholder">
+              <span>バナー画像なし</span>
+            </div>
+          </div>
+          <div class="upload-actions">
+            <input 
+              type="file" 
+              ref="bannerFileInput" 
+              @change="handleBannerUpload" 
+              accept="image/*" 
+              style="display: none"
+            />
+            <button type="button" class="btn-upload" @click="$refs.bannerFileInput?.click()">
+              バナー画像を選択
+            </button>
+            <button 
+              v-if="localProfile.bannerImage" 
+              type="button" 
+              class="btn-remove" 
+              @click="removeBanner"
+            >
+              削除
+            </button>
+          </div>
+        </div>
+        <small class="form-help">横長のバナー画像を推奨します（最大5MB）</small>
+      </div>
     </div>
 
     <!-- Contact Information -->
@@ -62,12 +138,6 @@
     <!-- Profile Card Settings -->
     <div class="form-section">
       <h3>プロフィールカード設定</h3>
-      
-      <div class="form-group">
-        <label>PERSONAL WEBSITE URL</label>
-        <input type="url" v-model="localProfile.personalWebsite" placeholder="個人サイトのURL" />
-        <small class="form-help">プロフィールカードにピクセルアートバナーで表示されます</small>
-      </div>
       
       <div class="form-group">
         <label>アイコン（カンマ区切り、最大6個）</label>
@@ -213,6 +283,78 @@ const initializeStringFields = () => {
   }
 }
 
+// Image upload handling
+const handleImageUpload = (event: Event) => {
+  const target = event.target as HTMLInputElement
+  const file = target.files?.[0]
+  
+  if (!file) return
+  
+  // Check file size (5MB limit)
+  if (file.size > 5 * 1024 * 1024) {
+    alert('ファイルサイズが大きすぎます。5MB以下の画像を選択してください。')
+    return
+  }
+  
+  // Check file type
+  if (!file.type.startsWith('image/')) {
+    alert('画像ファイルを選択してください。')
+    return
+  }
+  
+  // Convert to base64 for display and storage
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    localProfile.value.avatar = e.target?.result as string
+  }
+  reader.readAsDataURL(file)
+}
+
+const removeAvatar = () => {
+  localProfile.value.avatar = ''
+  // Clear file input
+  const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement
+  if (fileInput) {
+    fileInput.value = ''
+  }
+}
+
+// Banner upload handling
+const handleBannerUpload = (event: Event) => {
+  const target = event.target as HTMLInputElement
+  const file = target.files?.[0]
+  
+  if (!file) return
+  
+  // Check file size (5MB limit)
+  if (file.size > 5 * 1024 * 1024) {
+    alert('ファイルサイズが大きすぎます。5MB以下の画像を選択してください。')
+    return
+  }
+  
+  // Check file type
+  if (!file.type.startsWith('image/')) {
+    alert('画像ファイルを選択してください。')
+    return
+  }
+  
+  // Convert to base64 for display and storage
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    localProfile.value.bannerImage = e.target?.result as string
+  }
+  reader.readAsDataURL(file)
+}
+
+const removeBanner = () => {
+  localProfile.value.bannerImage = ''
+  // Clear file input
+  const bannerFileInput = document.querySelector('input[type="file"]:nth-of-type(2)') as HTMLInputElement
+  if (bannerFileInput) {
+    bannerFileInput.value = ''
+  }
+}
+
 // Initialize form
 onMounted(() => {
   initializeStringFields()
@@ -304,6 +446,110 @@ onMounted(() => {
   width: auto;
   margin-right: var(--spacing-2);
   margin-bottom: 0;
+}
+
+/* Avatar Upload */
+.avatar-upload {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-4);
+}
+
+.avatar-preview {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid var(--gray-200);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--gray-50);
+}
+
+.avatar-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatar-placeholder {
+  font-size: var(--font-size-2xl);
+  font-weight: 600;
+  color: var(--gray-400);
+  background: var(--primary-purple-lighter);
+  color: var(--primary-purple);
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.upload-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+
+.btn-upload,
+.btn-remove {
+  padding: var(--spacing-2) var(--spacing-4);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.btn-upload {
+  background: var(--primary-purple);
+  color: var(--white);
+}
+
+.btn-upload:hover {
+  background: var(--primary-purple-dark);
+}
+
+.btn-remove {
+  background: var(--red-100);
+  color: var(--red-600);
+}
+
+.btn-remove:hover {
+  background: var(--red-200);
+}
+
+/* Banner Upload */
+.banner-upload {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+}
+
+.banner-preview {
+  width: 100%;
+  height: 80px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 2px solid var(--gray-200);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--gray-50);
+}
+
+.banner-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.banner-placeholder {
+  color: var(--gray-400);
+  font-size: var(--font-size-sm);
+  text-align: center;
 }
 
 /* Form Actions */

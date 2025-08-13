@@ -309,7 +309,7 @@ body {
     var(--primary-purple-lighter) 0%,
     var(--white) 100%
   ); */
-  padding: var(--spacing-20) 0;
+  padding: 0 0 var(--spacing-20) 0;
   position: relative;
   overflow: hidden;
 }

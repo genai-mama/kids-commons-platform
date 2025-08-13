@@ -33,13 +33,14 @@
         >
           ニュース管理
         </button>
-        <button 
+        <!-- メンバー管理タブは一時的に非表示 -->
+        <!-- <button 
           class="admin-tab" 
           :class="{ active: activeTab === 'members' }"
           @click="$emit('tab-change', 'members')"
         >
           メンバー管理
-        </button>
+        </button> -->
       </div>
 
       <!-- Tab Content -->
@@ -86,23 +87,21 @@
           </div>
         </div>
 
-        <!-- メンバー管理 -->
-        <div v-if="activeTab === 'members'" class="tab-content">
+        <!-- メンバー管理 - 一時的に非表示 -->
+        <!-- <div v-if="activeTab === 'members'" class="tab-content">
           <div class="content-header">
             <h2>メンバー管理</h2>
           </div>
 
-          <!-- メンバー編集フォーム -->
           <div v-if="editingMember" class="admin-form">
             <h3>メンバーを編集</h3>
             <slot name="member-form" />
           </div>
 
-          <!-- メンバー一覧 -->
           <div class="admin-list">
             <slot name="members-list" />
           </div>
-        </div>
+        </div> -->
       </div>
     </div>
   </div>
