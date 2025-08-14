@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useDataStore } from '../stores/data'
 import type { Product } from '../stores/data'
 
 interface Props {
@@ -8,12 +6,10 @@ interface Props {
 }
 
 const props = defineProps<Props>()
-const dataStore = useDataStore()
-
-const isLiked = computed(() => dataStore.isLiked(props.product.id))
 
 const handleLike = () => {
-  dataStore.toggleLike(props.product.id)
+  // いいね機能（将来実装）
+  console.log('Like:', props.product.id)
 }
 
 const openProduct = () => {
@@ -25,11 +21,6 @@ const openProduct = () => {
 
 <template>
   <article class="product-card" @click="openProduct">
-    <img
-      :src="product.thumbnail"
-      :alt="product.title"
-      class="product-thumbnail"
-    />
     <div class="product-content">
       <div class="product-header">
         <span class="product-category">{{ product.category }}</span>
@@ -61,10 +52,9 @@ const openProduct = () => {
         
         <button
           class="like-btn"
-          :class="{ liked: isLiked }"
           @click.stop="handleLike"
         >
-          <span>{{ isLiked ? '❤️' : '🤍' }}</span>
+          <span>🤍</span>
           {{ product.likes }}
         </button>
       </div>
@@ -88,11 +78,6 @@ const openProduct = () => {
   box-shadow: var(--shadow-xl);
 }
 
-.product-thumbnail {
-  width: 100%;
-  height: 200px;
-  object-fit: cover;
-}
 
 .product-content {
   padding: var(--spacing-6);

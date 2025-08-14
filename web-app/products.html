@@ -3,10 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>About - #生成AIママ部</title>
+    <title>Products - #生成AIママ部</title>
     <meta
       name="description"
-      content="#生成AIママ部について - 家事育児の効率化からコーディングまで、生成AIを活用するママのためのDiscordコミュニティです。"
+      content="#生成AIママ部の成果物一覧 - ママたちが生成AIを活用して作成した様々なプロダクトをご紹介します。"
     />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -36,10 +36,10 @@
               <a href="index.html" class="nav-link">ホーム</a>
             </li>
             <li>
-              <a href="about.html" class="nav-link active">About</a>
+              <a href="about.html" class="nav-link">About</a>
             </li>
             <li>
-              <a href="products.html" class="nav-link">Products</a>
+              <a href="products.html" class="nav-link active">Products</a>
             </li>
             <li>
               <a href="news.html" class="nav-link">News</a>
@@ -68,28 +68,35 @@
 
     <!-- Main Content -->
     <main class="main">
-      <section class="about">
+      <section class="products">
         <div class="container">
-          <h1 class="page-title">#生成AIママ部とは</h1>
-          <div class="about-content">
-            <div class="about-text">
-              <h2>コミュニティについて</h2>
-              <p>
-                #生成AIママ部は、家事育児の効率化からコーディングまで、生成AIを活用するママのためのDiscordコミュニティです。
-                エンジニアでも、そうでなくても、経験問わずママさんなら大歓迎です。
-              </p>
-              <p>
-                日々の生活で生成AIを活用する方法を共有し、お互いに学び合い、サポートし合うコミュニティを目指しています。
-              </p>
-              <h3>活動内容</h3>
-              <ul>
-                <li>生成AIツールの活用法共有</li>
-                <li>家事・育児の効率化アイデア交換</li>
-                <li>プログラミング・デザインの学習サポート</li>
-                <li>成果物の発表・フィードバック</li>
-                <li>ママ同士の情報交換・相談</li>
-              </ul>
+          <h1 class="page-title">成果物一覧</h1>
+
+          <!-- Filters -->
+          <div class="filters">
+            <div class="filter-tabs">
+              <button class="filter-tab active" data-filter="all">
+                すべて
+              </button>
+              <button class="filter-tab" data-filter="仕事効率化">
+                仕事効率化
+              </button>
+              <button class="filter-tab" data-filter="学校">学校</button>
+              <button class="filter-tab" data-filter="コミュニケーション">
+                コミュニケーション
+              </button>
             </div>
+            <div class="sort-options">
+              <select class="sort-select" id="sort-select">
+                <option value="likes">いいね数順</option>
+                <option value="date">新着順</option>
+                <option value="comments">コメント数順</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="products-grid" id="products-grid">
+            <!-- Products will be injected here -->
           </div>
         </div>
       </section>
@@ -103,6 +110,8 @@
     </footer>
 
     <!-- Scripts -->
+    <script src="js/data.js"></script>
     <script src="js/mobile-menu.js"></script>
+    <script src="js/products-page.js"></script>
   </body>
 </html>

@@ -113,35 +113,31 @@ class ProductsPage {
   }
   
   createProductCard(product) {
-    const card = document.createElement('div');
+    const card = document.createElement('a');
+    card.href = product.url;
+    card.target = '_blank';
     card.className = 'product-card';
     
     card.innerHTML = `
       <div class="product-header">
         <div class="product-info">
-          <div class="product-category">${product.category}</div>
+          <span class="product-category">${product.category}</span>
           <h3 class="product-title">${product.title}</h3>
-          <p class="product-description">${product.description}</p>
         </div>
       </div>
-      
+      <p class="product-description">${product.description}</p>
       <div class="product-tags">
         ${product.tags.map(tag => `<span class="product-tag">${tag}</span>`).join('')}
       </div>
-      
       <div class="product-footer">
         <div class="product-author">
           <div class="author-avatar">${product.author.avatar}</div>
           <div class="author-info">
-            <div class="author-name">${product.author.name}</div>
+            <span class="author-name">${product.author.name}</span>
           </div>
         </div>
       </div>
     `;
-    
-    card.addEventListener('click', () => {
-      window.open(product.url, '_blank');
-    });
     
     return card;
   }

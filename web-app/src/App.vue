@@ -1,664 +1,261 @@
 <template>
   <div id="app" class="app-container">
     <!-- Header -->
-    <header class="header">
-      <div class="container">
-        <div class="logo">
-          <a href="#" @click="navigateToPage('home')">
-            <img
-              src="/images/logo/genai-mama-logo.svg"
-              alt="#生成AIママ部"
-              class="logo-image"
-            />
-          </a>
-        </div>
-        <nav class="nav" id="nav" :class="{ active: mobileMenuOpen }">
-          <ul class="nav-list">
-            <li>
-              <a
-                href="#"
-                @click="navigateToPage('home')"
-                class="nav-link"
-                :class="{ active: currentPage === 'home' }"
-                >ホーム</a
-              >
-            </li>
-            <li>
-              <a
-                href="#"
-                @click="navigateToPage('about')"
-                class="nav-link"
-                :class="{ active: currentPage === 'about' }"
-                >About</a
-              >
-            </li>
-            <li>
-              <a
-                href="#"
-                @click="navigateToPage('products')"
-                class="nav-link"
-                :class="{ active: currentPage === 'products' }"
-                >Products</a
-              >
-            </li>
-            <li>
-              <a
-                href="#"
-                @click="navigateToPage('news')"
-                class="nav-link"
-                :class="{ active: currentPage === 'news' }"
-                >News</a
-              >
-            </li>
-            <li>
-              <a
-                href="#"
-                @click="navigateToPage('admin')"
-                class="nav-link"
-                :class="{ active: currentPage === 'admin' }"
-                >Managed</a
-              >
-            </li>
-          </ul>
-        </nav>
-        <div class="header-actions">
-          <div
-            class="search-bar"
-            :class="{ 'mobile-active': mobileSearchActive }"
-          >
-            <input
-              type="text"
-              placeholder="成果物を検索"
-              class="search-input"
-              id="search-input"
-              v-model="searchQuery"
-              @keypress="handleSearchKeypress"
-              @input="debounceSearch"
-            />
-            <button class="search-btn" id="search-btn" @click="handleSearch">
-              🔍
-            </button>
-          </div>
-          <button
-            class="search-toggle"
-            @click="toggleMobileSearch"
-            v-show="!mobileSearchActive"
-          >
-            🔍
-          </button>
-          <!-- <a href="#" class="btn-join" id="join-btn" @click="handleJoinClick"
-            >参加する</a
-          > -->
-          <button
-            class="mobile-menu-toggle"
-            id="mobile-menu-toggle"
-            @click="toggleMobileMenu"
-            :class="{ active: mobileMenuOpen }"
-          >
-            <span></span><span></span><span></span>
-          </button>
-        </div>
-      </div>
-    </header>
+    <AppHeader 
+      :current-page="currentPage"
+      :is-logged-in="isLoggedIn"
+      :mobile-menu-open="mobileMenuOpen"
+      :mobile-search-active="mobileSearchActive"
+      :search-query="searchQuery"
+      @navigate="navigateToPage"
+      @toggle-mobile-menu="mobileMenuOpen = !mobileMenuOpen"
+      @toggle-mobile-search="mobileSearchActive = !mobileSearchActive"
+      @search="handleSearch"
+      @search-keypress="handleSearchKeypress"
+      @debounce-search="debounceSearch"
+      @login="openLoginModal"
+      @logout="handleLogout"
+    />
 
     <!-- Main Content -->
-    <main class="main main-content">
+    <main class="main-content">
       <!-- Home Page -->
-      <div class="page" id="home" :class="{ active: currentPage === 'home' }">
-        <!-- Hero Section -->
-        <section class="hero">
-          <div class="container">
-            <div class="hero-content">
-              <h1 class="hero-title">#生成AIママ部</h1>
-              <p class="hero-subtitle">
-                家事育児の効率化からコーディングまで、生成AIを活用するママのためのDiscordコミュニティです🎵<br />
-                エンジニアでも、そうでなくても、経験問わずママさんなら大歓迎🙆‍♀️✨<br />
-                ぜひみんなで生成AI活用していきましょう〜！
-              </p>
-              <!-- <div class="hero-actions">
-                <a href="#" class="btn-primary" id="hero-join-btn" @click="handleJoinClick">参加する</a>
-                <a href="#" class="btn-secondary" @click="navigateToPage('products')">成果物を見る</a>
-              </div> -->
-            </div>
-            <div class="hero-visual">
-              <div class="hero-icon">🤖</div>
-              <div class="hero-decoration"></div>
-            </div>
-          </div>
-        </section>
-
-        <!-- Stats Section -->
-        <section class="stats">
-          <div class="container">
-            <div class="stats-grid" id="stats-grid">
-              <div class="stat-card">
-                <div class="stat-number" data-count="127">
-                  {{ stats.totalMembers }}
-                </div>
-                <div class="stat-label">メンバー数</div>
-              </div>
-              <div class="stat-card">
-                <div class="stat-number" data-count="4">
-                  {{ stats.totalProducts }}
-                </div>
-                <div class="stat-label">成果物</div>
-              </div>
-              <div class="stat-card">
-                <div class="stat-number" data-count="156">
-                  {{ stats.activeDays }}
-                </div>
-                <div class="stat-label">活動日数</div>
-              </div>
-              <div class="stat-card">
-                <div class="stat-number" data-count="105">
-                  {{ stats.totalLikes }}
-                </div>
-                <div class="stat-label">総いいね数</div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- Main Content Layout - 横幅が広いときは2列、狭いときは1列 -->
-        <div class="home-main-content">
-          <div class="container">
-            <div class="content-layout">
-              <!-- Featured Products Section -->
-              <section class="featured-products content-section">
-                <div class="section-header">
-                  <h2 class="section-title">注目の成果物</h2>
-                  <a
-                    href="#"
-                    @click="navigateToPage('products')"
-                    class="view-all"
-                    >すべて見る →</a
-                  >
-                </div>
-                <div class="products-grid" id="featured-products-grid">
-                  <!-- 動的に生成される -->
-                </div>
-              </section>
-
-              <!-- Latest News Section -->
-              <section class="latest-news content-section news-section">
-                <div class="section-header">
-                  <h2 class="section-title">最新ニュース</h2>
-                  <a href="#" @click="navigateToPage('news')" class="view-all"
-                    >すべて見る →</a
-                  >
-                </div>
-                <div class="news-list" id="latest-news-grid">
-                  <!-- 動的に生成される -->
-                </div>
-              </section>
-            </div>
-          </div>
-        </div>
-      </div>
+      <HomePage 
+        v-if="currentPage === 'home'"
+        :products="products"
+        :news="news" 
+        :members="members"
+        :discord-stats="discordStats"
+        :stats="stats"
+        @navigate="navigateToPage"
+      />
 
       <!-- About Page -->
-      <div class="page" id="about" :class="{ active: currentPage === 'about' }">
-        <section class="about">
-          <div class="container">
-            <h1 class="page-title">#生成AIママ部とは</h1>
-            <div class="about-content">
-              <div class="about-text">
-                <h2>コミュニティについて</h2>
-                <p>
-                  #生成AIママ部は、家事育児の効率化からコーディングまで、生成AIを活用するママのためのDiscordコミュニティです。
-                  エンジニアでも、そうでなくても、経験問わずママさんなら大歓迎です。
-                </p>
-                <p>
-                  日々の生活で生成AIを活用する方法を共有し、お互いに学び合い、サポートし合うコミュニティを目指しています。
-                </p>
-
-                <h3>活動内容</h3>
-                <ul>
-                  <li>生成AIツールの活用法共有</li>
-                  <li>家事・育児の効率化アイデア交換</li>
-                  <li>プログラミング・デザインの学習サポート</li>
-                  <li>成果物の発表・フィードバック</li>
-                  <li>ママ同士の情報交換・相談</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </section>
+      <div v-else-if="currentPage === 'about'" class="page-content">
+        <About />
       </div>
 
-      <!-- Products Page - 元の静的サイトのレイアウトを正確に再現 -->
-      <div
-        class="page"
-        id="products"
-        :class="{ active: currentPage === 'products' }"
-      >
-        <section class="products">
-          <div class="container">
-            <h1 class="page-title">成果物一覧</h1>
+      <!-- Members Page -->
+      <MembersPage 
+        v-else-if="currentPage === 'members'"
+        :members="members"
+        :currentUser="currentUser"
+        @navigate="navigateToPage"
+      />
 
-            <!-- Filters - レスポンシブ対応 -->
-            <div class="filters">
-              <div class="filters-inner">
-                <div class="filter-tabs">
-                  <button
-                    v-for="category in categories"
-                    :key="category.id"
-                    class="filter-tab"
-                    :class="{ active: currentFilter === category.id }"
-                    :data-filter="category.id"
-                    @click="setFilter(category.id)"
-                  >
-                    {{ category.name }}
-                  </button>
-                </div>
-
-                <div class="sort-section">
-                  <div class="sort-options">
-                    <select
-                      class="sort-select"
-                      id="sort-select"
-                      v-model="currentSort"
-                      @change="handleSortChange"
-                    >
-                      <option value="likes">いいね数順</option>
-                      <option value="comments">コメント数順</option>
-                      <option value="date">新着順</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="products-grid" id="products-grid">
-              <!-- 動的に生成される -->
-            </div>
-          </div>
-        </section>
-      </div>
+      <!-- Products Page -->
+      <ProductsPage 
+        v-else-if="currentPage === 'products'"
+        :products="products"
+        :categories="categories"
+        :active-filter="currentFilter"
+        :current-sort="currentSort"
+        @filter-change="handleFilterChange"
+        @sort-change="handleSortChange"
+        @navigate="navigateToPage"
+      />
 
       <!-- News Page -->
-      <div class="page" id="news" :class="{ active: currentPage === 'news' }">
-        <section class="news">
-          <div class="container">
-            <h1 class="page-title">最新ニュース</h1>
-            <div class="news-grid" id="news-grid">
-              <!-- 動的に生成される -->
-            </div>
-          </div>
-        </section>
-      </div>
+      <News 
+        v-else-if="currentPage === 'news'"
+        :news="news"
+        @navigate="navigateToPage"
+      />
 
       <!-- Admin Page -->
-      <div class="page" id="admin" :class="{ active: currentPage === 'admin' }">
-        <section class="admin">
-          <div class="container">
-            <h1 class="page-title">🛠️ 生成AIママ部：成果物 & ニュース管理</h1>
+      <AdminPage 
+        v-else-if="currentPage === 'admin' && isLoggedIn"
+        :active-tab="activeTab"
+        :show-product-form="showProductForm"
+        :show-news-form="showNewsForm"
+        :show-member-form="showMemberForm"
+        :editing-product="editingProduct"
+        :editing-news="editingNews"
+        :editing-member="editingMember"
+        @tab-change="activeTab = $event"
+        @show-form="handleShowForm"
+        @export-csv="handleExportCSV"
+        @import-csv="handleImportCSV"
+      >
+        <!-- Admin Page Slots -->
+        <template #product-form>
+          <ProductForm 
+            :product="editingProduct || newProduct"
+            :is-editing="!!editingProduct"
+            @save="handleSaveProduct"
+            @cancel="handleCancelProductEdit"
+          />
+        </template>
+        
+        <template #products-list>
+          <ProductsList 
+            :products="products"
+            @edit="editProduct"
+            @delete="deleteProduct"
+            @duplicate="handleDuplicateProduct"
+          />
+        </template>
 
-            <!-- タブ切り替え -->
-            <div class="admin-tabs">
-              <button
-                class="admin-tab"
-                :class="{ active: currentAdminTab === 'products' }"
-                @click="setAdminTab('products')"
-              >
-                成果物管理
-              </button>
-              <button
-                class="admin-tab"
-                :class="{ active: currentAdminTab === 'news' }"
-                @click="setAdminTab('news')"
-              >
-                ニュース管理
-              </button>
-            </div>
+        <template #news-form>
+          <NewsForm 
+            :news-item="editingNews || newNews"
+            :is-editing="!!editingNews"
+            @save="handleSaveNews"
+            @cancel="handleCancelNewsEdit"
+          />
+        </template>
+        
+        <template #news-list>
+          <NewsList 
+            :news="news"
+            @edit="editNews"
+            @delete="deleteNews"
+          />
+        </template>
 
-            <!-- 成果物管理 -->
-            <div v-if="currentAdminTab === 'products'" class="admin-content">
-              <div class="admin-header">
-                <h2>成果物一覧</h2>
-                <div class="admin-actions">
-                  <div class="csv-actions">
-                    <button
-                      class="btn-csv"
-                      @click="exportProductsCSV"
-                      title="CSVエクスポート"
-                    >
-                      📥 エクスポート
-                    </button>
-                    <label class="btn-csv csv-import">
-                      📤 インポート
-                      <input
-                        type="file"
-                        accept=".csv"
-                        @change="importProductsCSV"
-                        style="display: none"
-                      />
-                    </label>
-                  </div>
-                  <button
-                    class="btn-primary"
-                    @click="showProductForm = !showProductForm"
-                  >
-                    {{ showProductForm ? "フォームを閉じる" : "新規追加" }}
-                  </button>
-                </div>
-              </div>
+        <template #member-form>
+          <MemberForm 
+            :member="editingMember"
+            @save="handleUpdateMember"
+            @cancel="cancelEditMember"
+          />
+        </template>
+        
+        <template #members-list>
+          <MembersList 
+            :members="members"
+            @edit="editMember"
+            @delete="deleteMember"
+            @duplicate="handleDuplicateMember"
+          />
+        </template>
+      </AdminPage>
 
-              <!-- 新規追加フォーム -->
-              <div v-if="showProductForm" class="admin-form">
-                <h3>新しい成果物を追加</h3>
-                <form @submit.prevent="handleAddProduct" :key="showProductForm">
-                  <div class="form-group">
-                    <label>タイトル</label>
-                    <input type="text" v-model="newProduct.title" required />
-                  </div>
-                  <div class="form-group">
-                    <label>カテゴリ</label>
-                    <select v-model="newProduct.category" required>
-                      <option value="仕事効率化">仕事効率化</option>
-                      <option value="学校">学校</option>
-                      <option value="コミュニケーション">
-                        コミュニケーション
-                      </option>
-                      <option value="学習">学習</option>
-                    </select>
-                  </div>
-                  <div class="form-group">
-                    <label>説明</label>
-                    <textarea
-                      v-model="newProduct.description"
-                      required
-                      rows="4"
-                    ></textarea>
-                  </div>
-                  <div class="form-group">
-                    <label>タグ（カンマ区切り）</label>
-                    <input
-                      type="text"
-                      v-model="newProduct.tagsString"
-                      placeholder="SNS, 効率化, スケジュール"
-                    />
-                  </div>
-                  <div class="form-group">
-                    <label>作者名</label>
-                    <input
-                      type="text"
-                      v-model="newProduct.authorName"
-                      required
-                    />
-                  </div>
-                  <div class="form-group">
-                    <label>作者の役割</label>
-                    <input
-                      type="text"
-                      v-model="newProduct.authorRole"
-                      required
-                    />
-                  </div>
-                  <div class="form-group">
-                    <label>URL</label>
-                    <input type="url" v-model="newProduct.url" required />
-                  </div>
-                  <div class="form-group">
-                    <label>
-                      <input type="checkbox" v-model="newProduct.featured" />
-                      注目の成果物として表示
-                    </label>
-                  </div>
-                  <button type="submit" class="btn-primary">追加</button>
-                </form>
-              </div>
-
-              <!-- 編集フォーム -->
-              <div v-if="editingProduct" class="admin-form">
-                <h3>成果物を編集</h3>
-                <form @submit.prevent="handleUpdateProduct">
-                  <div class="form-group">
-                    <label>タイトル</label>
-                    <input type="text" v-model="editingProduct.title" required />
-                  </div>
-                  <div class="form-group">
-                    <label>カテゴリ</label>
-                    <select v-model="editingProduct.category" required>
-                      <option value="仕事効率化">仕事効率化</option>
-                      <option value="学校">学校</option>
-                      <option value="コミュニケーション">コミュニケーション</option>
-                      <option value="学習">学習</option>
-                    </select>
-                  </div>
-                  <div class="form-group">
-                    <label>説明</label>
-                    <textarea
-                      v-model="editingProduct.description"
-                      required
-                      rows="4"
-                    ></textarea>
-                  </div>
-                  <div class="form-group">
-                    <label>タグ（カンマ区切り）</label>
-                    <input
-                      type="text"
-                      v-model="editingProduct.tagsString"
-                      placeholder="SNS, 効率化, スケジュール"
-                    />
-                  </div>
-                  <div class="form-group">
-                    <label>作者名</label>
-                    <input
-                      type="text"
-                      v-model="editingProduct.author.name"
-                      required
-                    />
-                  </div>
-                  <div class="form-group">
-                    <label>作者の役割</label>
-                    <input
-                      type="text"
-                      v-model="editingProduct.author.role"
-                      required
-                    />
-                  </div>
-                  <div class="form-group">
-                    <label>URL</label>
-                    <input type="url" v-model="editingProduct.url" required />
-                  </div>
-                  <div class="form-group">
-                    <label>
-                      <input type="checkbox" v-model="editingProduct.featured" />
-                      注目の成果物として表示
-                    </label>
-                  </div>
-                  <div class="form-actions">
-                    <button type="submit" class="btn-primary">更新</button>
-                    <button type="button" class="btn-secondary" @click="cancelEditProduct">キャンセル</button>
-                  </div>
-                </form>
-              </div>
-
-              <!-- 成果物一覧 -->
-              <div class="admin-list">
-                <div
-                  v-for="product in products"
-                  :key="product.id"
-                  class="admin-item"
-                >
-                  <div class="admin-item-content">
-                    <h4>{{ product.title }}</h4>
-                    <p>{{ product.category }} | {{ product.author.name }}</p>
-                    <p>{{ product.description }}</p>
-                    <p class="admin-item-meta">
-                      いいね: {{ product.likes }} | コメント: {{ product.comments }} | 
-                      {{ product.featured ? '注目' : '通常' }}
-                    </p>
-                  </div>
-                  <div class="admin-item-actions">
-                    <button 
-                      class="btn-edit" 
-                      @click="startEditProduct(product)"
-                      title="編集"
-                    >
-                      ✏️
-                    </button>
-                    <button 
-                      class="btn-duplicate" 
-                      @click="handleDuplicateProduct(product.id)"
-                      title="複製"
-                    >
-                      📋
-                    </button>
-                    <button 
-                      class="btn-delete" 
-                      @click="handleDeleteProduct(product.id)"
-                      title="削除"
-                    >
-                      🗑️
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- ニュース管理 -->
-            <div v-if="currentAdminTab === 'news'" class="admin-content">
-              <div class="admin-header">
-                <h2>ニュース一覧</h2>
-                <div class="admin-actions">
-                  <div class="csv-actions">
-                    <button
-                      class="btn-csv"
-                      @click="exportNewsCSV"
-                      title="CSVエクスポート"
-                    >
-                      📥 エクスポート
-                    </button>
-                    <label class="btn-csv csv-import">
-                      📤 インポート
-                      <input
-                        type="file"
-                        accept=".csv"
-                        @change="importNewsCSV"
-                        style="display: none"
-                      />
-                    </label>
-                  </div>
-                  <button
-                    class="btn-primary"
-                    @click="showNewsForm = !showNewsForm"
-                  >
-                    {{ showNewsForm ? "フォームを閉じる" : "新規追加" }}
-                  </button>
-                </div>
-              </div>
-
-              <!-- 新規追加フォーム -->
-              <div v-if="showNewsForm" class="admin-form">
-                <h3>新しいニュースを追加</h3>
-                <form @submit.prevent="handleAddNews" :key="showNewsForm">
-                  <div class="form-group">
-                    <label>タイトル</label>
-                    <input type="text" v-model="newNews.title" required />
-                  </div>
-                  <div class="form-group">
-                    <label>抜粋</label>
-                    <textarea
-                      v-model="newNews.excerpt"
-                      required
-                      rows="4"
-                    ></textarea>
-                  </div>
-                  <div class="form-group">
-                    <label>URL</label>
-                    <input type="url" v-model="newNews.url" required />
-                  </div>
-                  <button type="submit" class="btn-primary">追加</button>
-                </form>
-              </div>
-
-              <!-- ニュース編集フォーム -->
-              <div v-if="editingNews" class="admin-form">
-                <h3>ニュースを編集</h3>
-                <form @submit.prevent="handleUpdateNews">
-                  <div class="form-group">
-                    <label>タイトル</label>
-                    <input type="text" v-model="editingNews.title" required />
-                  </div>
-                  <div class="form-group">
-                    <label>抜粋</label>
-                    <textarea
-                      v-model="editingNews.excerpt"
-                      required
-                      rows="4"
-                    ></textarea>
-                  </div>
-                  <div class="form-group">
-                    <label>URL</label>
-                    <input type="url" v-model="editingNews.url" required />
-                  </div>
-                  <div class="form-actions">
-                    <button type="submit" class="btn-primary">更新</button>
-                    <button type="button" class="btn-secondary" @click="cancelEditNews">キャンセル</button>
-                  </div>
-                </form>
-              </div>
-
-              <!-- ニュース一覧 -->
-              <div class="admin-list">
-                <div
-                  v-for="newsItem in news"
-                  :key="newsItem.id"
-                  class="admin-item"
-                >
-                  <div class="admin-item-content">
-                    <h4>{{ newsItem.title }}</h4>
-                    <p>{{ formatDate(newsItem.date) }}</p>
-                    <p>{{ newsItem.excerpt }}</p>
-                  </div>
-                  <div class="admin-item-actions">
-                    <button 
-                      class="btn-edit" 
-                      @click="startEditNews(newsItem)"
-                      title="編集"
-                    >
-                      ✏️
-                    </button>
-                    <button 
-                      class="btn-duplicate" 
-                      @click="handleDuplicateNews(newsItem.id)"
-                      title="複製"
-                    >
-                      📋
-                    </button>
-                    <button 
-                      class="btn-delete" 
-                      @click="handleDeleteNews(newsItem.id)"
-                      title="削除"
-                    >
-                      🗑️
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-      </div>
+      <!-- Profile Page -->
+      <ProfilePage 
+        v-else-if="currentPage === 'profile' && isLoggedIn"
+        :user-profile="userProfile"
+        :current-photo-index="currentPhotoIndex"
+        @photo-prev="handlePhotoPrev"
+        @photo-next="handlePhotoNext" 
+        @photo-goto="handlePhotoGoto"
+        @photo-upload="handlePhotoUpload"
+        @photo-remove="handlePhotoRemove"
+      >
+        <template #profile-form>
+          <ProfileForm 
+            :user-profile="userProfile"
+            @save="updateProfile"
+            @cancel="navigateToPage('home')"
+          />
+        </template>
+      </ProfilePage>
     </main>
 
     <!-- Footer -->
-    <footer class="footer app-footer">
-      <div class="container">
-        <p>&copy; 2025 #生成AIママ部. All rights reserved.</p>
-      </div>
-    </footer>
+    <Footer />
+
+    <!-- Modals -->
+    <CommentModal 
+      v-if="showCommentModal"
+      :member-id="commentingMemberId"
+      :new-comment="newComment"
+      @close="closeCommentModal"
+      @save="handleSaveComment"
+    />
+
+    <LoginModal 
+      v-if="showLoginModal"
+      :login-form="loginForm"
+      :is-x-auth-loading="isXAuthLoading"
+      :is-x-auth-available="isXAuthAvailable()"
+      @close="closeLoginModal"
+      @login="handleLoginWithForm"
+      @x-login="handleXLogin"
+      @show-signup="showSignupModal = true; showLoginModal = false"
+    />
+
+    <SignupModal 
+      v-if="showSignupModal"
+      :signup-form="signupForm"
+      :is-x-auth-loading="isXAuthLoading"
+      :is-x-auth-available="isXAuthAvailable()"
+      @close="closeSignupModal"
+      @signup="handleSignup"
+      @x-login="handleXLogin"
+      @show-login="showLoginModal = true; showSignupModal = false"
+      @update-form="handleSignupFormUpdate"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, nextTick, watch } from "vue";
+import { ref, onMounted, nextTick, watch, onUnmounted } from "vue";
 import { useFirestore } from "./composables/useFirestore";
-import { arrayToCSV, csvToArray, downloadCSV, readCSVFile } from "./utils/csvUtils";
+import { useAuth } from "./composables/useAuth";
+import { initiateXLogin, handleXCallback, mockXLogin, isXAuthAvailable } from "./utils/xAuth";
+import { getDiscordMemberCount, createDiscordDataFetcher } from "./utils/discordApi";
 
-// State
+// Components
+import AppHeader from "./components/layout/AppHeader.vue";
+import Footer from "./components/Footer.vue";
+import HomePage from "./views/HomePage.vue";
+import About from "./views/About.vue";
+import MembersPage from "./views/MembersPage.vue";
+import ProductsPage from "./views/ProductsPage.vue";
+import News from "./views/News.vue";
+import AdminPage from "./views/AdminPage.vue";
+import ProfilePage from "./views/ProfilePage.vue";
+
+// Modal Components (これらは後でPhase2で作成)
+import CommentModal from "./components/modals/CommentModal.vue";
+import LoginModal from "./components/modals/LoginModal.vue";
+import SignupModal from "./components/modals/SignupModal.vue";
+
+// Form Components (これらは後でPhase2で作成)
+import ProductForm from "./components/admin/ProductForm.vue";
+import ProductsList from "./components/admin/ProductsList.vue";
+import NewsForm from "./components/admin/NewsForm.vue";
+import NewsList from "./components/admin/NewsList.vue";
+import MemberForm from "./components/admin/MemberForm.vue";
+import MembersList from "./components/admin/MembersList.vue";
+import ProfileForm from "./components/profile/ProfileForm.vue";
+
+// Firestore composable
+const {
+  products,
+  news,
+  members,
+  loading,
+  error,
+  loadProducts,
+  loadNews,
+  loadMembers,
+  addProduct,
+  addNews,
+  addMemberWithAuthId,
+  updateProduct,
+  updateNews,
+  updateMember,
+  deleteProduct: firestoreDeleteProduct,
+  deleteNews: firestoreDeleteNews,
+  deleteMember: firestoreDeleteMember,
+  initialize
+} = useFirestore();
+
+// Firebase Authentication
+const {
+  currentUser: authUser,
+  isLoading: authLoading,
+  error: authError,
+  login: firebaseLogin,
+  signup: firebaseSignup,
+  logout: firebaseLogout,
+  getUserProfile,
+  initializeAuth
+} = useAuth();
+
+// Core State
 const currentPage = ref("home");
 const mobileMenuOpen = ref(false);
 const mobileSearchActive = ref(false);
@@ -668,23 +265,88 @@ const currentSort = ref("likes");
 const likedProducts = ref<Set<number>>(new Set());
 let searchTimeout: number | null = null;
 
-// Admin State
-const currentAdminTab = ref("products");
+// Comment system
+const showCommentModal = ref(false);
+const commentingMemberId = ref(null);
+const newComment = ref({
+  authorName: "",
+  content: "",
+});
+const memberComments = ref([]);
+
+// Login system
+const isLoggedIn = ref(false);
+const showLoginModal = ref(false);
+const showSignupModal = ref(false);
+const currentUser = ref(null);
+const loginForm = ref({
+  email: "",
+  password: "",
+});
+const signupForm = ref({
+  name: "",
+  email: "",
+  password: "",
+  passwordConfirm: "",
+});
+
+// User Profile
+const userProfile = ref({
+  id: null,
+  name: "",
+  role: "",
+  bio: "",
+  avatar: "",
+  skills: [],
+  location: "",
+  website: "", // 既存のwebsite（フォーム用）
+  personalWebsite: "https://example.com", // バナー表示用の個人サイトURL
+  twitter: "",
+  github: "",
+  visible: true,
+  email: "",
+  skillsString: "",
+  photos: [], // 写真データは別途読み込み
+  icons: [], // 新形式: {id, name, thumbnailUrl, description?, link?}[]
+  photosString: "",
+  iconsString: "",
+  joinDate: new Date().toISOString(),
+  featured: false,
+  iconList: [
+    // サンプルデータ
+    { id: "mom", emoji: "🧸", label: "MOM", link: "/mom" },
+    { id: "diy", emoji: "🌷", label: "DIY", link: "/diy" },
+    { id: "book", emoji: "📘", label: "BOOK", link: "/book" },
+    { id: "travel", emoji: "🧳", label: "TRAVEL", link: "/travel" }
+  ]
+});
+
+const currentPhotoIndex = ref(0);
+
+// Admin state
+const activeTab = ref("products");
 const showProductForm = ref(false);
 const showNewsForm = ref(false);
+const showMemberForm = ref(false);
 const editingProduct = ref<any>(null);
 const editingNews = ref<any>(null);
+const editingMember = ref<any>(null);
 
-// New Item Forms
+// New item forms
 const newProduct = ref({
   title: "",
   category: "仕事効率化",
   description: "",
-  tagsString: "",
-  authorName: "",
-  authorRole: "",
+  image: "",
   url: "",
-  featured: false,
+  author: {
+    name: "",
+    avatar: ""
+  },
+  date: new Date().toISOString(),
+  tags: [],
+  tagString: "",
+  likes: 0
 });
 
 const newNews = ref({
@@ -693,28 +355,36 @@ const newNews = ref({
   url: "",
 });
 
-// Firestore使用
-const { 
-  products, 
-  news, 
-  loading, 
-  error, 
-  addProduct, 
-  addNews, 
-  updateProduct, 
-  deleteProduct, 
-  duplicateProduct, 
-  updateNews, 
-  deleteNews, 
-  duplicateNews, 
-  initialize 
-} = useFirestore();
+// X Authentication
+const isXAuthLoading = ref(false);
+
+// Discord Stats
+const discordServerId = "1384414582621081620"; // 提供されたサーバーID
+const discordStats = ref({
+  memberCount: 127, // デフォルト値
+  onlineCount: 0,
+  serverName: "#生成AIママ部",
+  isLoading: false,
+  lastUpdated: null as Date | null,
+  error: null as string | null,
+});
+
+let discordDataFetcher: any = null;
 
 // Stats（Firestoreから計算）
+// コミュニティ開始日から活動日数を計算
+const calculateActiveDays = () => {
+  const startDate = new Date('2025-06-24'); // コミュニティ開始日
+  const currentDate = new Date();
+  const diffTime = Math.abs(currentDate.getTime() - startDate.getTime());
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  return diffDays;
+};
+
 const stats = ref({
   totalMembers: 127,
   totalProducts: 4,
-  activeDays: 156,
+  activeDays: calculateActiveDays(),
   totalLikes: 105,
 });
 
@@ -726,50 +396,99 @@ const categories = ref([
   { id: "学習", name: "学習", count: 1 },
 ]);
 
-// Methods
+// Available icons for profile cards
+const availableIcons = ref([
+  { id: "mom", emoji: "🧸", label: "MOM", link: "/family" },
+  { id: "diy", emoji: "🌷", label: "DIY", link: "/diy" },
+  { id: "book", emoji: "📘", label: "BOOK", link: "/books" },
+  { id: "travel", emoji: "🧳", label: "TRAVEL", link: "/travel" },
+  { id: "cooking", emoji: "🥘", label: "COOKING", link: "/cooking" },
+  { id: "fitness", emoji: "💪", label: "FITNESS", link: "/fitness" },
+  { id: "music", emoji: "🎵", label: "MUSIC", link: "/music" },
+  { id: "art", emoji: "🎨", label: "ART", link: "/art" },
+  { id: "tech", emoji: "💻", label: "TECH", link: "/tech" },
+  { id: "learning", emoji: "📚", label: "LEARNING", link: "/learning" },
+  { id: "photography", emoji: "📸", label: "PHOTO", link: "/photography" },
+  { id: "garden", emoji: "🌱", label: "GARDEN", link: "/garden" }
+]);
+
+// Navigation
 const navigateToPage = async (page: string) => {
   currentPage.value = page;
   mobileMenuOpen.value = false;
 
-  await nextTick();
-
-  // Firestoreデータが読み込まれていない場合は初期化
-  if (products.value.length === 0 || news.value.length === 0) {
-    try {
-      await initialize();
-      console.log("Firestore re-initialized for navigation");
-    } catch (error) {
-      console.error("Failed to re-initialize Firestore:", error);
+  // プロフィール画面への遷移時の特別処理
+  if (page === 'profile' && isLoggedIn.value) {
+    console.log("プロフィール画面に遷移:", userProfile.value.email);
+    console.log("現在のmembers:", members.value.length, "件");
+    
+    const existingMember = members.value.find(member => member.email === userProfile.value.email);
+    console.log("既存メンバー検索結果:", existingMember ? existingMember.name : "見つからない");
+    
+    if (existingMember) {
+      userProfile.value = {
+        ...userProfile.value,
+        ...existingMember,
+        skillsString: existingMember.skills ? existingMember.skills.join(", ") : "",
+        photosString: existingMember.photos?.join(", ") || "",
+        iconsString: existingMember.icons?.join(", ") || "",
+        iconDescriptionsString: existingMember.iconDescriptions?.join(", ") || ""
+      };
+      
+      const profileWithoutPhotos = { ...userProfile.value };
+      delete profileWithoutPhotos.photos;
+      localStorage.setItem(`profile_${userProfile.value.email}`, JSON.stringify(profileWithoutPhotos));
+      console.log('Profile updated from existing member data');
+      
+      userProfile.value.photos = loadUserPhotos(userProfile.value.email);
+    } else {
+      if (userProfile.value.skills && Array.isArray(userProfile.value.skills)) {
+        userProfile.value.skillsString = userProfile.value.skills.join(", ");
+      }
     }
   }
 
-  if (page === "home") {
-    initializePage("home");
-  } else if (page === "products") {
-    initializePage("products");
-  } else if (page === "news") {
-    initializePage("news");
-  } else if (page === "admin") {
-    // 管理ページは特別な初期化不要
+  // Vue.jsコンポーネントが自動的にデータを表示するため、
+  // 手動でのレンダリング処理は不要
+};
+
+// Event Handlers
+const handleFilterChange = (filter: string) => {
+  currentFilter.value = filter;
+  renderProducts();
+};
+
+const handleSortChange = (sort: string) => {
+  currentSort.value = sort;
+  renderProducts();
+};
+
+const handleShowForm = (type: string) => {
+  if (type === 'product') {
+    showProductForm.value = true;
+  } else if (type === 'news') {
+    showNewsForm.value = true;
   }
 };
 
-const toggleMobileMenu = () => {
-  mobileMenuOpen.value = !mobileMenuOpen.value;
+const handleExportCSV = (type: string) => {
+  // CSV export logic
+  console.log('Export CSV:', type);
 };
 
-const toggleMobileSearch = () => {
-  mobileSearchActive.value = !mobileSearchActive.value;
-  if (mobileSearchActive.value) {
-    nextTick(() => {
-      const searchInput = document.getElementById(
-        "search-input"
-      ) as HTMLInputElement;
-      if (searchInput) {
-        searchInput.focus();
-      }
-    });
+const handleImportCSV = (type: string) => {
+  // CSV import logic  
+  console.log('Import CSV:', type);
+};
+
+// Search
+const handleSearch = () => {
+  if (currentPage.value !== "products") {
+    navigateToPage("products");
   }
+  setTimeout(() => {
+    renderProducts();
+  }, 100);
 };
 
 const handleSearchKeypress = (e: KeyboardEvent) => {
@@ -778,408 +497,705 @@ const handleSearchKeypress = (e: KeyboardEvent) => {
   }
 };
 
-const handleSearch = () => {
-  if (currentPage.value !== "products") {
-    navigateToPage("products");
-  }
-  nextTick(() => {
-    renderProducts();
-  });
-};
-
 const debounceSearch = () => {
-  if (searchTimeout) clearTimeout(searchTimeout);
+  if (searchTimeout) {
+    clearTimeout(searchTimeout);
+  }
   searchTimeout = setTimeout(() => {
-    handleSearch();
+    if (currentPage.value === "products") {
+      renderProducts();
+    }
   }, 300);
 };
 
-const handleJoinClick = () => {
-  const discordInvite = "https://discord.gg/genai-mama";
-  alert(`Discordコミュニティへの参加はこちら: ${discordInvite}`);
+// Auth
+const openLoginModal = () => {
+  showLoginModal.value = true;
+  loginForm.value = { email: "", password: "" };
 };
 
-// Admin Methods
-const setAdminTab = (tab: string) => {
-  currentAdminTab.value = tab;
-  showProductForm.value = false;
-  showNewsForm.value = false;
-  editingProduct.value = null;
-  editingNews.value = null;
+const closeLoginModal = () => {
+  showLoginModal.value = false;
+  loginForm.value = { email: "", password: "" };
 };
 
-const handleAddProduct = async () => {
-  console.log("handleAddProduct called");
-  console.log("newProduct.value:", newProduct.value);
+const closeSignupModal = () => {
+  showSignupModal.value = false;
+  signupForm.value = { name: "", email: "", password: "", passwordConfirm: "" };
+};
 
-  if (
-    !newProduct.value.title ||
-    !newProduct.value.description ||
-    !newProduct.value.authorName
-  ) {
-    alert("必須項目を入力してください");
+const handleLoginWithForm = async (formData: { email: string, password: string }) => {
+  // フォームデータを更新
+  loginForm.value.email = formData.email;
+  loginForm.value.password = formData.password;
+  
+  // 実際のログイン処理を実行
+  await handleLogin();
+};
+
+const handleLogin = async () => {
+  if (!loginForm.value.email || !loginForm.value.password) {
+    alert("メールアドレスとパスワードを入力してください");
     return;
   }
 
   try {
-    const tags = newProduct.value.tagsString
-      .split(",")
-      .map((tag) => tag.trim())
-      .filter((tag) => tag);
-
-    console.log("Calling addProduct...");
-    await addProduct({
-      title: newProduct.value.title,
-      category: newProduct.value.category,
-      description: newProduct.value.description,
-      tags: tags,
-      author: {
-        name: newProduct.value.authorName,
-        avatar: newProduct.value.authorName.charAt(0).toUpperCase(),
-        role: newProduct.value.authorRole,
-      },
-      date: new Date().toISOString().split("T")[0],
-      likes: 0,
-      comments: 0,
-      thumbnail: `https://via.placeholder.com/300x200/9B7BD8/FFFFFF?text=${encodeURIComponent(
-        newProduct.value.title
-      )}`,
-      featured: newProduct.value.featured,
-      url: newProduct.value.url,
-    });
-
-    console.log("Product added successfully");
-
-    // フォームをリセット
-    newProduct.value = {
-      title: "",
-      category: "仕事効率化",
-      description: "",
-      tagsString: "",
-      authorName: "",
-      authorRole: "",
-      url: "",
-      featured: false,
-    };
-
-    showProductForm.value = false;
-    alert("成果物をFirestoreに追加しました！");
-  } catch (err) {
-    console.error("Error adding product:", err);
-    alert("エラーが発生しました: " + err);
+    // Firebase Authenticationでログイン
+    const user = await firebaseLogin(loginForm.value.email, loginForm.value.password);
+    
+    if (user) {
+      isLoggedIn.value = true;
+      
+      // ユーザープロフィールをローカルストレージから読み込み
+      console.log("ログイン処理:", user.email);
+      const savedProfile = localStorage.getItem(`profile_${user.email}`);
+      console.log("保存されたプロフィール:", savedProfile ? "見つかった" : "見つからない");
+      
+      // membersコレクションからユーザー情報を検索
+      const existingMember = members.value.find(member => member.email === user.email);
+      
+      if (savedProfile) {
+        userProfile.value = JSON.parse(savedProfile);
+        console.log("プロフィール読み込み完了:", userProfile.value.name);
+      } else if (existingMember) {
+        // ローカルにないがメンバーコレクションにはある場合
+        userProfile.value = {
+          ...existingMember,
+          skillsString: existingMember.skills ? existingMember.skills.join(", ") : "",
+          iconDescriptionsString: existingMember.iconDescriptions?.join(", ") || ""
+        };
+        console.log('メンバーコレクションからプロフィールを復元:', userProfile.value.name);
+      } else {
+        // 新規ユーザーの場合、デフォルトプロフィールを作成
+        userProfile.value = {
+          id: Date.now(),
+          name: user.email.split('@')[0],
+          role: "メンバー",
+          bio: "よろしくお願いします！",
+          avatar: "",
+          skills: [],
+          skillsString: "",
+          location: "",
+          website: "",
+          personalWebsite: "",
+          twitter: "",
+          github: "",
+          visible: true,
+          email: user.email,
+          photos: [],
+          icons: [],
+          iconDescriptions: [],
+          photosString: "",
+          iconsString: "",
+          iconDescriptionsString: "",
+          joinDate: new Date().toISOString(),
+          featured: false,
+          iconList: []
+        };
+        
+        console.log('新規ユーザープロフィールを作成:', userProfile.value.name);
+      }
+      
+      currentUser.value = userProfile.value;
+      
+      // ログイン状態をローカルストレージに保存
+      localStorage.setItem('isLoggedIn', 'true');
+      localStorage.setItem('currentUserEmail', user.email);
+      
+      // 既存メンバーの情報でプロフィールを同期
+      if (existingMember) {
+        // 既存メンバーの情報でプロフィールを更新
+        userProfile.value = {
+          ...userProfile.value,
+          ...existingMember,
+          skillsString: existingMember.skills ? existingMember.skills.join(", ") : "",
+          iconDescriptionsString: existingMember.iconDescriptions?.join(", ") || ""
+        };
+        currentUser.value = userProfile.value;
+        console.log('Profile synced with existing member data on login');
+      }
+      
+      // 写真データを別途読み込み
+      userProfile.value.photos = loadUserPhotos(user.email);
+      
+      // ログイン時にもメンバーデータを同期
+      await updateMemberProfile();
+      
+      closeLoginModal();
+      alert("ログインしました！");
+    }
+  } catch (error) {
+    console.error('Login failed:', error);
+    // Firebase Authエラーの場合は、useAuthが既に適切なメッセージを設定済み
+    if (authError.value) {
+      alert(authError.value);
+    } else {
+      // QuotaExceededError等のその他のエラー
+      if (error.name === 'QuotaExceededError') {
+        closeLoginModal();
+        alert("ログインしました！\n（ストレージ容量が不足しています。一部機能が制限される可能性があります）");
+      } else {
+        alert("ログインに失敗しました。");
+      }
+    }
   }
 };
 
-const handleAddNews = async () => {
+// サインアップフォーム更新関数
+const handleSignupFormUpdate = (field: string, value: string) => {
+  signupForm.value[field] = value;
+};
+
+const handleSignup = async () => {
+  // バリデーション
+  if (!signupForm.value.name || !signupForm.value.email || !signupForm.value.password) {
+    alert("すべての必須項目を入力してください");
+    return;
+  }
+  
+  if (signupForm.value.password !== signupForm.value.passwordConfirm) {
+    alert("パスワードが一致しません");
+    return;
+  }
+  
+  if (signupForm.value.password.length < 6) {
+    alert("パスワードは6文字以上で入力してください");
+    return;
+  }
+  
   try {
-    await addNews({
-      title: newNews.value.title,
-      excerpt: newNews.value.excerpt,
-      date: new Date().toISOString().split("T")[0],
-      url: newNews.value.url,
-    });
-
-    // フォームをリセット
-    newNews.value = {
-      title: "",
-      excerpt: "",
-      url: "",
+    // Firebase Authenticationでユーザー作成
+    const userData = {
+      name: signupForm.value.name
     };
-
-    showNewsForm.value = false;
-    alert("ニュースをFirestoreに追加しました！");
-  } catch (err) {
-    alert("エラーが発生しました: " + err);
+    
+    const user = await firebaseSignup(signupForm.value.email, signupForm.value.password, userData);
+    
+    if (user) {
+      // ログイン状態に設定
+      isLoggedIn.value = true;
+      
+      // ユーザープロフィール作成
+      userProfile.value = {
+        id: Date.now(),
+        name: signupForm.value.name,
+        role: "メンバー",
+        bio: "よろしくお願いします！",
+        avatar: "",
+        skills: [],
+        skillsString: "",
+        location: "",
+        website: "",
+        personalWebsite: "",
+        twitter: "",
+        github: "",
+        visible: true,
+        email: user.email,
+        photos: [],
+        icons: [],
+        iconDescriptions: [],
+        photosString: "",
+        iconsString: "",
+        iconDescriptionsString: "",
+        joinDate: new Date().toISOString(),
+        featured: false,
+        iconList: []
+      };
+      
+      currentUser.value = userProfile.value;
+      
+      // ローカルストレージに保存
+      localStorage.setItem('isLoggedIn', 'true');
+      localStorage.setItem('currentUserEmail', user.email);
+      
+      // membersコレクションにFirebase Auth UUIDをドキュメントIDとして追加
+      try {
+        await addMemberWithAuthId(user.uid, {
+          name: signupForm.value.name,
+          role: "メンバー",
+          bio: "よろしくお願いします！",
+          avatar: "",
+          skills: [],
+          joinDate: new Date().toISOString(),
+          location: "",
+          website: "",
+          twitter: "",
+          github: "",
+          featured: false,
+          email: user.email,
+          visible: true,
+          photos: [],
+          personalWebsite: "",
+          icons: [],
+          iconDescriptions: []
+        });
+        console.log('Member added to members collection with Auth UID:', user.uid);
+      } catch (memberError) {
+        console.error('Failed to add to members collection:', memberError);
+        // メンバー追加エラーでもアカウント作成は成功とする
+      }
+      
+      closeSignupModal();
+      alert("アカウントが作成されました！");
+    }
+  } catch (error) {
+    console.error('Signup failed:', error);
+    if (authError.value) {
+      alert(authError.value);
+    } else {
+      alert("アカウント作成に失敗しました");
+    }
   }
 };
 
-// Product CRUD Methods
-const startEditProduct = (product: any) => {
-  editingProduct.value = {
-    ...product,
-    tagsString: product.tags.join(", "),
-    author: { ...product.author }
+const handleLogout = () => {
+  isLoggedIn.value = false;
+  currentUser.value = null;
+  userProfile.value = {
+    id: null,
+    name: "",
+    role: "",
+    bio: "",
+    avatar: "",
+    skills: [],
+    location: "",
+    website: "",
+    personalWebsite: "",
+    twitter: "",
+    github: "",
+    email: "",
+    skillsString: "",
+    photos: [],
+    icons: [],
+    iconDescriptions: [],
+    photosString: "",
+    iconsString: "",
+    iconDescriptionsString: "",
+    joinDate: new Date().toISOString(),
+    featured: false,
+    visible: true
   };
+  
+  localStorage.removeItem('isLoggedIn');
+  localStorage.removeItem('currentUserEmail');
+  navigateToPage('home');
+  alert("ログアウトしました");
+};
+
+const handleXLogin = async () => {
+  // X login logic
+  console.log("X Login");
+};
+
+// Profile
+const updateProfile = async () => {
+  console.log("updateProfile関数が呼び出されました");
+  console.log("現在のuserProfile:", userProfile.value);
+  
+  if (!userProfile.value.name || !userProfile.value.role) {
+    alert("名前と役職は必須です");
+    return;
+  }
+
+  try {
+    console.log("プロフィール保存処理を開始します");
+    
+    if (userProfile.value.skillsString) {
+      userProfile.value.skills = userProfile.value.skillsString
+        .split(",")
+        .map((skill) => skill.trim())
+        .filter((skill) => skill);
+    }
+
+    try {
+      const profileWithoutPhotos = { ...userProfile.value };
+      delete profileWithoutPhotos.photos;
+      localStorage.setItem(`profile_${userProfile.value.email}`, JSON.stringify(profileWithoutPhotos));
+    } catch (storageError) {
+      if (storageError.name === 'QuotaExceededError') {
+        console.warn('Storage quota exceeded when saving profile');
+        cleanupOldLocalStorageData();
+      }
+    }
+    
+    currentUser.value = { ...userProfile.value };
+    
+    await updateMemberProfile();
+    
+    if (currentPage.value === 'profile') {
+      userProfile.value.skillsString = userProfile.value.skills.join(", ");
+    }
+    
+    alert("プロフィールを保存しました！");
+  } catch (error) {
+    console.error('Profile update failed:', error);
+    alert("プロフィールの保存に失敗しました");
+  }
+};
+
+const updateMemberProfile = async () => {
+  if (!userProfile.value.email) {
+    console.warn('No email found in user profile, skipping member profile update');
+    return;
+  }
+
+  try {
+    console.log('Updating member profile for:', userProfile.value.email);
+    
+    // 既存メンバーを検索
+    const existingMember = members.value.find(member => member.email === userProfile.value.email);
+    
+    if (existingMember) {
+      // 既存メンバーを更新
+      await updateMember(existingMember.id, {
+        name: userProfile.value.name,
+        role: userProfile.value.role,
+        bio: userProfile.value.bio,
+        avatar: userProfile.value.avatar || `https://via.placeholder.com/150/9B7BD8/FFFFFF?text=${encodeURIComponent(userProfile.value.name.charAt(0))}`,
+        skills: userProfile.value.skills || [],
+        location: userProfile.value.location,
+        website: userProfile.value.website,
+        personalWebsite: userProfile.value.personalWebsite,
+        twitter: userProfile.value.twitter,
+        github: userProfile.value.github,
+        visible: userProfile.value.visible,
+        email: userProfile.value.email,
+        photos: userProfile.value.photos || [],
+        icons: userProfile.value.icons || [],
+        bannerImage: userProfile.value.bannerImage || null
+      });
+      console.log('Member profile updated successfully');
+    } else {
+      // 新規メンバーを追加
+      const memberData = {
+        name: userProfile.value.name,
+        role: userProfile.value.role,
+        bio: userProfile.value.bio,
+        avatar: userProfile.value.avatar || `https://via.placeholder.com/150/9B7BD8/FFFFFF?text=${encodeURIComponent(userProfile.value.name.charAt(0))}`,
+        skills: userProfile.value.skills || [],
+        location: userProfile.value.location,
+        website: userProfile.value.website,
+        personalWebsite: userProfile.value.personalWebsite,
+        twitter: userProfile.value.twitter,
+        github: userProfile.value.github,
+        visible: userProfile.value.visible,
+        email: userProfile.value.email,
+        photos: userProfile.value.photos || [],
+        icons: userProfile.value.icons || [],
+        bannerImage: userProfile.value.bannerImage || null,
+        joinDate: userProfile.value.joinDate || new Date().toISOString(),
+        featured: userProfile.value.featured || false
+      };
+      
+      await addMember(memberData);
+      console.log('New member profile created successfully');
+    }
+  } catch (error) {
+    console.error('Failed to update member profile:', error);
+  }
+};
+
+// Photo handlers
+const handlePhotoPrev = () => {
+  if (currentPhotoIndex.value > 0) {
+    currentPhotoIndex.value--;
+  }
+};
+
+const handlePhotoNext = () => {
+  if (currentPhotoIndex.value < (userProfile.value.photos?.length || 0) - 1) {
+    currentPhotoIndex.value++;
+  }
+};
+
+const handlePhotoGoto = (index: number) => {
+  currentPhotoIndex.value = index;
+};
+
+const handlePhotoUpload = (event: Event) => {
+  const input = event.target as HTMLInputElement;
+  const file = input.files?.[0];
+  
+  if (!file) return;
+  
+  // ファイルサイズ制限 (5MB)
+  const maxSize = 5 * 1024 * 1024;
+  if (file.size > maxSize) {
+    alert('ファイルサイズは5MB以下にしてください');
+    return;
+  }
+  
+  // ファイル形式チェック
+  if (!file.type.startsWith('image/')) {
+    alert('画像ファイルを選択してください');
+    return;
+  }
+  
+  // 最大4枚まで
+  if (userProfile.value.photos && userProfile.value.photos.length >= 4) {
+    alert('写真は最大4枚まで追加できます');
+    return;
+  }
+  
+  // FileReaderで画像を読み込み
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const imageUrl = e.target?.result as string;
+    
+    if (!userProfile.value.photos) {
+      userProfile.value.photos = [];
+    }
+    
+    // 写真を追加
+    userProfile.value.photos.push(imageUrl);
+    
+    // ローカルストレージに保存
+    saveUserPhotos(userProfile.value.email, userProfile.value.photos);
+    
+    // 新しく追加した写真にインデックスを移動
+    currentPhotoIndex.value = userProfile.value.photos.length - 1;
+    
+    console.log('Photo uploaded successfully');
+  };
+  
+  reader.onerror = () => {
+    alert('画像の読み込みに失敗しました');
+  };
+  
+  reader.readAsDataURL(file);
+  
+  // inputをリセット
+  input.value = '';
+};
+
+const handlePhotoRemove = (photoNumber: number) => {
+  if (!userProfile.value.photos || userProfile.value.photos.length === 0) {
+    return;
+  }
+  
+  const photoIndex = photoNumber - 1; // 1-based to 0-based
+  
+  if (photoIndex < 0 || photoIndex >= userProfile.value.photos.length) {
+    return;
+  }
+  
+  if (confirm(`Photo${photoNumber}を削除しますか？`)) {
+    // 写真を削除
+    userProfile.value.photos.splice(photoIndex, 1);
+    
+    // カレントインデックスを調整
+    if (currentPhotoIndex.value >= userProfile.value.photos.length) {
+      currentPhotoIndex.value = Math.max(0, userProfile.value.photos.length - 1);
+    }
+    
+    // ローカルストレージに保存
+    saveUserPhotos(userProfile.value.email, userProfile.value.photos);
+    
+    console.log(`Photo ${photoNumber} removed successfully`);
+  }
+};
+
+// Admin handlers
+const handleSaveProduct = async (product: any) => {
+  console.log("Save product:", product);
+  try {
+    if (editingProduct.value && editingProduct.value.id) {
+      // 編集モード：既存の成果物を更新
+      const productId = editingProduct.value.id;
+      const updateData = {
+        ...product,
+        updatedAt: new Date().toISOString()
+      };
+      await updateProduct(productId, updateData);
+      console.log("成果物が更新されました:", product.title);
+      editingProduct.value = null;
+    } else {
+      // 新規追加モード：新しい成果物を追加
+      const newProduct = {
+        ...product,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      await addProduct(newProduct);
+      console.log("新しい成果物が追加されました:", newProduct.title);
+    }
+    showProductForm.value = false;
+  } catch (error) {
+    console.error("成果物の保存に失敗しました:", error);
+    alert("保存に失敗しました。もう一度お試しください。");
+  }
+};
+
+const handleCancelProductEdit = () => {
+  editingProduct.value = null;
   showProductForm.value = false;
 };
 
-const handleUpdateProduct = async () => {
-  if (!editingProduct.value) return;
-
-  try {
-    const tags = editingProduct.value.tagsString
-      .split(",")
-      .map((tag: string) => tag.trim())
-      .filter((tag: string) => tag);
-
-    editingProduct.value.author.avatar = editingProduct.value.author.name.charAt(0).toUpperCase();
-
-    await updateProduct(editingProduct.value.id, {
-      title: editingProduct.value.title,
-      category: editingProduct.value.category,
-      description: editingProduct.value.description,
-      tags: tags,
-      author: editingProduct.value.author,
-      url: editingProduct.value.url,
-      featured: editingProduct.value.featured
-    });
-
-    editingProduct.value = null;
-    alert("成果物を更新しました！");
-  } catch (err) {
-    alert("エラーが発生しました: " + err);
-  }
+const editProduct = (product: any) => {
+  editingProduct.value = product;
 };
 
-const cancelEditProduct = () => {
-  editingProduct.value = null;
-};
-
-const handleDeleteProduct = async (productId: number) => {
-  if (!confirm("この成果物を削除してもよろしいですか？")) return;
-
+const deleteProduct = async (productId: number) => {
+  console.log("Delete product:", productId);
   try {
-    await deleteProduct(productId);
-    alert("成果物を削除しました！");
-  } catch (err) {
-    alert("エラーが発生しました: " + err);
+    await firestoreDeleteProduct(productId);
+    console.log("成果物が削除されました:", productId);
+  } catch (error) {
+    console.error("成果物の削除に失敗しました:", error);
+    alert("削除に失敗しました。もう一度お試しください。");
   }
 };
 
 const handleDuplicateProduct = async (productId: number) => {
+  console.log("Duplicate product:", productId);
   try {
-    await duplicateProduct(productId);
-    alert("成果物を複製しました！");
-  } catch (err) {
-    alert("エラーが発生しました: " + err);
+    // 元の成果物を見つける
+    const originalProduct = products.value.find(p => p.id === productId);
+    if (!originalProduct) {
+      alert("複製する成果物が見つかりませんでした。");
+      return;
+    }
+
+    // 複製データを作成（IDを除外し、タイトルに「（コピー）」を追加）
+    const duplicatedProduct = {
+      ...originalProduct,
+      title: `${originalProduct.title}（コピー）`,
+      featured: false, // 複製時は注目成果物にしない
+      likes: 0, // いいね数はリセット
+      comments: 0, // コメント数はリセット
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+
+    // IDを削除
+    delete duplicatedProduct.id;
+
+    // 新しい成果物として追加
+    await addProduct(duplicatedProduct);
+    console.log("成果物が複製されました:", duplicatedProduct.title);
+  } catch (error) {
+    console.error("成果物の複製に失敗しました:", error);
+    alert("複製に失敗しました。もう一度お試しください。");
   }
 };
 
-// News CRUD Methods
-const startEditNews = (newsItem: any) => {
-  editingNews.value = { ...newsItem };
+const handleSaveNews = (newsItem: any) => {
+  console.log("Save news:", newsItem);
+};
+
+const handleCancelNewsEdit = () => {
+  editingNews.value = null;
   showNewsForm.value = false;
 };
 
-const handleUpdateNews = async () => {
-  if (!editingNews.value) return;
+const editNews = (newsItem: any) => {
+  editingNews.value = newsItem;
+};
 
+const deleteNews = (newsId: number) => {
+  console.log("Delete news:", newsId);
+};
+
+const handleUpdateMember = (member: any) => {
+  console.log("Update member:", member);
+};
+
+const cancelEditMember = () => {
+  editingMember.value = null;
+};
+
+const editMember = (member: any) => {
+  editingMember.value = member;
+};
+
+const deleteMember = (memberId: number) => {
+  console.log("Delete member:", memberId);
+};
+
+const handleDuplicateMember = (memberId: number) => {
+  console.log("Duplicate member:", memberId);
+};
+
+// Comment handlers
+const closeCommentModal = () => {
+  showCommentModal.value = false;
+  commentingMemberId.value = null;
+  newComment.value = { authorName: "", content: "" };
+};
+
+const handleSaveComment = (comment: any) => {
+  console.log("Save comment:", comment);
+};
+
+// Utility functions (これらは元のApp.vueから移植する必要があります)
+const loadUserPhotos = (email: string) => {
   try {
-    await updateNews(editingNews.value.id, {
-      title: editingNews.value.title,
-      excerpt: editingNews.value.excerpt,
-      url: editingNews.value.url
+    const photoKey = `photos_${email}`;
+    const savedPhotos = localStorage.getItem(photoKey);
+    return savedPhotos ? JSON.parse(savedPhotos) : [];
+  } catch (error) {
+    console.error('Failed to load user photos:', error);
+    return [];
+  }
+};
+
+const saveUserPhotos = (email: string, photos: string[]) => {
+  try {
+    const photoKey = `photos_${email}`;
+    localStorage.setItem(photoKey, JSON.stringify(photos));
+    console.log('Photos saved to localStorage');
+  } catch (error) {
+    if (error.name === 'QuotaExceededError') {
+      console.warn('LocalStorage quota exceeded. Attempting to clean up old data.');
+      cleanupOldLocalStorageData();
+      // 再試行
+      try {
+        localStorage.setItem(photoKey, JSON.stringify(photos));
+        console.log('Photos saved after cleanup');
+      } catch (retryError) {
+        console.error('Failed to save photos even after cleanup:', retryError);
+      }
+    } else {
+      console.error('Failed to save user photos:', error);
+    }
+  }
+};
+
+// LocalStorageの古いデータをクリーンアップ
+const cleanupOldLocalStorageData = () => {
+  try {
+    const keys = Object.keys(localStorage);
+    const now = Date.now();
+    const oneWeekAgo = now - 7 * 24 * 60 * 60 * 1000; // 1週間前
+    
+    // 古いデータを削除
+    keys.forEach(key => {
+      if (key.startsWith('temp_') || key.startsWith('cache_')) {
+        localStorage.removeItem(key);
+      }
     });
-
-    editingNews.value = null;
-    alert("ニュースを更新しました！");
-  } catch (err) {
-    alert("エラーが発生しました: " + err);
+    
+    console.log('Old localStorage data cleaned up');
+  } catch (error) {
+    console.error('Failed to cleanup localStorage:', error);
   }
 };
 
-const cancelEditNews = () => {
-  editingNews.value = null;
-};
-
-const handleDeleteNews = async (newsId: number) => {
-  if (!confirm("このニュースを削除してもよろしいですか？")) return;
-
-  try {
-    await deleteNews(newsId);
-    alert("ニュースを削除しました！");
-  } catch (err) {
-    alert("エラーが発生しました: " + err);
-  }
-};
-
-const handleDuplicateNews = async (newsId: number) => {
-  try {
-    await duplicateNews(newsId);
-    alert("ニュースを複製しました！");
-  } catch (err) {
-    alert("エラーが発生しました: " + err);
-  }
-};
-
-// CSV Export/Import Methods
-const exportProductsCSV = () => {
-  try {
-    const headers = [
-      'title',
-      'category', 
-      'description',
-      'tags',
-      'author.name',
-      'author.role',
-      'date',
-      'likes',
-      'comments',
-      'url',
-      'featured'
-    ];
-    
-    // tagsを文字列に変換
-    const exportData = products.value.map(product => ({
-      ...product,
-      tags: product.tags.join('; ')
-    }));
-    
-    const csvContent = arrayToCSV(exportData, headers);
-    const filename = `products_${new Date().toISOString().split('T')[0]}.csv`;
-    downloadCSV(csvContent, filename);
-    
-    alert('成果物データをCSVで出力しました！');
-  } catch (err) {
-    alert('エクスポートエラー: ' + err);
-  }
-};
-
-const importProductsCSV = async (event: Event) => {
-  const target = event.target as HTMLInputElement;
-  const file = target.files?.[0];
-  
-  if (!file) return;
-  
-  try {
-    const csvContent = await readCSVFile(file);
-    const headers = [
-      'title',
-      'category',
-      'description', 
-      'tags',
-      'author.name',
-      'author.role',
-      'date',
-      'likes',
-      'comments',
-      'url',
-      'featured'
-    ];
-    
-    const importedData = csvToArray(csvContent, headers);
-    
-    for (const item of importedData) {
-      if (!item.title || !item.description || !item['author.name']) {
-        continue; // 必須項目がない行はスキップ
-      }
-      
-      // tagsを配列に変換
-      const tags = item.tags ? item.tags.split(';').map((tag: string) => tag.trim()).filter((tag: string) => tag) : [];
-      
-      // Firestoreに追加
-      await addProduct({
-        title: item.title,
-        category: item.category || '仕事効率化',
-        description: item.description,
-        tags: tags,
-        author: {
-          name: item['author.name'],
-          avatar: item['author.name'].charAt(0).toUpperCase(),
-          role: item['author.role'] || 'メンバー'
-        },
-        date: item.date || new Date().toISOString().split('T')[0],
-        likes: item.likes || 0,
-        comments: item.comments || 0,
-        thumbnail: `https://via.placeholder.com/300x200/9B7BD8/FFFFFF?text=${encodeURIComponent(item.title)}`,
-        featured: item.featured || false,
-        url: item.url || '#'
-      });
-    }
-    
-    alert(`${importedData.length}件の成果物をインポートしました！`);
-  } catch (err) {
-    alert('インポートエラー: ' + err);
-  } finally {
-    // ファイル入力をリセット
-    target.value = '';
-  }
-};
-
-const exportNewsCSV = () => {
-  try {
-    const headers = [
-      'title',
-      'excerpt',
-      'date',
-      'url'
-    ];
-    
-    const csvContent = arrayToCSV(news.value, headers);
-    const filename = `news_${new Date().toISOString().split('T')[0]}.csv`;
-    downloadCSV(csvContent, filename);
-    
-    alert('ニュースデータをCSVで出力しました！');
-  } catch (err) {
-    alert('エクスポートエラー: ' + err);
-  }
-};
-
-const importNewsCSV = async (event: Event) => {
-  const target = event.target as HTMLInputElement;
-  const file = target.files?.[0];
-  
-  if (!file) return;
-  
-  try {
-    const csvContent = await readCSVFile(file);
-    const headers = [
-      'title',
-      'excerpt',
-      'date',
-      'url'
-    ];
-    
-    const importedData = csvToArray(csvContent, headers);
-    
-    for (const item of importedData) {
-      if (!item.title || !item.excerpt) {
-        continue; // 必須項目がない行はスキップ
-      }
-      
-      // Firestoreに追加
-      await addNews({
-        title: item.title,
-        excerpt: item.excerpt,
-        date: item.date || new Date().toISOString().split('T')[0],
-        url: item.url || '#'
-      });
-    }
-    
-    alert(`${importedData.length}件のニュースをインポートしました！`);
-  } catch (err) {
-    alert('インポートエラー: ' + err);
-  } finally {
-    // ファイル入力をリセット
-    target.value = '';
-  }
-};
-
-const setFilter = (filter: string) => {
-  currentFilter.value = filter;
-  renderProducts();
-};
-
-const handleSortChange = () => {
-  renderProducts();
-};
-
-// Utility functions
-const formatDate = (dateString: string) => {
-  const date = new Date(dateString);
-  return date.toLocaleDateString("ja-JP", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
-};
-
+// Helper functions for data filtering and processing
 const getFeaturedProducts = () => {
   return products.value.filter((product) => product.featured);
 };
 
 const getLatestNews = (count = 3) => {
   return news.value.slice(0, count);
+};
+
+const getFeaturedMembers = () => {
+  return members.value.filter((member) => member.featured);
+};
+
+const getAllMembers = () => {
+  return members.value.filter((member) => !member.featured);
 };
 
 const filterProducts = (products: any[], category: string) => {
@@ -1214,223 +1230,103 @@ const searchProducts = (products: any[], query: string) => {
     (product) =>
       product.title.toLowerCase().includes(lowerQuery) ||
       product.description.toLowerCase().includes(lowerQuery) ||
-      product.category.toLowerCase().includes(lowerQuery) ||
-      product.tags.some((tag: string) =>
-        tag.toLowerCase().includes(lowerQuery)
-      ) ||
-      product.author.name.toLowerCase().includes(lowerQuery)
+      product.author.name.toLowerCase().includes(lowerQuery) ||
+      (product.tags && product.tags.some((tag: string) => 
+        tag.toLowerCase().includes(lowerQuery)))
   );
 };
 
-// Create elements
-const createProductCard = (product: any, delay = 0) => {
-  const card = document.createElement("div");
-  card.className = "product-card animate-fade-in-up";
-  card.style.animationDelay = `${delay}ms`;
+// Vue.jsコンポーネントベースなので、レンダー関数は不要
+// データは自動的にリアクティブに表示される
 
-  card.innerHTML = `
-    <div class="product-header">
-      <div class="product-info">
-        <div class="product-category">${product.category}</div>
-        <h3 class="product-title">${product.title}</h3>
-        <p class="product-description">${product.description}</p>
-      </div>
-    </div>
-    
-    <div class="product-tags">
-      ${product.tags
-        .map((tag: string) => `<span class="product-tag">${tag}</span>`)
-        .join("")}
-    </div>
-    
-    <div class="product-footer">
-      <div class="product-author">
-        <div class="author-avatar">${product.author.avatar}</div>
-        <div class="author-info">
-          <div class="author-name">${product.author.name}</div>
-        </div>
-      </div>
-    </div>
-  `;
-
-  card.addEventListener("click", () => {
-    window.open(product.url, "_blank");
-  });
-
-  return card;
-};
-
-const createNewsCard = (newsItem: any, delay = 0) => {
-  const card = document.createElement("a");
-  card.href = newsItem.url;
-  card.target = "_blank";
-  card.className = "news-card animate-fade-in-up";
-  card.style.animationDelay = `${delay}ms`;
-
-  card.innerHTML = `
-    <h3 class="news-title">${newsItem.title}</h3>
-    <p class="news-excerpt">${newsItem.excerpt}</p>
-    <div class="news-date">${formatDate(newsItem.date)}</div>
-  `;
-
-  return card;
-};
-
-// Render functions
-const renderFeaturedProducts = () => {
-  const container = document.getElementById("featured-products-grid");
-  if (!container) return;
-
-  const featuredProducts = getFeaturedProducts();
-  container.innerHTML = "";
-
-  if (featuredProducts.length === 0) {
-    container.innerHTML = '<div class="no-results">データを読み込み中...</div>';
-    return;
-  }
-
-  featuredProducts.forEach((product, index) => {
-    const productCard = createProductCard(product, index * 100);
-    container.appendChild(productCard);
-  });
-};
-
-const renderLatestNews = () => {
-  const container = document.getElementById("latest-news-grid");
-  if (!container) return;
-
-  const latestNews = getLatestNews(3);
-  container.innerHTML = "";
-
-  if (latestNews.length === 0) {
-    container.innerHTML = '<div class="no-results">データを読み込み中...</div>';
-    return;
-  }
-
-  latestNews.forEach((newsItem, index) => {
-    const newsCard = createNewsCard(newsItem, index * 100);
-    container.appendChild(newsCard);
-  });
-};
-
-const renderProducts = () => {
-  const container = document.getElementById("products-grid");
-  if (!container) return;
-
-  let filteredProducts = filterProducts(products.value, currentFilter.value);
-
-  if (searchQuery.value) {
-    filteredProducts = searchProducts(filteredProducts, searchQuery.value);
-  }
-
-  const sortedProducts = sortProducts(filteredProducts, currentSort.value);
-
-  container.innerHTML = "";
-
-  if (sortedProducts.length === 0) {
-    container.innerHTML =
-      '<div class="no-results">該当する成果物が見つかりませんでした。</div>';
-    return;
-  }
-
-  sortedProducts.forEach((product, index) => {
-    const productCard = createProductCard(product, index * 50);
-    container.appendChild(productCard);
-  });
-};
-
-const renderNews = () => {
-  const container = document.getElementById("news-grid");
-  if (!container) return;
-
-  container.innerHTML = "";
-
-  news.value.forEach((newsItem, index) => {
-    const newsCard = createNewsCard(newsItem, index * 100);
-    container.appendChild(newsCard);
-  });
-};
-
-const initializePage = (page: string) => {
-  switch (page) {
-    case "home":
-      renderFeaturedProducts();
-      renderLatestNews();
-      break;
-    case "products":
-      renderProducts();
-      break;
-    case "news":
-      renderNews();
-      break;
-  }
-};
-
-// Global keyboard shortcuts
-const handleKeyDown = (e: KeyboardEvent) => {
-  const target = e.target as HTMLElement;
-  // テキスト入力要素（input, textarea, contenteditable）では無効化
-  if (
-    target &&
-    (target.tagName === "INPUT" ||
-      target.tagName === "TEXTAREA" ||
-      target.contentEditable === "true")
-  ) {
-    return;
-  }
-
-  if (e.key === "/") {
-    e.preventDefault();
-    const searchInput = document.getElementById(
-      "search-input"
-    ) as HTMLInputElement;
-    if (searchInput) {
-      searchInput.focus();
-    }
-  }
-
-  if (e.key === "Escape") {
-    const searchInput = document.getElementById(
-      "search-input"
-    ) as HTMLInputElement;
-    if (searchInput && document.activeElement === searchInput) {
-      searchInput.blur();
-      searchInput.value = "";
-      searchQuery.value = "";
-      renderProducts();
-    }
-  }
-};
-
+// Initialization
 onMounted(async () => {
-  document.addEventListener("keydown", handleKeyDown);
-  // Firestoreからデータを読み込み
+  try {
+    console.log("アプリケーション初期化開始");
+    
+    // Firebase Authの初期化
+    initializeAuth();
+    
+    const savedComments = localStorage.getItem("memberComments");
+    if (savedComments) {
+      memberComments.value = JSON.parse(savedComments);
+    }
+    
+    console.log("アプリケーション初期化完了");
+  } catch (error) {
+    console.error("アプリケーション初期化エラー:", error);
+  }
+  
+  // ログイン状態をローカルストレージから復元
+  const savedLoginState = localStorage.getItem('isLoggedIn');
+  const savedUserEmail = localStorage.getItem('currentUserEmail');
+  
+  if (savedLoginState === 'true' && savedUserEmail) {
+    isLoggedIn.value = true;
+    const savedProfile = localStorage.getItem(`profile_${savedUserEmail}`);
+    if (savedProfile) {
+      userProfile.value = JSON.parse(savedProfile);
+      userProfile.value.photos = loadUserPhotos(savedUserEmail);
+      currentUser.value = userProfile.value;
+    }
+  }
+
+  // Discord統計を取得
+  try {
+    discordStats.value.isLoading = true;
+    discordDataFetcher = createDiscordDataFetcher(
+      import.meta.env.VITE_DISCORD_GUILD_ID || discordServerId
+    );
+    
+    if (discordDataFetcher) {
+      discordDataFetcher.start((data: any) => {
+        if (data && data.approximate_member_count) {
+          discordStats.value.memberCount = data.approximate_member_count;
+          discordStats.value.error = null;
+        }
+      });
+    } else {
+      console.warn('Failed to create Discord data fetcher, using default values');
+    }
+  } catch (error) {
+    discordStats.value.error = 'Discord統計の取得中にエラーが発生しました';
+    console.error('Error updating Discord stats:', error);
+  } finally {
+    discordStats.value.isLoading = false;
+  }
+
+  // Firestoreの初期化とデータ読み込み
   try {
     await initialize();
-    console.log(
-      "Firestore initialized, products:",
-      products.value.length,
-      "news:",
-      news.value.length
-    );
+    initializePage("home");
   } catch (error) {
     console.error("Failed to initialize Firestore:", error);
   }
-  // データ読み込み後にページを初期化
-  initializePage("home");
 });
 
-// Firestoreデータの変更を監視してレンダリング更新
+onUnmounted(() => {
+  if (discordDataFetcher) {
+    discordDataFetcher.stop();
+  }
+});
+
+const initializePage = (page: string) => {
+  // Vue.jsコンポーネントが自動的にデータを表示するため、
+  // 特別な初期化処理は不要
+  console.log(`Page initialized: ${page}`);
+};
+
+// Firestoreデータの変更を監視
 watch(
-  [products, news],
+  [products, news, members],
   () => {
-    if (currentPage.value === "home") {
-      renderFeaturedProducts();
-      renderLatestNews();
-    } else if (currentPage.value === "products") {
-      renderProducts();
-    } else if (currentPage.value === "news") {
-      renderNews();
+    // Vue.jsのリアクティブシステムが自動的にUIを更新するため、
+    // 手動でのレンダリング処理は不要
+    console.log(`Data updated - Products: ${products.value.length}, News: ${news.value.length}, Members: ${members.value.length}`);
+    
+    // プロフィール画面でスキル配列を文字列に変換
+    if (currentPage.value === "profile" && userProfile.value.skills && Array.isArray(userProfile.value.skills)) {
+      userProfile.value.skillsString = userProfile.value.skills.join(", ");
     }
   },
   { deep: true }
@@ -1441,9 +1337,7 @@ watch(
 /* 元のstyle.cssとresponsive.cssの内容をそのまま適用 */
 @import "./assets/styles/original-style.css";
 
-/* 追加スタイル - ホバーアニメーション、レイアウト改善、レスポンシブ対応 */
-
-/* アプリ全体のレイアウト - フッターを常に下部に配置 */
+/* 基本的なレイアウトスタイル */
 .app-container {
   min-height: 100vh;
   display: flex;
@@ -1454,792 +1348,67 @@ watch(
   flex: 1;
 }
 
-/* ロゴ画像のスタイル */
-.logo-image {
-  height: 20px;
-  width: auto;
-}
-
-/* Mobile Navigation - 元の静的サイトと同じ挙動 */
-.mobile-menu-toggle {
-  display: none !important;
-  flex-direction: column;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: var(--spacing-1);
-  gap: var(--spacing-1);
-}
-
-.mobile-menu-toggle span {
-  width: 20px;
-  height: 2px;
-  background: var(--gray-600);
-  transition: var(--transition-base);
-}
-
-.search-toggle {
-  display: none !important;
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: var(--gray-600);
-  font-size: var(--font-size-lg);
-  padding: var(--spacing-2);
-  border-radius: var(--radius-md);
-  transition: all var(--transition-base);
-}
-
-.search-toggle:hover {
-  background: var(--gray-100);
-}
-
-.search-toggle.active {
-  color: var(--primary-purple);
-}
-
-/* Mobile Responsive Behavior - 1024px以下 */
-@media (max-width: 1024px) {
-  .header .container {
-    position: relative;
-  }
-
-  .logo-image {
-    height: 20px;
-  }
-
-  /* Navigation - モバイルで隠れて、ドロップダウンメニューに */
-  .nav {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    background: var(--white);
-    border-top: 1px solid var(--gray-200);
-    transform: translateY(-100%);
-    opacity: 0;
-    visibility: hidden;
-    transition: all var(--transition-base);
-    box-shadow: var(--shadow-md);
-    z-index: 1000;
-  }
-
-  .nav.active {
-    transform: translateY(0);
-    opacity: 1;
-    visibility: visible;
-  }
-
-  .nav-list {
-    flex-direction: column;
-    padding: var(--spacing-4);
-    gap: var(--spacing-2);
-  }
-
-  .nav-link {
-    padding: var(--spacing-3);
-    border-radius: var(--radius-md);
-    transition: all var(--transition-base);
-  }
-
-  .nav-link:hover {
-    background: var(--primary-purple-lighter);
-  }
-
-  .nav-link.active::after {
-    display: none;
-  }
-
-  /* Search Bar - モバイルで隠れる */
-  .search-bar {
-    display: none;
-  }
-
-  .search-bar.mobile-active {
-    display: flex;
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    background: var(--white);
-    border-top: 1px solid var(--gray-200);
-    padding: var(--spacing-4);
-    box-shadow: var(--shadow-md);
-    z-index: 999;
-  }
-
-  .search-input {
-    min-width: auto;
-    flex: 1;
-  }
-
-  /* Mobile buttons - 表示 */
-  .mobile-menu-toggle {
-    display: flex !important;
-  }
-
-  .search-toggle {
-    display: flex !important;
-  }
-
-  /* Mobile menu toggle animation */
-  .mobile-menu-toggle.active span:nth-child(1) {
-    transform: rotate(45deg) translate(5px, 5px);
-  }
-
-  .mobile-menu-toggle.active span:nth-child(2) {
-    opacity: 0;
-  }
-
-  .mobile-menu-toggle.active span:nth-child(3) {
-    transform: rotate(-45deg) translate(7px, -6px);
-  }
-
-  .header-actions {
-    gap: var(--spacing-2);
-  }
-
-  .btn-join {
-    padding: var(--spacing-2) var(--spacing-3);
-    font-size: var(--font-size-xs);
-  }
-}
-
-/* Product Card ホバーアニメーション */
-.product-card {
-  transition: all 0.3s ease;
-  cursor: pointer;
-}
-
-.product-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 20px 40px rgba(155, 123, 216, 0.15);
-  border-color: var(--primary-purple-light);
-}
-
-/* News Card ホバーアニメーション */
-.news-card {
-  transition: all 0.3s ease;
-}
-
-.news-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 24px rgba(155, 123, 216, 0.12);
-}
-
-/* Sort Section - filtersの中に配置 */
-.sort-section {
-  display: flex;
-  justify-content: center;
-}
-
-.sort-options {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-2);
-}
-
-.sort-select {
-  padding: var(--spacing-2) var(--spacing-4);
-  border: 1px solid var(--gray-300);
-  border-radius: var(--radius-lg);
-  font-size: var(--font-size-sm);
-  background: var(--white);
-  color: var(--gray-700);
-  cursor: pointer;
-  transition: border-color var(--transition-base);
-  min-width: 150px;
-}
-
-.sort-select:focus {
-  outline: none;
-  border-color: var(--primary-purple);
-}
-
-/* Filters レイアウト調整 */
-.filters {
-  width: 100%;
-  padding: var(--spacing-6) var(--spacing-4);
-  background: var(--white);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-sm);
-  border: 1px solid var(--gray-200);
-  margin-bottom: var(--spacing-8);
-}
-
-.filters-inner {
-  max-width: 1200px;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-4);
-}
-
-.filter-tabs {
-  display: flex;
-  gap: var(--spacing-2);
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-/* PC表示（1024px以上）: 横並び */
-@media (min-width: 1024px) {
-  .filters-inner {
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .filter-tabs {
-    justify-content: flex-start;
-  }
-
-  .sort-section {
-    justify-content: flex-end;
-  }
-}
-
-/* News Grid - 2列表示、レスポンシブで1列 */
-.news-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: var(--spacing-6);
-}
-
-/* ニュースカードのスタイル改善 */
-.news-card {
-  background: var(--white);
-  border-radius: var(--radius-xl);
-  padding: var(--spacing-6);
-  box-shadow: var(--shadow-sm);
-  border: 1px solid var(--gray-200);
-  text-decoration: none;
-  color: inherit;
-}
-
-/* News List (ホームページ用) */
-.news-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-4);
-}
-
-.news-list .news-card {
-  padding: var(--spacing-4);
-  border-radius: var(--radius-lg);
-}
-
-/* プロダクトグリッドのレスポンシブ対応 */
-/* 横幅が広いとき（1200px以上）: 3列表示 */
-@media (min-width: 1200px) {
-  .products-grid {
-    grid-template-columns: repeat(3, 1fr);
-    gap: var(--spacing-6);
-  }
-
-  /* ホームページの注目の成果物は横にニュースがある時は1列 */
-  #featured-products-grid {
-    grid-template-columns: 1fr;
-    gap: var(--spacing-5);
-  }
-}
-
-/* タブレット（768px - 1199px）: 2列表示 */
-@media (max-width: 1199px) and (min-width: 769px) {
-  .products-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: var(--spacing-5);
-  }
-
-  /* ホームページの注目の成果物は横にニュースがある時は1列 */
-  #featured-products-grid {
-    grid-template-columns: 1fr;
-    gap: var(--spacing-5);
-  }
-}
-
-/* 元の768pxレスポンシブデザイン - より小さい画面用 */
-@media (max-width: 768px) {
-  /* ニュースグリッドを1列表示に */
-  .news-grid {
-    grid-template-columns: 1fr;
-    gap: var(--spacing-4);
-  }
-
-  /* フィルターをモバイル対応 - 縦に配置 */
-  .filter-tabs {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: var(--spacing-2);
-    width: 100%;
-    justify-content: stretch;
-  }
-
-  .filter-tab {
-    padding: var(--spacing-2) var(--spacing-3);
-    font-size: var(--font-size-xs);
-  }
-
-  /* ソートセクション調整 - カテゴリタブの下に */
-  .sort-section {
-    width: 100%;
-    margin-top: var(--spacing-4);
-  }
-
-  .sort-select {
-    width: 100%;
-    max-width: 200px;
-  }
-
-  /* プロダクトグリッドを1列に */
-  .products-grid {
-    grid-template-columns: 1fr !important;
-    gap: var(--spacing-4);
-  }
-
-  /* ホームページの注目の成果物も1列 */
-  #featured-products-grid {
-    grid-template-columns: 1fr !important;
-    gap: var(--spacing-4);
-  }
-}
-
-@media (max-width: 480px) {
-  /* さらに小さい画面での調整 */
-  .filter-tabs {
-    grid-template-columns: 1fr;
-  }
-
-  .filters {
-    padding: var(--spacing-3);
-  }
-
-  .sort-section {
-    margin: var(--spacing-4) 0;
-  }
-}
-
-/* Hero Content - 中央配置 */
-.hero-content {
-  text-align: center;
-  max-width: 800px;
-  margin: 0 auto;
-}
-
-/* Home Layout - レスポンシブ対応 */
-.home-main-content {
+.page-content {
   padding: var(--spacing-12) 0;
 }
 
-.content-layout {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: var(--spacing-12);
-  align-items: start;
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--spacing-6);
 }
 
-/* Featured Products Section */
-.featured-products {
-  padding: 0;
-}
-
-/* News Section */
-.news-section {
-  padding: var(--spacing-8);
-  background: var(--gray-50);
-  border-radius: var(--radius-xl);
-  position: sticky;
-  top: var(--spacing-20);
-  height: fit-content;
-}
-
-/* News List - 右配置時は1列表示 */
-.news-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-4);
-}
-
-.news-list .news-card {
-  padding: var(--spacing-4);
-  border-radius: var(--radius-lg);
-  background: var(--white);
-  border: 1px solid var(--gray-200);
-  box-shadow: var(--shadow-sm);
-}
-
-/* タブレット対応 - ニュースが下に移動して2列表示 */
-@media (max-width: 1024px) and (min-width: 741px) {
-  .content-layout {
-    grid-template-columns: 1fr;
-    gap: var(--spacing-8);
-  }
-
-  .news-section {
-    position: static;
-    order: 2;
-    background: var(--gray-50);
-    padding: var(--spacing-8);
-    border-radius: var(--radius-xl);
-  }
-
-  .featured-products {
-    order: 1;
-  }
-
-  /* 注目の成果物を2列表示 */
-  #featured-products-grid {
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: var(--spacing-5);
-  }
-
-  /* ニュースは常に1列表示 */
-  .news-list {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-4);
-  }
-}
-
-/* モバイル対応 - ニュースが下で1列表示 */
-@media (max-width: 740px) {
-  .content-layout {
-    grid-template-columns: 1fr;
-    gap: var(--spacing-6);
-  }
-
-  .news-section {
-    position: static;
-    order: 2;
-    background: var(--gray-50);
-    padding: var(--spacing-6);
-    border-radius: var(--radius-xl);
-  }
-
-  .featured-products {
-    order: 1;
-  }
-
-  /* 注目の成果物を1列表示 */
-  #featured-products-grid {
-    grid-template-columns: 1fr !important;
-    gap: var(--spacing-4);
-  }
-
-  /* ニュースを1列表示 */
-  .news-list {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-4);
-  }
-}
-
-/* アニメーション改善 */
-.animate-fade-in-up {
-  animation: fadeInUp 0.6s ease-out forwards;
-  opacity: 0;
-  transform: translateY(30px);
-}
-
-@keyframes fadeInUp {
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* 統計カードのホバーアニメーション */
-.stat-card {
+/* 共通ボタンスタイル */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-3) var(--spacing-6);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-base);
+  font-weight: 500;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
   transition: all var(--transition-base);
+  gap: var(--spacing-2);
 }
 
-.stat-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-lg);
+.btn-primary {
+  background: var(--primary-purple);
+  color: var(--white);
 }
 
-/* ボタンのホバーアニメーション改善 */
-.btn-primary:hover,
-.btn-secondary:hover,
-.btn-join:hover {
+.btn-primary:hover {
+  background: var(--primary-purple-dark);
   transform: translateY(-2px);
 }
 
-.filter-tab {
-  transition: all var(--transition-base);
-}
-
-.filter-tab:hover {
-  transform: translateY(-1px);
-}
-
-/* Admin Styles */
-.admin {
-  padding: var(--spacing-12) 0;
-}
-
-.admin-tabs {
-  display: flex;
-  gap: var(--spacing-2);
-  margin-bottom: var(--spacing-8);
-  border-bottom: 1px solid var(--gray-200);
-}
-
-.admin-tab {
-  padding: var(--spacing-3) var(--spacing-6);
-  background: none;
-  border: none;
-  border-bottom: 2px solid transparent;
-  cursor: pointer;
-  font-size: var(--font-size-base);
-  color: var(--gray-600);
-  transition: all var(--transition-base);
-}
-
-.admin-tab:hover {
-  color: var(--primary-purple);
-}
-
-.admin-tab.active {
-  color: var(--primary-purple);
-  border-bottom-color: var(--primary-purple);
-}
-
-.admin-content {
-  margin-top: var(--spacing-6);
-}
-
-.admin-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--spacing-6);
-}
-
-.admin-header h2 {
-  margin: 0;
-  color: var(--gray-800);
-}
-
-.admin-actions {
-  display: flex;
-  gap: var(--spacing-4);
-  align-items: center;
-}
-
-.csv-actions {
-  display: flex;
-  gap: var(--spacing-2);
-}
-
-.btn-csv {
-  background: var(--gray-100);
-  color: var(--gray-700);
-  border: 1px solid var(--gray-300);
-  padding: var(--spacing-2) var(--spacing-4);
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  font-size: var(--font-size-sm);
-  font-weight: 500;
-  text-decoration: none;
-  transition: all var(--transition-base);
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-1);
-}
-
-.btn-csv:hover {
-  background: var(--gray-200);
-  transform: translateY(-1px);
-}
-
-.csv-import {
-  position: relative;
-}
-
-.admin-form {
-  background: var(--gray-50);
-  padding: var(--spacing-6);
-  border-radius: var(--radius-xl);
-  margin-bottom: var(--spacing-8);
-}
-
-.admin-form h3 {
-  margin: 0 0 var(--spacing-6) 0;
-  color: var(--gray-800);
-}
-
-.form-group {
-  margin-bottom: var(--spacing-4);
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: var(--spacing-2);
-  font-weight: 500;
-  color: var(--gray-700);
-}
-
-.form-group input,
-.form-group select,
-.form-group textarea {
-  width: 100%;
-  padding: var(--spacing-3);
-  border: 1px solid var(--gray-300);
-  border-radius: var(--radius-md);
-  font-size: var(--font-size-base);
-  transition: border-color var(--transition-base);
-}
-
-.form-group input:focus,
-.form-group select:focus,
-.form-group textarea:focus {
-  outline: none;
-  border-color: var(--primary-purple);
-}
-
-.form-group textarea {
-  min-height: 100px;
-  resize: vertical;
-}
-
-.form-group input[type="checkbox"] {
-  width: auto;
-  margin-right: var(--spacing-2);
-}
-
-.admin-list {
-  display: grid;
-  gap: var(--spacing-4);
-}
-
-.admin-item {
-  background: var(--white);
-  padding: var(--spacing-6);
-  border-radius: var(--radius-xl);
-  border: 1px solid var(--gray-200);
-  box-shadow: var(--shadow-sm);
-}
-
-.admin-item h4 {
-  margin: 0 0 var(--spacing-2) 0;
-  color: var(--gray-800);
-}
-
-.admin-item p {
-  margin: var(--spacing-2) 0;
-  color: var(--gray-600);
-  font-size: var(--font-size-sm);
-}
-
-/* Admin Item Layout */
-.admin-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: var(--spacing-4);
-}
-
-.admin-item-content {
-  flex: 1;
-}
-
-.admin-item-meta {
-  font-size: var(--font-size-xs);
-  color: var(--gray-500);
-  margin-top: var(--spacing-2);
-}
-
-.admin-item-actions {
-  display: flex;
-  gap: var(--spacing-2);
-  flex-shrink: 0;
-}
-
-.btn-edit,
-.btn-duplicate,
-.btn-delete {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: var(--spacing-2);
-  border-radius: var(--radius-md);
-  font-size: var(--font-size-base);
-  transition: all var(--transition-base);
-  min-width: 40px;
-  min-height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.btn-edit:hover {
-  background: var(--primary-purple-lighter);
-}
-
-.btn-duplicate:hover {
-  background: var(--gray-100);
-}
-
-.btn-delete:hover {
-  background: #fee;
-  color: #d63384;
-}
-
-.form-actions {
-  display: flex;
-  gap: var(--spacing-3);
-  margin-top: var(--spacing-4);
-}
-
 .btn-secondary {
-  background: var(--gray-200);
-  color: var(--gray-700);
-  border: 1px solid var(--gray-300);
-  padding: var(--spacing-3) var(--spacing-6);
-  border-radius: var(--radius-lg);
-  cursor: pointer;
-  font-size: var(--font-size-base);
-  font-weight: 500;
-  text-decoration: none;
-  transition: all var(--transition-base);
+  background: var(--white);
+  color: var(--primary-purple);
+  border: 2px solid var(--primary-purple);
 }
 
 .btn-secondary:hover {
-  background: var(--gray-300);
-  transform: translateY(-1px);
+  background: var(--primary-purple-lighter);
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--gray-700);
+  border: 1px solid var(--gray-300);
+}
+
+.btn-outline:hover {
+  background: var(--gray-50);
+  border-color: var(--gray-400);
 }
 
 /* レスポンシブ対応 */
 @media (max-width: 768px) {
-  .admin-header {
-    flex-direction: column;
-    gap: var(--spacing-4);
-    align-items: stretch;
-  }
-
-  .admin-actions {
-    flex-direction: column;
-    gap: var(--spacing-3);
-  }
-
-  .csv-actions {
-    justify-content: center;
-  }
-
-  .admin-tabs {
-    flex-direction: column;
-  }
-
-  .admin-tab {
-    text-align: center;
-    border-bottom: none;
-    border-left: 3px solid transparent;
-  }
-
-  .admin-tab.active {
-    border-left-color: var(--primary-purple);
-    border-bottom-color: transparent;
+  .container {
+    padding: 0 var(--spacing-4);
   }
 }
 </style>

@@ -1,39 +1,50 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { useDataStore } from '../stores/data'
-import ProductCard from '../components/ProductCard-enhanced.vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { useFirestore } from '../composables/useFirestore'
+import ProductCard from '../components/ProductCard.vue'
 
-const dataStore = useDataStore()
+const { products, loadProducts } = useFirestore()
 
 const searchQuery = ref('')
 const selectedCategory = ref('all')
 const sortBy = ref<'likes' | 'date' | 'title'>('likes')
 
-const categories = computed(() => ['all', ...dataStore.categories])
+const categories = computed(() => {
+  const uniqueCategories = [...new Set(products.value.map(p => p.category))]
+  return ['all', ...uniqueCategories]
+})
 
 const filteredProducts = computed(() => {
-  let products = dataStore.products
+  let filtered = products.value
+
+  // Category filter
+  if (selectedCategory.value !== 'all') {
+    filtered = filtered.filter(product => product.category === selectedCategory.value)
+  }
 
   // Search filter
   if (searchQuery.value.trim()) {
-    products = dataStore.searchProducts(searchQuery.value)
-  }
-
-  // Category filter
-  products = dataStore.filterByCategory(selectedCategory.value)
-
-  // Apply search filter to category results
-  if (searchQuery.value.trim()) {
     const searchTerm = searchQuery.value.toLowerCase()
-    products = products.filter(product =>
+    filtered = filtered.filter(product =>
       product.title.toLowerCase().includes(searchTerm) ||
       product.description.toLowerCase().includes(searchTerm) ||
       product.category.toLowerCase().includes(searchTerm) ||
-      product.tags.some(tag => tag.toLowerCase().includes(searchTerm))
+      product.tags?.some((tag: string) => tag.toLowerCase().includes(searchTerm))
     )
   }
 
-  return dataStore.sortProducts(products, sortBy.value)
+  // Sort products
+  const sorted = [...filtered]
+  switch (sortBy.value) {
+    case 'likes':
+      return sorted.sort((a, b) => (b.likes || 0) - (a.likes || 0))
+    case 'date':
+      return sorted.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    case 'title':
+      return sorted.sort((a, b) => a.title.localeCompare(b.title))
+    default:
+      return sorted
+  }
 })
 
 const clearSearch = () => {
@@ -44,33 +55,33 @@ const handleCategoryChange = (category: string) => {
   selectedCategory.value = category
 }
 
+// Focus search on '/' key press
+const handleKeyPress = (e: KeyboardEvent) => {
+  if (e.key === '/' && !e.ctrlKey && !e.metaKey) {
+    e.preventDefault()
+    const searchInput = document.getElementById('search-input') as HTMLInputElement
+    if (searchInput) {
+      searchInput.focus()
+    }
+  }
+  if (e.key === 'Escape') {
+    clearSearch()
+  }
+}
+
 onMounted(async () => {
   // Firestoreからデータを読み込む
   try {
-    await dataStore.initializeFirestore()
+    await loadProducts()
   } catch (error) {
-    console.error('Failed to initialize Firestore:', error)
+    console.error('Failed to load products:', error)
   }
   
-  // Focus search on '/' key press
-  const handleKeyPress = (e: KeyboardEvent) => {
-    if (e.key === '/' && !e.ctrlKey && !e.metaKey) {
-      e.preventDefault()
-      const searchInput = document.getElementById('search-input') as HTMLInputElement
-      if (searchInput) {
-        searchInput.focus()
-      }
-    }
-    if (e.key === 'Escape') {
-      clearSearch()
-    }
-  }
-
   document.addEventListener('keydown', handleKeyPress)
+})
 
-  return () => {
-    document.removeEventListener('keydown', handleKeyPress)
-  }
+onUnmounted(() => {
+  document.removeEventListener('keydown', handleKeyPress)
 })
 </script>
 
