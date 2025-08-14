@@ -8,11 +8,31 @@
       </div>
 
       <div class="members-content">
+        <!-- スキルフィルタータブ -->
+        <div class="skill-filter-tabs">
+          <button 
+            class="skill-tab" 
+            :class="{ active: selectedSkill === null }"
+            @click="filterBySkill(null)"
+          >
+            すべて ({{ allMembers.length }})
+          </button>
+          <button 
+            v-for="skill in availableSkills" 
+            :key="skill"
+            class="skill-tab"
+            :class="{ active: selectedSkill === skill }"
+            @click="filterBySkill(skill)"
+          >
+            {{ skill }} ({{ getMemberCountBySkill(skill) }})
+          </button>
+        </div>
+
         <!-- All Members (統合表示) -->
         <section class="all-members">
-          <div class="members-grid" v-if="allMembers.length > 0">
+          <div class="members-grid" v-if="filteredMembers.length > 0">
             <div 
-              v-for="member in allMembers" 
+              v-for="member in filteredMembers" 
               :key="member.id" 
               class="member-card" 
               :class="{ 'featured': member.featured }"
@@ -198,7 +218,8 @@
             </div>
           </div>
           <div v-else class="no-members">
-            <p>メンバーデータを読み込み中...</p>
+            <p v-if="selectedSkill">{{ selectedSkill }}のスキルを持つメンバーは見つかりませんでした。</p>
+            <p v-else>メンバーデータを読み込み中...</p>
           </div>
         </section>
       </div>
@@ -292,12 +313,48 @@ const swipeState = ref({
   memberId: null as number | null
 })
 
+// Skill filtering state
+const selectedSkill = ref<string | null>(null)
+
 // 全メンバーを統合表示（コアメンバーを上位に）
 const allMembers = computed(() => {
   const featured = props.members.filter(member => member.featured)
   const regular = props.members.filter(member => !member.featured)
   return [...featured, ...regular]
 })
+
+// 全スキルを取得（重複なし、アルファベット順）
+const availableSkills = computed(() => {
+  const skillsSet = new Set<string>()
+  props.members.forEach(member => {
+    if (member.skills && Array.isArray(member.skills)) {
+      member.skills.forEach(skill => skillsSet.add(skill))
+    }
+  })
+  return Array.from(skillsSet).sort()
+})
+
+// フィルタ済みメンバー
+const filteredMembers = computed(() => {
+  if (!selectedSkill.value) {
+    return allMembers.value
+  }
+  return allMembers.value.filter(member => 
+    member.skills && member.skills.includes(selectedSkill.value)
+  )
+})
+
+// スキル別メンバー数を取得
+const getMemberCountBySkill = (skill: string) => {
+  return props.members.filter(member => 
+    member.skills && member.skills.includes(skill)
+  ).length
+}
+
+// スキルフィルターを設定
+const filterBySkill = (skill: string | null) => {
+  selectedSkill.value = skill
+}
 
 // ログインユーザーの情報
 const currentUserName = computed(() => props.currentUser?.name || '')
@@ -648,6 +705,70 @@ onMounted(() => {
   max-width: 1600px;
   margin: 0 auto;
   padding: 0 var(--spacing-4);
+}
+
+/* Skill Filter Tabs */
+.skill-filter-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-2);
+  margin-bottom: var(--spacing-8);
+  padding: var(--spacing-4);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 250, 252, 0.9) 100%);
+  border-radius: 16px;
+  border: 1px solid rgba(155, 123, 216, 0.1);
+  box-shadow: 0 4px 12px rgba(155, 123, 216, 0.08);
+}
+
+.skill-tab {
+  background: var(--white);
+  border: 1px solid rgba(155, 123, 216, 0.2);
+  color: var(--gray-600);
+  padding: var(--spacing-2) var(--spacing-4);
+  border-radius: 20px;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
+  position: relative;
+  overflow: hidden;
+}
+
+.skill-tab::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(155, 123, 216, 0.1), transparent);
+  transition: left 0.5s;
+}
+
+.skill-tab:hover::before {
+  left: 100%;
+}
+
+.skill-tab:hover {
+  background: rgba(155, 123, 216, 0.05);
+  border-color: var(--primary-purple-light);
+  color: var(--primary-purple);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(155, 123, 216, 0.15);
+}
+
+.skill-tab.active {
+  background: linear-gradient(135deg, var(--primary-purple) 0%, #8b5cf6 100%);
+  border-color: var(--primary-purple);
+  color: var(--white);
+  font-weight: 600;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(155, 123, 216, 0.3);
+}
+
+.skill-tab.active::before {
+  display: none;
 }
 
 .all-members {
@@ -1537,6 +1658,17 @@ onMounted(() => {
     font-size: var(--font-size-lg);
   }
   
+  .skill-filter-tabs {
+    padding: var(--spacing-3);
+    margin-bottom: var(--spacing-6);
+    justify-content: center;
+  }
+  
+  .skill-tab {
+    font-size: 12px;
+    padding: 6px 12px;
+  }
+
   .members-grid {
     gap: var(--spacing-4);
   }

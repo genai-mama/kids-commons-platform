@@ -76,6 +76,26 @@ interface Member {
   }[]
 }
 
+// Firestore用のユーティリティ関数
+const removeUndefinedFields = (obj: any): any => {
+  const cleanedObj: any = {}
+  for (const [key, value] of Object.entries(obj)) {
+    if (value !== undefined && value !== null) {
+      // 配列の場合はサイズをチェック
+      if (Array.isArray(value)) {
+        const arraySize = JSON.stringify(value).length
+        if (arraySize > 1048576) { // 1MB
+          console.warn(`Array field '${key}' is too large: ${arraySize} bytes`)
+          // 大きすぎる配列は除外するか、警告を出す
+          continue
+        }
+      }
+      cleanedObj[key] = value
+    }
+  }
+  return cleanedObj
+}
+
 export function useFirestore() {
   const products = ref<Product[]>([])
   const news = ref<NewsItem[]>([])
@@ -441,14 +461,27 @@ export function useFirestore() {
     try {
       loading.value = true
       
+      // undefined値を除去したデータを作成
+      const cleanedMemberData = removeUndefinedFields(memberData)
+      
       // Firebase AuthのUUIDをドキュメントIDとして使用
       const memberDocRef = doc(db, 'members', authUid)
       
       const memberWithId = {
-        ...memberData,
+        ...cleanedMemberData,
         id: Date.now(), // 内部IDとして使用
         authUid: authUid // Firebase Auth UIDを記録
       }
+      
+      // データサイズをチェック（1MB制限）
+      const dataSize = JSON.stringify(memberWithId).length
+      console.log(`Member data size: ${dataSize} bytes`)
+      
+      if (dataSize > 1048576) { // 1MB = 1048576 bytes
+        throw new Error(`データサイズが大きすぎます（${dataSize} bytes）。写真やアイコンの数を減らしてください。`)
+      }
+      
+      console.log('Adding member with cleaned data:', memberWithId)
       
       await setDoc(memberDocRef, memberWithId)
       
@@ -459,9 +492,29 @@ export function useFirestore() {
       
       return authUid
     } catch (err) {
-      error.value = `Member追加エラー: ${err}`
+      // Firestoreの詳細エラーを解析
+      let errorMessage = 'Member追加エラー'
+      
+      if (err.message) {
+        if (err.message.includes('1048487 bytes') || err.message.includes('1048576')) {
+          errorMessage = 'データサイズが上限（1MB）を超えています。写真やアイコンの数を減らしてください。'
+        } else if (err.message.includes('PERMISSION_DENIED')) {
+          errorMessage = 'データベースへのアクセス権限がありません。'
+        } else if (err.message.includes('UNAVAILABLE')) {
+          errorMessage = 'データベースに接続できません。インターネット接続を確認してください。'
+        } else {
+          errorMessage = `Member追加エラー: ${err.message}`
+        }
+      }
+      
+      error.value = errorMessage
       console.error('Error adding member with auth ID:', err)
-      throw err
+      console.error('Error details:', {
+        code: err.code,
+        message: err.message,
+        stack: err.stack
+      })
+      throw new Error(errorMessage)
     } finally {
       loading.value = false
     }
@@ -472,6 +525,20 @@ export function useFirestore() {
     try {
       loading.value = true
       
+      // undefined値を除去したデータを作成
+      const cleanedMemberData = removeUndefinedFields(memberData)
+      
+      // データサイズをチェック（1MB制限）
+      const dataSize = JSON.stringify(cleanedMemberData).length
+      console.log(`Member data size: ${dataSize} bytes`)
+      
+      if (dataSize > 1048576) { // 1MB = 1048576 bytes
+        throw new Error(`データサイズが大きすぎます（${dataSize} bytes）。写真やアイコンの数を減らしてください。`)
+      }
+      
+      console.log('Original memberData:', memberData)
+      console.log('Cleaned memberData:', cleanedMemberData)
+      
       // Firestoreドキュメントを探す
       const q = query(collection(db, 'members'), where('id', '==', memberId))
       const querySnapshot = await getDocs(q)
@@ -481,19 +548,39 @@ export function useFirestore() {
       }
       
       const docRef = querySnapshot.docs[0].ref
-      await updateDoc(docRef, memberData)
+      await updateDoc(docRef, cleanedMemberData)
       
       // ローカルデータも更新
       const index = members.value.findIndex(m => m.id === memberId)
       if (index !== -1) {
-        members.value[index] = { ...members.value[index], ...memberData }
+        members.value[index] = { ...members.value[index], ...cleanedMemberData }
       }
       
       console.log('Member updated:', memberId)
     } catch (err) {
-      error.value = `Member更新エラー: ${err}`
+      // Firestoreの詳細エラーを解析
+      let errorMessage = 'Member更新エラー'
+      
+      if (err.message) {
+        if (err.message.includes('1048487 bytes') || err.message.includes('1048576')) {
+          errorMessage = 'データサイズが上限（1MB）を超えています。写真やアイコンの数を減らしてください。'
+        } else if (err.message.includes('PERMISSION_DENIED')) {
+          errorMessage = 'データベースへのアクセス権限がありません。'
+        } else if (err.message.includes('UNAVAILABLE')) {
+          errorMessage = 'データベースに接続できません。インターネット接続を確認してください。'
+        } else {
+          errorMessage = `Member更新エラー: ${err.message}`
+        }
+      }
+      
+      error.value = errorMessage
       console.error('Error updating member:', err)
-      throw err
+      console.error('Error details:', {
+        code: err.code,
+        message: err.message,
+        stack: err.stack
+      })
+      throw new Error(errorMessage)
     } finally {
       loading.value = false
     }

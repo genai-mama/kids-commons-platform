@@ -2,12 +2,12 @@
   <!-- Product Form - 成果物フォーム（新規作成・編集） -->
   <form @submit.prevent="handleSubmit" class="product-form">
     <div class="form-group">
-      <label>タイトル</label>
+      <label>タイトル <span class="required">※必須</span></label>
       <input type="text" v-model="localProduct.title" required />
     </div>
     
     <div class="form-group">
-      <label>カテゴリ</label>
+      <label>カテゴリ <span class="required">※必須</span></label>
       <select v-model="localProduct.category" required>
         <option value="仕事効率化">仕事効率化</option>
         <option value="学校">学校</option>
@@ -17,7 +17,7 @@
     </div>
     
     <div class="form-group">
-      <label>説明</label>
+      <label>説明 <span class="required">※必須</span></label>
       <textarea
         v-model="localProduct.description"
         required
@@ -35,7 +35,7 @@
     </div>
     
     <div class="form-group">
-      <label>作者名</label>
+      <label>作者名 <span class="required">※必須</span></label>
       <input
         type="text"
         :value="authorName"
@@ -45,7 +45,7 @@
     </div>
     
     <div class="form-group">
-      <label>作者の役割</label>
+      <label>作者の役割 <span class="required">※必須</span></label>
       <input
         type="text"
         :value="authorRole"
@@ -55,7 +55,7 @@
     </div>
     
     <div class="form-group">
-      <label>URL</label>
+      <label>URL <span class="required">※必須</span></label>
       <input type="url" v-model="localProduct.url" required />
     </div>
     
@@ -167,9 +167,13 @@ const handleSubmit = () => {
   emit('save', { ...localProduct.value })
 }
 
-// Watch for prop changes to update local state
+// Watch for prop changes to update local state (only when editing)
 watch(() => props.product, (newProduct) => {
-  localProduct.value = { ...newProduct }
+  // Only update if we're in editing mode and the product ID has changed
+  // This prevents clearing user input during new product creation
+  if (props.isEditing && newProduct.id !== localProduct.value.id) {
+    localProduct.value = { ...newProduct }
+  }
 }, { deep: true })
 
 // Initialize form
@@ -279,6 +283,13 @@ onMounted(() => {
 
 .btn-secondary:hover {
   background: var(--gray-200);
+}
+
+/* Required field styling */
+.required {
+  color: #dc2626;
+  font-weight: 600;
+  font-size: var(--font-size-sm);
 }
 
 /* Responsive */

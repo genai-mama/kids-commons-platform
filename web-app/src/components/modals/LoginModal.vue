@@ -9,24 +9,27 @@
             <button class="modal-close" @click="$emit('close')">&times;</button>
           </div>
           
-          <!-- X (Twitter) ログイン - 条件付き表示 -->
-          <div v-if="isXAuthAvailable" class="x-login-section">
+          <!-- Google ログイン -->
+          <div class="google-login-section">
             <button 
-              class="btn btn-x-login" 
-              @click="$emit('x-login')"
-              :disabled="isXAuthLoading"
+              class="btn btn-google-login" 
+              @click="$emit('google-login')"
+              :disabled="isGoogleLoading"
             >
-              <span v-if="isXAuthLoading">認証中...</span>
+              <span v-if="isGoogleLoading">認証中...</span>
               <span v-else>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                  <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                  <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                  <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
                 </svg>
-                Xアカウントでログイン
+                Googleアカウントでログイン
               </span>
             </button>
           </div>
           
-          <div v-if="isXAuthAvailable" class="login-divider">
+          <div class="login-divider">
             <span>または</span>
           </div>
           
@@ -75,8 +78,7 @@ interface Props {
     email: string
     password: string
   }
-  isXAuthLoading: boolean
-  isXAuthAvailable: boolean
+  isGoogleLoading: boolean
 }
 
 const props = defineProps<Props>()
@@ -85,7 +87,7 @@ const props = defineProps<Props>()
 const emit = defineEmits<{
   close: []
   login: [formData: { email: string, password: string }]
-  'x-login': []
+  'google-login': []
   'show-signup': []
 }>()
 
@@ -182,42 +184,46 @@ const handleLogin = () => {
   font-weight: 600;
 }
 
-/* X Login */
-.x-login-section {
+/* Google Login */
+.google-login-section {
   margin-bottom: var(--spacing-6);
 }
 
-.btn-x-login {
+.btn-google-login {
   width: 100%;
-  background: #000000;
-  color: #ffffff;
-  border: 1px solid #000000;
+  background: #ffffff;
+  color: #3c4043;
+  border: 1px solid #dadce0;
   padding: var(--spacing-3) var(--spacing-4);
   border-radius: var(--radius-md);
   cursor: pointer;
   font-size: var(--font-size-sm);
-  font-weight: 600;
+  font-weight: 500;
   text-decoration: none;
   transition: all var(--transition-base);
   display: flex;
   align-items: center;
   justify-content: center;
   gap: var(--spacing-2);
+  box-shadow: 0 1px 2px rgba(60, 64, 67, 0.3), 0 1px 3px 1px rgba(60, 64, 67, 0.15);
 }
 
-.btn-x-login:hover:not(:disabled) {
-  background: #1a1a1a;
+.btn-google-login:hover:not(:disabled) {
+  background: #f8f9fa;
+  border-color: #d2e3fc;
+  box-shadow: 0 1px 3px rgba(60, 64, 67, 0.3), 0 4px 8px 3px rgba(60, 64, 67, 0.15);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
-.btn-x-login:disabled {
-  background: #666666;
+.btn-google-login:disabled {
+  background: #f8f9fa;
+  color: #5f6368;
   cursor: not-allowed;
   transform: none;
+  box-shadow: 0 1px 2px rgba(60, 64, 67, 0.3), 0 1px 3px 1px rgba(60, 64, 67, 0.15);
 }
 
-.btn-x-login svg {
+.btn-google-login svg {
   flex-shrink: 0;
 }
 

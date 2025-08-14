@@ -167,22 +167,20 @@
     <LoginModal 
       v-if="showLoginModal"
       :login-form="loginForm"
-      :is-x-auth-loading="isXAuthLoading"
-      :is-x-auth-available="isXAuthAvailable()"
+      :is-google-loading="isGoogleLoading"
       @close="closeLoginModal"
       @login="handleLoginWithForm"
-      @x-login="handleXLogin"
+      @google-login="handleGoogleAuth"
       @show-signup="showSignupModal = true; showLoginModal = false"
     />
 
     <SignupModal 
       v-if="showSignupModal"
       :signup-form="signupForm"
-      :is-x-auth-loading="isXAuthLoading"
-      :is-x-auth-available="isXAuthAvailable()"
+      :is-google-loading="isGoogleLoading"
       @close="closeSignupModal"
       @signup="handleSignup"
-      @x-login="handleXLogin"
+      @google-signup="handleGoogleAuth"
       @show-login="showLoginModal = true; showSignupModal = false"
       @update-form="handleSignupFormUpdate"
     />
@@ -251,6 +249,7 @@ const {
   login: firebaseLogin,
   signup: firebaseSignup,
   logout: firebaseLogout,
+  signInWithGoogle,
   getUserProfile,
   initializeAuth
 } = useAuth();
@@ -357,6 +356,7 @@ const newNews = ref({
 
 // X Authentication
 const isXAuthLoading = ref(false);
+const isGoogleLoading = ref(false);
 
 // Discord Stats
 const discordServerId = "1384414582621081620"; // 提供されたサーバーID
@@ -748,43 +748,202 @@ const handleSignup = async () => {
   }
 };
 
-const handleLogout = () => {
-  isLoggedIn.value = false;
-  currentUser.value = null;
-  userProfile.value = {
-    id: null,
-    name: "",
-    role: "",
-    bio: "",
-    avatar: "",
-    skills: [],
-    location: "",
-    website: "",
-    personalWebsite: "",
-    twitter: "",
-    github: "",
-    email: "",
-    skillsString: "",
-    photos: [],
-    icons: [],
-    iconDescriptions: [],
-    photosString: "",
-    iconsString: "",
-    iconDescriptionsString: "",
-    joinDate: new Date().toISOString(),
-    featured: false,
-    visible: true
-  };
-  
-  localStorage.removeItem('isLoggedIn');
-  localStorage.removeItem('currentUserEmail');
-  navigateToPage('home');
-  alert("ログアウトしました");
+const handleLogout = async () => {
+  try {
+    // Firebase Authからログアウト
+    await firebaseLogout();
+    
+    // アプリの状態をクリア（watcherで自動的に実行されるが明示的にも実行）
+    isLoggedIn.value = false;
+    currentUser.value = null;
+    userProfile.value = {
+      id: null,
+      name: "",
+      role: "",
+      bio: "",
+      avatar: "",
+      skills: [],
+      location: "",
+      website: "",
+      personalWebsite: "",
+      twitter: "",
+      github: "",
+      email: "",
+      skillsString: "",
+      photos: [],
+      icons: [],
+      iconDescriptions: [],
+      photosString: "",
+      iconsString: "",
+      iconDescriptionsString: "",
+      joinDate: new Date().toISOString(),
+      featured: false,
+      visible: true
+    };
+    
+    localStorage.removeItem('isLoggedIn');
+    localStorage.removeItem('currentUserEmail');
+    navigateToPage('home');
+    alert("ログアウトしました");
+  } catch (error) {
+    console.error('ログアウトエラー:', error);
+    alert("ログアウトに失敗しました");
+  }
 };
 
 const handleXLogin = async () => {
   // X login logic
   console.log("X Login");
+};
+
+// Google認証の処理
+const handleGoogleAuth = async () => {
+  try {
+    isGoogleLoading.value = true;
+    
+    const user = await signInWithGoogle();
+    
+    if (user) {
+      await handleSuccessfulAuth(user, true);
+    }
+  } catch (error) {
+    console.error('Google認証エラー:', error);
+    // useAuthで設定されたエラーメッセージを使用
+    if (authError.value) {
+      alert(authError.value);
+    }
+  } finally {
+    isGoogleLoading.value = false;
+  }
+};
+
+// 認証処理の重複実行を防ぐフラグ
+const isProcessingAuth = ref(false);
+
+// 認証成功時の共通処理
+const handleSuccessfulAuth = async (user, fromGoogle = false) => {
+  // 既に処理中の場合はスキップ
+  if (isProcessingAuth.value) {
+    console.log('認証処理は既に実行中です');
+    return;
+  }
+  
+  try {
+    isProcessingAuth.value = true;
+    console.log('認証処理開始:', user.email);
+    
+    // 認証状態を更新
+    currentUser.value = user;
+    isLoggedIn.value = true;
+    
+    // ユーザープロフィールを取得
+    const profile = await getUserProfile(user.uid);
+    
+    if (profile) {
+      userProfile.value = {
+        id: user.uid,
+        name: profile.name || '', // 既存のプロフィールの名前のみ使用、Googleの名前は使わない
+        email: profile.email || user.email || '',
+        role: profile.role || '',
+        bio: profile.bio || '',
+        skills: profile.skills || [],
+        skillsString: profile.skills ? profile.skills.join(', ') : '',
+        github: profile.github || '',
+        twitter: profile.twitter || '',
+        avatar: profile.avatar || user.photoURL || ''
+      };
+    } else {
+      // 新規ユーザーの場合、名前は空文字で初期化
+      userProfile.value = {
+        id: user.uid,
+        name: '', // Google認証でも名前は空文字で開始
+        email: user.email || '',
+        role: '',
+        bio: '',
+        skills: [],
+        skillsString: '',
+        github: '',
+        twitter: '',
+        avatar: user.photoURL || ''
+      };
+    }
+    
+    // Firestoreのmembersコレクションにデータを追加/更新（Google認証時のみ）
+    if (fromGoogle) {
+      await ensureMemberInFirestore(user);
+    }
+    
+    localStorage.setItem('currentUserEmail', user.email || '');
+    closeLoginModal();
+    closeSignupModal();
+    
+    if (fromGoogle) {
+      alert(`Google認証でログインしました: ${user.email}`);
+    }
+    console.log('ログイン成功、UI状態更新完了:', {
+      isLoggedIn: isLoggedIn.value,
+      currentUser: currentUser.value?.email,
+      userProfile: userProfile.value.email
+    });
+  } catch (error) {
+    console.error('認証後の処理エラー:', error);
+  } finally {
+    isProcessingAuth.value = false;
+  }
+};
+
+// Firestoreのmembersコレクションにメンバーデータを追加/更新
+const ensureMemberInFirestore = async (user) => {
+  try {
+    console.log('メンバーデータ処理開始:', user.uid, user.email);
+    
+    // 既存のメンバーをチェック
+    const existingMember = members.value.find(member => 
+      member.authUid === user.uid || member.email === user.email
+    );
+    
+    const memberData = {
+      name: '', // Google認証時は名前を空文字で初期化
+      email: user.email || '',
+      role: '',
+      bio: '',
+      skills: [],
+      avatar: user.photoURL || '',
+      github: '',
+      twitter: '',
+      personalWebsite: '',
+      joinDate: existingMember?.joinDate || new Date().toISOString(),
+      featured: existingMember?.featured || false,
+      provider: 'google',
+      lastLogin: new Date().toISOString()
+    };
+    
+    if (existingMember) {
+      // 既存メンバーの場合は更新
+      console.log('既存メンバーを更新:', existingMember.id);
+      
+      // 既存の情報を保持しつつ、必要な部分のみ更新（名前は変更しない）
+      const updatedMemberData = {
+        ...existingMember,
+        avatar: user.photoURL || existingMember.avatar,
+        lastLogin: new Date().toISOString()
+      };
+      
+      await updateMember(existingMember.id, updatedMemberData);
+      console.log('メンバーデータを更新しました:', updatedMemberData);
+    } else {
+      // 新規メンバーの場合は追加
+      console.log('新規メンバーを追加:', user.email);
+      await addMemberWithAuthId(user.uid, memberData);
+      console.log('メンバーデータを新規追加しました:', memberData);
+    }
+    
+  } catch (error) {
+    console.error('メンバーデータの処理エラー:', error);
+    console.error('エラー詳細:', error.message);
+    console.error('エラースタック:', error.stack);
+    // エラーでもアプリは続行する
+  }
 };
 
 // Profile
@@ -820,27 +979,44 @@ const updateProfile = async () => {
     
     currentUser.value = { ...userProfile.value };
     
-    await updateMemberProfile();
+    // Firestore更新を実行し、実際の結果を確認
+    const updateResult = await updateMemberProfile();
     
     if (currentPage.value === 'profile') {
       userProfile.value.skillsString = userProfile.value.skills.join(", ");
     }
     
-    alert("プロフィールを保存しました！");
+    // Firestore更新が成功した場合のみ成功メッセージを表示
+    if (updateResult.success) {
+      alert("プロフィールを保存しました！");
+    } else {
+      // Firestore更新が失敗した場合はエラーメッセージを表示
+      alert(`プロフィールの保存に失敗しました: ${updateResult.error}`);
+    }
   } catch (error) {
     console.error('Profile update failed:', error);
-    alert("プロフィールの保存に失敗しました");
+    alert(`プロフィールの保存に失敗しました: ${error.message}`);
   }
 };
 
 const updateMemberProfile = async () => {
   if (!userProfile.value.email) {
     console.warn('No email found in user profile, skipping member profile update');
-    return;
+    return { success: false, error: 'メールアドレスが設定されていません' };
   }
 
   try {
     console.log('Updating member profile for:', userProfile.value.email);
+    
+    // データサイズをチェック（1MB制限）
+    const profileDataSize = JSON.stringify(userProfile.value).length;
+    console.log(`Profile data size: ${profileDataSize} bytes`);
+    
+    if (profileDataSize > 1048576) { // 1MB = 1048576 bytes
+      const error = 'プロフィールデータが大きすぎます。写真やアイコンの数を減らしてください。';
+      console.error('Profile data size exceeds Firestore limit:', profileDataSize);
+      return { success: false, error };
+    }
     
     // 既存メンバーを検索
     const existingMember = members.value.find(member => member.email === userProfile.value.email);
@@ -865,6 +1041,7 @@ const updateMemberProfile = async () => {
         bannerImage: userProfile.value.bannerImage || null
       });
       console.log('Member profile updated successfully');
+      return { success: true };
     } else {
       // 新規メンバーを追加
       const memberData = {
@@ -889,9 +1066,23 @@ const updateMemberProfile = async () => {
       
       await addMember(memberData);
       console.log('New member profile created successfully');
+      return { success: true };
     }
   } catch (error) {
     console.error('Failed to update member profile:', error);
+    
+    // Firestoreのサイズ制限エラーを詳細に処理
+    if (error.message && error.message.includes('1048487 bytes')) {
+      return { 
+        success: false, 
+        error: 'データサイズが上限を超えています。写真やアイコンの数を減らしてください。' 
+      };
+    }
+    
+    return { 
+      success: false, 
+      error: error.message || 'データベースへの保存に失敗しました' 
+    };
   }
 };
 
@@ -1244,8 +1435,36 @@ onMounted(async () => {
   try {
     console.log("アプリケーション初期化開始");
     
-    // Firebase Authの初期化
-    initializeAuth();
+    // Firebase Authの初期化と認証状態監視
+    const unsubscribe = initializeAuth();
+    
+    // 認証状態が変更されたときのハンドラーを追加
+    watch(authUser, async (newUser) => {
+      console.log('認証状態が変更されました:', newUser?.email || 'ログアウト');
+      
+      if (newUser) {
+        // ログイン状態になった場合（Google認証以外）
+        await handleSuccessfulAuth(newUser, false);
+      } else {
+        // ログアウト状態になった場合
+        currentUser.value = null;
+        isLoggedIn.value = false;
+        userProfile.value = {
+          id: null,
+          name: "",
+          role: "",
+          bio: "",
+          avatar: "",
+          skills: [],
+          skillsString: "",
+          github: "",
+          twitter: "",
+          email: "",
+        };
+        localStorage.removeItem('currentUserEmail');
+        console.log('ログアウト状態に更新しました');
+      }
+    }, { immediate: true });
     
     const savedComments = localStorage.getItem("memberComments");
     if (savedComments) {

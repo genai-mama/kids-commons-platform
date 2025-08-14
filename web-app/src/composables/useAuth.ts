@@ -5,6 +5,8 @@ import {
   createUserWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
+  signInWithPopup,
+  GoogleAuthProvider,
   type User
 } from 'firebase/auth'
 import { auth, db } from '../firebase'
@@ -126,6 +128,61 @@ export function useAuth() {
     }
   }
 
+  // Google認証でサインイン/サインアップ
+  const signInWithGoogle = async () => {
+    try {
+      isLoading.value = true
+      error.value = null
+      
+      const provider = new GoogleAuthProvider()
+      // 毎回アカウント選択画面を表示
+      provider.setCustomParameters({
+        prompt: 'select_account'
+      })
+      
+      const result = await signInWithPopup(auth, provider)
+      currentUser.value = result.user
+      
+      // 新規ユーザーの場合、Firestoreにプロフィールを作成
+      const userDocRef = doc(db, 'users', result.user.uid)
+      const userDoc = await getDoc(userDocRef)
+      
+      if (!userDoc.exists()) {
+        // 新規ユーザーの場合
+        await setDoc(userDocRef, {
+          name: result.user.displayName || '',
+          email: result.user.email,
+          avatar: result.user.photoURL || '',
+          provider: 'google',
+          createdAt: new Date().toISOString(),
+        })
+        console.log('New Google user profile created')
+      }
+      
+      console.log('Google Authentication success:', result.user.email)
+      return result.user
+    } catch (err: any) {
+      console.error('Google Authentication failed:', err)
+      
+      switch (err.code) {
+        case 'auth/popup-closed-by-user':
+          error.value = 'Google認証がキャンセルされました'
+          break
+        case 'auth/popup-blocked':
+          error.value = 'ポップアップがブロックされました。ポップアップを許可してください'
+          break
+        case 'auth/cancelled-popup-request':
+          error.value = 'Google認証がキャンセルされました'
+          break
+        default:
+          error.value = 'Google認証に失敗しました'
+      }
+      throw err
+    } finally {
+      isLoading.value = false
+    }
+  }
+
   // 認証状態の監視
   const initializeAuth = () => {
     return onAuthStateChanged(auth, (user) => {
@@ -141,6 +198,7 @@ export function useAuth() {
     login,
     signup,
     logout,
+    signInWithGoogle,
     getUserProfile,
     initializeAuth
   }
