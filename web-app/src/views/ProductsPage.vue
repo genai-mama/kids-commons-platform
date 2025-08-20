@@ -59,10 +59,15 @@
                 <span v-for="tag in product.tags" :key="tag" class="product-tag">{{ tag }}</span>
               </div>
               <div class="product-footer">
-                <div class="product-author">
-                  <div class="author-avatar">
-                    <img :src="product.author.avatar || `https://via.placeholder.com/40/9B7BD8/FFFFFF?text=${product.author.name.charAt(0)}`" 
-                         :alt="product.author.name" />
+                <div class="product-author" @click="navigateToMember(product.author.name)" title="メンバーページへ">
+                  <img 
+                    v-if="product.author.avatar && !product.author.avatar.includes('placeholder')" 
+                    :src="product.author.avatar" 
+                    :alt="product.author.name"
+                    class="author-avatar"
+                  />
+                  <div v-else class="author-avatar-placeholder">
+                    {{ product.author.name.charAt(0).toUpperCase() }}
                   </div>
                   <div class="author-info">
                     <div class="author-name">{{ product.author.name }}</div>
@@ -106,9 +111,10 @@ interface Props {
 const props = defineProps<Props>()
 
 // Events - 親コンポーネントに送信するイベント
-defineEmits<{
+const emit = defineEmits<{
   'filter-change': [filter: string]
   'sort-change': [sort: string]
+  'navigate-to-member': [memberName: string]
   navigate: [page: string]
 }>()
 
@@ -153,6 +159,10 @@ const formatDate = (dateString: string) => {
     month: 'long',
     day: 'numeric'
   })
+}
+
+const navigateToMember = (memberName: string) => {
+  emit('navigate-to-member', memberName)
 }
 </script>
 
@@ -393,21 +403,36 @@ const formatDate = (dateString: string) => {
   display: flex;
   align-items: center;
   gap: var(--spacing-3);
+  cursor: pointer;
+  transition: transform var(--transition-base);
+}
+
+.product-author:hover {
+  transform: scale(1.05);
 }
 
 .author-avatar {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  overflow: hidden;
-  border: 2px solid var(--white);
+  object-fit: cover;
+  border: 2px solid var(--gray-200);
   box-shadow: var(--shadow-sm);
 }
 
-.author-avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+.author-avatar-placeholder {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--purple-gradient);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--white);
+  font-weight: 600;
+  font-size: var(--font-size-sm);
+  border: 2px solid var(--gray-200);
+  box-shadow: var(--shadow-sm);
 }
 
 .author-info {

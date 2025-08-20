@@ -6,6 +6,9 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+const emit = defineEmits<{
+  'navigate-to-member': [memberName: string]
+}>()
 
 const handleLike = () => {
   // いいね機能（将来実装）
@@ -17,6 +20,11 @@ const openProduct = () => {
     window.open(props.product.url, '_blank')
   }
 }
+
+const navigateToMember = (e: Event) => {
+  e.stopPropagation()
+  emit('navigate-to-member', props.product.author.name)
+}
 </script>
 
 <template>
@@ -24,8 +32,16 @@ const openProduct = () => {
     <div class="product-content">
       <div class="product-header">
         <span class="product-category">{{ product.category }}</span>
-        <div class="product-author">
-          <span class="author-avatar">{{ product.author.avatar }}</span>
+        <div class="product-author" @click="navigateToMember" title="メンバーページへ">
+          <img 
+            v-if="product.author.avatar" 
+            :src="product.author.avatar" 
+            :alt="product.author.name"
+            class="author-avatar"
+          />
+          <div v-else class="author-avatar-placeholder">
+            {{ product.author.name.charAt(0).toUpperCase() }}
+          </div>
         </div>
       </div>
       
@@ -102,9 +118,23 @@ const openProduct = () => {
 .product-author {
   display: flex;
   align-items: center;
+  cursor: pointer;
+  transition: transform var(--transition-base);
+}
+
+.product-author:hover {
+  transform: scale(1.1);
 }
 
 .author-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  object-fit: cover;
+  border: 2px solid var(--gray-200);
+}
+
+.author-avatar-placeholder {
   width: 32px;
   height: 32px;
   border-radius: var(--radius-full);

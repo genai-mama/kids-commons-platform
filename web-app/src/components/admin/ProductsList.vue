@@ -12,8 +12,18 @@
         class="admin-item"
       >
         <div class="admin-item-content">
-          <h4>{{ product.title }}</h4>
-          <p>{{ product.category }} | {{ getAuthorName(product) }}</p>
+          <div class="admin-item-header">
+            <img 
+              v-if="getAuthorAvatar(product)" 
+              :src="getAuthorAvatar(product)" 
+              :alt="getAuthorName(product)"
+              class="author-avatar"
+            />
+            <div class="admin-item-info">
+              <h4>{{ product.title }}</h4>
+              <p>{{ product.category }} | {{ getAuthorName(product) }}</p>
+            </div>
+          </div>
           <p>{{ product.description }}</p>
           <div class="admin-item-meta">
             <div class="meta-stats">
@@ -77,6 +87,7 @@ interface Props {
     author: {
       name: string
       role?: string
+      avatar?: string
     }
     authorName?: string
     likes?: number
@@ -99,6 +110,10 @@ const emit = defineEmits<{
 // Helper functions
 const getAuthorName = (product: any) => {
   return product.author?.name || product.authorName || '不明'
+}
+
+const getAuthorAvatar = (product: any) => {
+  return product.author?.avatar || product.authorAvatar || ''
 }
 
 const handleDelete = (product: any) => {
@@ -157,6 +172,26 @@ const handleDelete = (product: any) => {
   min-width: 0;
 }
 
+.admin-item-header {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-3);
+  margin-bottom: var(--spacing-2);
+}
+
+.author-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--gray-200);
+}
+
+.admin-item-info {
+  flex: 1;
+}
+
+.admin-item-info h4,
 .admin-item-content h4 {
   margin: 0 0 var(--spacing-2) 0;
   font-size: var(--font-size-lg);

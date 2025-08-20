@@ -28,6 +28,7 @@
         :discord-stats="discordStats"
         :stats="stats"
         @navigate="navigateToPage"
+        @navigate-to-member="handleNavigateToMember"
       />
 
       <!-- About Page -->
@@ -40,6 +41,7 @@
         v-else-if="currentPage === 'members'"
         :members="members"
         :currentUser="currentUser"
+        :target-member="targetMember"
         @navigate="navigateToPage"
       />
 
@@ -53,6 +55,7 @@
         @filter-change="handleFilterChange"
         @sort-change="handleSortChange"
         @navigate="navigateToPage"
+        @navigate-to-member="handleNavigateToMember"
       />
 
       <!-- News Page -->
@@ -82,6 +85,7 @@
           <ProductForm 
             :product="editingProduct || newProduct"
             :is-editing="!!editingProduct"
+            :members="members"
             @save="handleSaveProduct"
             @cancel="handleCancelProductEdit"
           />
@@ -263,6 +267,7 @@ const searchQuery = ref("");
 const currentFilter = ref("all");
 const currentSort = ref("likes");
 const likedProducts = ref<Set<number>>(new Set());
+const targetMember = ref<string | undefined>(undefined);
 let searchTimeout: number | null = null;
 
 // Comment system
@@ -480,6 +485,16 @@ const handleImportCSV = (type: string) => {
   // CSV import logic  
   console.log('Import CSV:', type);
 };
+
+// Navigate to member function
+const handleNavigateToMember = (memberName: string) => {
+  targetMember.value = memberName
+  navigateToPage('members')
+  // Clear target member after navigation
+  setTimeout(() => {
+    targetMember.value = undefined
+  }, 500)
+}
 
 // Search
 const handleSearch = () => {
