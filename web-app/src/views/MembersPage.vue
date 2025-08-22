@@ -11,20 +11,26 @@
         <!-- All Members (統合表示) -->
         <section class="all-members">
           <div class="members-grid" v-if="allMembers.length > 0">
-            <div 
-              v-for="member in allMembers" 
-              :key="member.id" 
-              class="member-card" 
-              :class="{ 'featured': member.featured }"
+            <div
+              v-for="member in allMembers"
+              :key="member.id"
+              :id="`member-${member.name}`"
+              class="member-card"
+              :class="{ featured: member.featured }"
               :data-member-id="member.id"
             >
-              
               <!-- 左側カラム: 写真・バッジ・アイコンカテゴリ -->
               <div class="member-card-left">
                 <!-- 縦長写真（スワイプ機能付き） -->
-                <div class="member-photo" :class="{ 'has-multiple-photos': hasMultiplePhotos(member) }">
-                  <div v-if="getMemberPhotos(member).length > 0" class="photo-carousel">
-                    <div 
+                <div
+                  class="member-photo"
+                  :class="{ 'has-multiple-photos': hasMultiplePhotos(member) }"
+                >
+                  <div
+                    v-if="getMemberPhotos(member).length > 0"
+                    class="photo-carousel"
+                  >
+                    <div
                       class="photo-container"
                       @touchstart="handleTouchStart($event, member.id)"
                       @touchmove="handleTouchMove"
@@ -34,38 +40,55 @@
                       @mouseup="handleMouseEnd($event, member.id)"
                       @mouseleave="handleMouseEnd($event, member.id)"
                     >
-                      <img 
-                        :src="getCurrentPhoto(member)" 
-                        :alt="`${member.name}の写真 ${getCurrentPhotoIndex(member.id) + 1}/${getMemberPhotos(member).length}`"
+                      <img
+                        :src="getCurrentPhoto(member)"
+                        :alt="`${member.name}の写真 ${
+                          getCurrentPhotoIndex(member.id) + 1
+                        }/${getMemberPhotos(member).length}`"
                         class="photo-image"
                       />
                       <!-- 複数写真がある場合の左右ナビゲーション -->
-                      <div v-if="getMemberPhotos(member).length > 1" class="photo-navigation">
-                        <button 
-                          class="nav-btn nav-prev" 
+                      <div
+                        v-if="getMemberPhotos(member).length > 1"
+                        class="photo-navigation"
+                      >
+                        <button
+                          class="nav-btn nav-prev"
                           @click="previousPhoto(member.id)"
                           :title="'前の写真'"
                         >
                           <svg viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+                            <path
+                              d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"
+                            />
                           </svg>
                         </button>
-                        <button 
-                          class="nav-btn nav-next" 
+                        <button
+                          class="nav-btn nav-next"
                           @click="nextPhoto(member.id)"
                           :title="'次の写真'"
                         >
                           <svg viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+                            <path
+                              d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"
+                            />
                           </svg>
                         </button>
                       </div>
                       <!-- 写真インジケーター -->
-                      <div v-if="getMemberPhotos(member).length > 1" class="photo-indicators">
-                        <button 
-                          v-for="(photo, index) in getMemberPhotos(member)" 
+                      <div
+                        v-if="getMemberPhotos(member).length > 1"
+                        class="photo-indicators"
+                      >
+                        <button
+                          v-for="(photo, index) in getMemberPhotos(member)"
                           :key="index"
-                          :class="['indicator', { active: getCurrentPhotoIndex(member.id) === index }]"
+                          :class="[
+                            'indicator',
+                            {
+                              active: getCurrentPhotoIndex(member.id) === index,
+                            },
+                          ]"
                           @click="setCurrentPhoto(member.id, index)"
                         ></button>
                       </div>
@@ -73,19 +96,19 @@
                   </div>
                   <div v-else class="photo-placeholder">
                     <div class="placeholder-avatar">
-                      {{ member.name ? member.name.charAt(0) : '?' }}
+                      {{ member.name ? member.name.charAt(0) : "?" }}
                     </div>
                     <span class="placeholder-text">写真なし</span>
                   </div>
                 </div>
-                
+
                 <!-- バナー画像またはPERSONAL WEBSITEバッジ -->
                 <div v-if="member.personalWebsite">
                   <!-- バナー画像がある場合 -->
                   <div v-if="member.bannerImage" class="member-banner">
                     <a :href="member.personalWebsite" target="_blank">
-                      <img 
-                        :src="member.bannerImage" 
+                      <img
+                        :src="member.bannerImage"
                         :alt="`${member.name}のバナー`"
                         class="banner-image"
                       />
@@ -98,7 +121,7 @@
                     </a>
                   </div>
                 </div>
-                
+
                 <!-- アイコンカテゴリ - 仕様不確定のため非表示 -->
                 <!-- <div class="icon-categories">
                   <div 
@@ -112,63 +135,96 @@
                   </div>
                 </div> -->
               </div>
-              
+
               <!-- 中央カラム: プロフィール情報 -->
               <div class="member-card-center">
                 <div class="member-profile">
                   <!-- プロフィールアバター -->
                   <div class="member-avatar">
-                    <img 
+                    <img
                       v-if="getMemberAvatar(member)"
-                      :src="getMemberAvatar(member)" 
+                      :src="getMemberAvatar(member)"
                       :alt="`${member.name}のアバター`"
                       class="avatar-image"
                     />
                     <div v-else class="avatar-placeholder">
-                      {{ member.name ? member.name.charAt(0) : '?' }}
+                      {{ member.name ? member.name.charAt(0) : "?" }}
                     </div>
                   </div>
-                  
+
                   <h3 class="member-name">{{ member.name }}</h3>
                   <p class="member-role">{{ member.role }}</p>
                   <p class="member-bio" v-if="member.bio">{{ member.bio }}</p>
-                  
+
                   <!-- 技術タグ -->
-                  <div class="tech-tags" v-if="member.skills && member.skills.length > 0">
-                    <span v-for="skill in member.skills.slice(0, 4)" :key="skill" class="tech-tag">
+                  <div
+                    class="tech-tags"
+                    v-if="member.skills && member.skills.length > 0"
+                  >
+                    <span
+                      v-for="skill in member.skills.slice(0, 4)"
+                      :key="skill"
+                      class="tech-tag"
+                    >
                       {{ skill }}
                     </span>
-                    <span v-if="member.skills.length > 4" class="tech-tag more">+{{ member.skills.length - 4 }}</span>
+                    <span v-if="member.skills.length > 4" class="tech-tag more"
+                      >+{{ member.skills.length - 4 }}</span
+                    >
                   </div>
-                  
+
                   <!-- SNSアイコン -->
-                  <div class="social-links" v-if="member.github || member.twitter">
-                    <a v-if="member.github" :href="member.github" target="_blank" class="social-link github" title="GitHub">
+                  <div
+                    class="social-links"
+                    v-if="member.github || member.twitter"
+                  >
+                    <a
+                      v-if="member.github"
+                      :href="member.github"
+                      target="_blank"
+                      class="social-link github"
+                      title="GitHub"
+                    >
                       <svg viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                        <path
+                          d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"
+                        />
                       </svg>
                     </a>
-                    <a v-if="member.twitter" :href="member.twitter" target="_blank" class="social-link twitter" title="X (Twitter)">
+                    <a
+                      v-if="member.twitter"
+                      :href="member.twitter"
+                      target="_blank"
+                      class="social-link twitter"
+                      title="X (Twitter)"
+                    >
                       <svg viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                        <path
+                          d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"
+                        />
                       </svg>
                     </a>
                   </div>
-                  
+
                   <!-- 参加日 -->
                   <div class="join-date">
                     <span>参加日: {{ formatJoinDate(member.joinDate) }}</span>
                   </div>
                 </div>
               </div>
-              
+
               <!-- 右側カラム: 吹き出しコメント -->
               <div class="member-card-right">
                 <div class="speech-bubbles">
-                  <div 
-                    v-for="(comment, index) in getMemberComments(member.id).slice(0, 3)" 
+                  <div
+                    v-for="(comment, index) in getMemberComments(
+                      member.id
+                    ).slice(0, 3)"
                     :key="comment.id"
-                    :class="['speech-bubble', index % 2 === 0 ? 'bubble-left' : 'bubble-right']"
+                    :class="[
+                      'speech-bubble',
+                      index % 2 === 0 ? 'bubble-left' : 'bubble-right',
+                    ]"
                     @click="scrollToMemberByName(comment.authorName)"
                   >
                     <div class="bubble-content">
@@ -177,24 +233,30 @@
                       <div class="bubble-date">{{ comment.date }}</div>
                     </div>
                   </div>
-                  
-                  <div v-if="getMemberComments(member.id).length === 0" class="no-comments">
+
+                  <div
+                    v-if="getMemberComments(member.id).length === 0"
+                    class="no-comments"
+                  >
                     <div class="empty-comment">
                       <span>コメントがありません</span>
                     </div>
                   </div>
                 </div>
-                
+
                 <!-- メッセージ送信欄風コメント追加ボタン -->
                 <div class="comment-input-area">
-                  <button @click="openCommentModal(member.id)" class="message-send-btn" title="コメントを追加">
+                  <button
+                    @click="openCommentModal(member.id)"
+                    class="message-send-btn"
+                    title="コメントを追加"
+                  >
                     <svg viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                      <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
                     </svg>
                   </button>
                 </div>
               </div>
-              
             </div>
           </div>
           <div v-else class="no-members">
@@ -204,7 +266,7 @@
       </div>
     </div>
   </div>
-  
+
   <!-- Comment Modal -->
   <div v-if="showCommentModal" class="modal-overlay" @click="closeCommentModal">
     <div class="modal-content comment-modal" @click.stop>
@@ -247,7 +309,9 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-secondary" @click="closeCommentModal">キャンセル</button>
+        <button class="btn btn-secondary" @click="closeCommentModal">
+          キャンセル
+        </button>
         <button class="btn btn-primary" @click="addComment">投稿</button>
       </div>
     </div>
@@ -255,183 +319,217 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted } from 'vue'
+import { computed, ref, onMounted } from "vue";
 
 // Props - 親コンポーネントから受け取るデータ
 interface Props {
-  members: any[]
+  members: any[];
   currentUser?: {
-    name: string
-    email: string
-    [key: string]: any
-  }
+    name: string;
+    email: string;
+    [key: string]: any;
+  };
+  targetMember?: string;
 }
 
-const props = defineProps<Props>()
+const props = defineProps<Props>();
 
 // Events - 親コンポーネントに送信するイベント
 defineEmits<{
-  navigate: [page: string]
-}>()
+  navigate: [page: string];
+}>();
 
 // Comment system
-const showCommentModal = ref(false)
-const commentingMemberId = ref<number | null>(null)
+const showCommentModal = ref(false);
+const commentingMemberId = ref<number | null>(null);
 const newComment = ref({
   authorName: "",
   content: "",
-})
-const memberComments = ref<any[]>([])
+});
+const memberComments = ref<any[]>([]);
 
 // Photo carousel state
-const currentPhotoIndexes = ref<Record<number, number>>({})
+const currentPhotoIndexes = ref<Record<number, number>>({});
+
+// Scroll to specific member
+const scrollToMember = (memberName: string) => {
+  const memberElement = document.getElementById(`member-${memberName}`);
+  if (memberElement) {
+    memberElement.scrollIntoView({ behavior: "smooth", block: "center" });
+    // ハイライト効果
+    memberElement.classList.add("highlighted");
+    setTimeout(() => {
+      memberElement.classList.remove("highlighted");
+    }, 3000);
+  }
+};
+
+// Watch for target member changes
+import { watch } from "vue";
+watch(
+  () => props.targetMember,
+  (newTarget) => {
+    if (newTarget) {
+      setTimeout(() => scrollToMember(newTarget), 100);
+    }
+  },
+  { immediate: true }
+);
 const swipeState = ref({
   isSwipe: false,
   startX: 0,
   currentX: 0,
-  memberId: null as number | null
-})
+  memberId: null as number | null,
+});
 
 // 全メンバーを統合表示（コアメンバーを上位に）
 const allMembers = computed(() => {
-  const featured = props.members.filter(member => member.featured)
-  const regular = props.members.filter(member => !member.featured)
-  return [...featured, ...regular]
-})
+  const featured = props.members.filter((member) => member.featured);
+  const regular = props.members.filter((member) => !member.featured);
+  return [...featured, ...regular];
+});
 
 // ログインユーザーの情報
-const currentUserName = computed(() => props.currentUser?.name || '')
+const currentUserName = computed(() => props.currentUser?.name || "");
 
 // 現在コメントしようとしているカードが自分のカードかどうか
 const isOwnCard = computed(() => {
-  const targetMember = props.members.find(m => m.id === commentingMemberId.value)
-  return targetMember?.email === props.currentUser?.email
-})
+  const targetMember = props.members.find(
+    (m) => m.id === commentingMemberId.value
+  );
+  return targetMember?.email === props.currentUser?.email;
+});
 
 // Comment functions
 const openCommentModal = (memberId: number) => {
-  commentingMemberId.value = memberId
-  showCommentModal.value = true
-  
+  commentingMemberId.value = memberId;
+  showCommentModal.value = true;
+
   // 対象メンバーを取得
-  const targetMember = props.members.find(m => m.id === memberId)
-  const isOwn = targetMember?.email === props.currentUser?.email
-  
+  const targetMember = props.members.find((m) => m.id === memberId);
+  const isOwn = targetMember?.email === props.currentUser?.email;
+
   // フォームを初期化
   newComment.value = {
-    authorName: isOwn ? "" : (props.currentUser?.name || ""),
+    authorName: isOwn ? "" : props.currentUser?.name || "",
     content: "",
-  }
-}
+  };
+};
 
 const closeCommentModal = () => {
-  showCommentModal.value = false
-  commentingMemberId.value = null
-}
+  showCommentModal.value = false;
+  commentingMemberId.value = null;
+};
 
 const addComment = () => {
   // 自分のカードの場合は名前の入力チェック、他人のカードの場合は自動で名前が設定される
   if (!newComment.value.content.trim()) {
-    alert("コメントを入力してください")
-    return
+    alert("コメントを入力してください");
+    return;
   }
-  
+
   if (isOwnCard.value && !newComment.value.authorName.trim()) {
-    alert("名前を入力してください")
-    return
+    alert("名前を入力してください");
+    return;
   }
-  
+
   const comment = {
     id: Date.now(),
     memberId: commentingMemberId.value,
     authorName: newComment.value.authorName.trim(),
     content: newComment.value.content.trim(),
-    date: new Date().toLocaleDateString('ja-JP', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
+    date: new Date().toLocaleDateString("ja-JP", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     }),
-    position: Math.random() < 0.5 ? 'left' : 'right' // ランダムに左右を決定
-  }
-  
-  memberComments.value.push(comment)
-  
+    position: Math.random() < 0.5 ? "left" : "right", // ランダムに左右を決定
+  };
+
+  memberComments.value.push(comment);
+
   // localStorage に保存
-  localStorage.setItem('memberComments', JSON.stringify(memberComments.value))
-  
-  closeCommentModal()
-  
+  localStorage.setItem("memberComments", JSON.stringify(memberComments.value));
+
+  closeCommentModal();
+
   // 成功メッセージを表示
-  alert("コメントを追加しました！")
-}
+  alert("コメントを追加しました！");
+};
 
 const getMemberComments = (memberId: number) => {
-  return memberComments.value.filter(comment => comment.memberId === memberId)
-}
+  return memberComments.value.filter(
+    (comment) => comment.memberId === memberId
+  );
+};
 
 // メンバーの写真配列を取得
 const getMemberPhotos = (member: any) => {
-  if (member.photos && Array.isArray(member.photos) && member.photos.length > 0) {
-    return member.photos
+  if (
+    member.photos &&
+    Array.isArray(member.photos) &&
+    member.photos.length > 0
+  ) {
+    return member.photos;
   }
-  return []
-}
+  return [];
+};
 
 // 複数写真があるかチェック
 const hasMultiplePhotos = (member: any) => {
-  return getMemberPhotos(member).length > 1
-}
+  return getMemberPhotos(member).length > 1;
+};
 
 // 現在の写真インデックスを取得
 const getCurrentPhotoIndex = (memberId: number) => {
-  return currentPhotoIndexes.value[memberId] || 0
-}
+  return currentPhotoIndexes.value[memberId] || 0;
+};
 
 // 現在表示する写真を取得
 const getCurrentPhoto = (member: any) => {
-  const photos = getMemberPhotos(member)
-  if (photos.length === 0) return null
-  
-  const index = getCurrentPhotoIndex(member.id)
-  return photos[index] || photos[0]
-}
+  const photos = getMemberPhotos(member);
+  if (photos.length === 0) return null;
+
+  const index = getCurrentPhotoIndex(member.id);
+  return photos[index] || photos[0];
+};
 
 // 次の写真に切り替え（ループ）
 const nextPhoto = (memberId: number) => {
-  const member = props.members.find(m => m.id === memberId)
-  if (!member) return
-  
-  const photos = getMemberPhotos(member)
-  if (photos.length <= 1) return
-  
-  const currentIndex = getCurrentPhotoIndex(memberId)
-  const nextIndex = (currentIndex + 1) % photos.length
-  currentPhotoIndexes.value[memberId] = nextIndex
-}
+  const member = props.members.find((m) => m.id === memberId);
+  if (!member) return;
+
+  const photos = getMemberPhotos(member);
+  if (photos.length <= 1) return;
+
+  const currentIndex = getCurrentPhotoIndex(memberId);
+  const nextIndex = (currentIndex + 1) % photos.length;
+  currentPhotoIndexes.value[memberId] = nextIndex;
+};
 
 // 前の写真に切り替え（ループ）
 const previousPhoto = (memberId: number) => {
-  const member = props.members.find(m => m.id === memberId)
-  if (!member) return
-  
-  const photos = getMemberPhotos(member)
-  if (photos.length <= 1) return
-  
-  const currentIndex = getCurrentPhotoIndex(memberId)
-  const prevIndex = (currentIndex - 1 + photos.length) % photos.length
-  currentPhotoIndexes.value[memberId] = prevIndex
-}
+  const member = props.members.find((m) => m.id === memberId);
+  if (!member) return;
+
+  const photos = getMemberPhotos(member);
+  if (photos.length <= 1) return;
+
+  const currentIndex = getCurrentPhotoIndex(memberId);
+  const prevIndex = (currentIndex - 1 + photos.length) % photos.length;
+  currentPhotoIndexes.value[memberId] = prevIndex;
+};
 
 // 特定の写真に切り替え
 const setCurrentPhoto = (memberId: number, index: number) => {
-  const member = props.members.find(m => m.id === memberId)
-  if (!member) return
-  
-  const photos = getMemberPhotos(member)
+  const member = props.members.find((m) => m.id === memberId);
+  if (!member) return;
+
+  const photos = getMemberPhotos(member);
   if (index >= 0 && index < photos.length) {
-    currentPhotoIndexes.value[memberId] = index
+    currentPhotoIndexes.value[memberId] = index;
   }
-}
+};
 
 // タッチスワイプハンドラー
 const handleTouchStart = (event: TouchEvent, memberId: number) => {
@@ -439,38 +537,38 @@ const handleTouchStart = (event: TouchEvent, memberId: number) => {
     isSwipe: true,
     startX: event.touches[0].clientX,
     currentX: event.touches[0].clientX,
-    memberId
-  }
-}
+    memberId,
+  };
+};
 
 const handleTouchMove = (event: TouchEvent) => {
-  if (!swipeState.value.isSwipe) return
-  swipeState.value.currentX = event.touches[0].clientX
-}
+  if (!swipeState.value.isSwipe) return;
+  swipeState.value.currentX = event.touches[0].clientX;
+};
 
 const handleTouchEnd = (event: TouchEvent, memberId: number) => {
-  if (!swipeState.value.isSwipe) return
-  
-  const deltaX = swipeState.value.currentX - swipeState.value.startX
-  const threshold = 50 // スワイプの閾値
-  
+  if (!swipeState.value.isSwipe) return;
+
+  const deltaX = swipeState.value.currentX - swipeState.value.startX;
+  const threshold = 50; // スワイプの閾値
+
   if (Math.abs(deltaX) > threshold) {
     if (deltaX > 0) {
       // 右にスワイプ → 前の写真
-      previousPhoto(memberId)
+      previousPhoto(memberId);
     } else {
       // 左にスワイプ → 次の写真
-      nextPhoto(memberId)
+      nextPhoto(memberId);
     }
   }
-  
+
   swipeState.value = {
     isSwipe: false,
     startX: 0,
     currentX: 0,
-    memberId: null
-  }
-}
+    memberId: null,
+  };
+};
 
 // マウスドラッグハンドラー（デスクトップ用）
 const handleMouseDown = (event: MouseEvent, memberId: number) => {
@@ -478,143 +576,150 @@ const handleMouseDown = (event: MouseEvent, memberId: number) => {
     isSwipe: true,
     startX: event.clientX,
     currentX: event.clientX,
-    memberId
-  }
-  event.preventDefault()
-}
+    memberId,
+  };
+  event.preventDefault();
+};
 
 const handleMouseMove = (event: MouseEvent) => {
-  if (!swipeState.value.isSwipe) return
-  swipeState.value.currentX = event.clientX
-}
+  if (!swipeState.value.isSwipe) return;
+  swipeState.value.currentX = event.clientX;
+};
 
 const handleMouseEnd = (event: MouseEvent, memberId: number) => {
-  if (!swipeState.value.isSwipe) return
-  
-  const deltaX = swipeState.value.currentX - swipeState.value.startX
-  const threshold = 50
-  
+  if (!swipeState.value.isSwipe) return;
+
+  const deltaX = swipeState.value.currentX - swipeState.value.startX;
+  const threshold = 50;
+
   if (Math.abs(deltaX) > threshold) {
     if (deltaX > 0) {
-      previousPhoto(memberId)
+      previousPhoto(memberId);
     } else {
-      nextPhoto(memberId)
+      nextPhoto(memberId);
     }
   }
-  
+
   swipeState.value = {
     isSwipe: false,
     startX: 0,
     currentX: 0,
-    memberId: null
-  }
-}
+    memberId: null,
+  };
+};
 
 // コメント作成者のメンバー情報にスクロール
 const scrollToMemberByName = (authorName: string) => {
   // 作成者名からメンバーを検索（部分一致も考慮）
-  const targetMember = props.members.find(member => {
+  const targetMember = props.members.find((member) => {
     // 完全一致を優先
-    if (member.name === authorName) return true
+    if (member.name === authorName) return true;
     // 部分一致も確認（名前の一部が含まれている場合）
-    if (member.name.includes(authorName) || authorName.includes(member.name)) return true
-    return false
-  })
-  
+    if (member.name.includes(authorName) || authorName.includes(member.name))
+      return true;
+    return false;
+  });
+
   if (!targetMember) {
-    console.log('対応するメンバーが見つかりませんでした:', authorName)
-    return
+    console.log("対応するメンバーが見つかりませんでした:", authorName);
+    return;
   }
-  
+
   // メンバーカードのDOM要素を検索
-  const memberCard = document.querySelector(`[data-member-id="${targetMember.id}"]`) as HTMLElement
-  
+  const memberCard = document.querySelector(
+    `[data-member-id="${targetMember.id}"]`
+  ) as HTMLElement;
+
   if (memberCard) {
     // スムーズスクロールでメンバーカードに移動
-    memberCard.scrollIntoView({ 
-      behavior: 'smooth', 
-      block: 'center' 
-    })
-    
+    memberCard.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+    });
+
     // 一時的にハイライト効果を追加
-    memberCard.classList.add('highlight-member')
+    memberCard.classList.add("highlight-member");
     setTimeout(() => {
-      memberCard.classList.remove('highlight-member')
-    }, 2000)
+      memberCard.classList.remove("highlight-member");
+    }, 2000);
   }
-}
+};
 
 // メンバーのアバターを取得
 const getMemberAvatar = (member: any) => {
   // member.avatarがあり、プレースホルダーでない場合
-  if (member.avatar && member.avatar.trim() && !member.avatar.includes('placeholder')) {
-    return member.avatar
+  if (
+    member.avatar &&
+    member.avatar.trim() &&
+    !member.avatar.includes("placeholder")
+  ) {
+    return member.avatar;
   }
-  
+
   // アバターがない場合はnullを返してプレースホルダーを表示
-  return null
-}
+  return null;
+};
 
 // メンバーのカテゴリを取得 - 仕様不確定のため非表示
 // const getMemberCategories = (member: any) => {
 //   const categories = []
-  
+
 //   // DEV category for developers
-//   if (member.skills && member.skills.some((skill: string) => 
+//   if (member.skills && member.skills.some((skill: string) =>
 //     ['Vue.js', 'React', 'TypeScript', 'JavaScript', 'Python', 'Node.js'].includes(skill)
 //   )) {
 //     categories.push({ id: 'dev', emoji: '👩‍💻', label: 'DEV', name: 'Developer' })
 //   }
-  
+
 //   // MOM category for all members (assuming this is a mom community)
 //   categories.push({ id: 'mom', emoji: '👩‍👧‍👦', label: 'MOM', name: 'Mom' })
-  
+
 //   // DESIGN category for designers
-//   if (member.skills && member.skills.some((skill: string) => 
+//   if (member.skills && member.skills.some((skill: string) =>
 //     ['Figma', 'Sketch', 'Photoshop', 'Illustrator'].includes(skill)
 //   )) {
 //     categories.push({ id: 'design', emoji: '🎨', label: 'DESIGN', name: 'Designer' })
 //   }
-  
+
 //   // AI category for AI enthusiasts
-//   if (member.bio && member.bio.toLowerCase().includes('ai') || 
+//   if (member.bio && member.bio.toLowerCase().includes('ai') ||
 //       member.role && member.role.toLowerCase().includes('ai')) {
 //     categories.push({ id: 'ai', emoji: '🤖', label: 'AI', name: 'AI Enthusiast' })
 //   }
-  
+
 //   return categories.slice(0, 3) // 最大3個まで
 // }
 
 // 参加日をフォーマット
 const formatJoinDate = (joinDate: string) => {
-  if (!joinDate) return '不明'
-  
+  if (!joinDate) return "不明";
+
   try {
-    const date = new Date(joinDate)
-    return date.toLocaleDateString('ja-JP', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    })
+    const date = new Date(joinDate);
+    return date.toLocaleDateString("ja-JP", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
   } catch (error) {
-    return '不明'
+    return "不明";
   }
-}
+};
 
 // プロフィールアイコン関連の関数は削除
 
 // Load comments from localStorage on mount
 onMounted(() => {
-  const savedComments = localStorage.getItem('memberComments')
+  const savedComments = localStorage.getItem("memberComments");
   if (savedComments) {
     try {
-      memberComments.value = JSON.parse(savedComments)
+      memberComments.value = JSON.parse(savedComments);
     } catch (error) {
-      console.error('Failed to load comments:', error)
-      memberComments.value = []
+      console.error("Failed to load comments:", error);
+      memberComments.value = [];
     }
   }
-})
+});
 </script>
 
 <style scoped>
@@ -622,7 +727,8 @@ onMounted(() => {
 .members-page {
   padding: var(--spacing-12) 0;
   min-height: 80vh;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    sans-serif;
 }
 
 .page-header {
@@ -679,6 +785,26 @@ onMounted(() => {
   gap: var(--spacing-6);
 }
 
+.member-card.highlighted {
+  animation: highlight 3s ease-out;
+  box-shadow: 0 0 0 3px var(--primary-purple);
+}
+
+@keyframes highlight {
+  0% {
+    box-shadow: 0 0 0 3px var(--primary-purple);
+    transform: scale(1.02);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(155, 123, 216, 0.5);
+    transform: scale(1.02);
+  }
+  100% {
+    box-shadow: 0 8px 32px rgba(155, 123, 216, 0.12);
+    transform: scale(1);
+  }
+}
+
 .member-card:hover {
   transform: translateY(-8px);
   box-shadow: 0 20px 40px rgba(155, 123, 216, 0.2);
@@ -691,7 +817,7 @@ onMounted(() => {
 }
 
 .member-card.featured::before {
-  content: '⭐';
+  content: "⭐";
   position: absolute;
   top: 12px;
   right: 12px;
@@ -824,7 +950,11 @@ onMounted(() => {
 .photo-placeholder {
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, var(--primary-purple-lighter) 0%, var(--primary-purple-light) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--primary-purple-lighter) 0%,
+    var(--primary-purple-light) 100%
+  );
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -871,7 +1001,7 @@ onMounted(() => {
   letter-spacing: 0.5px;
   box-shadow: 0 3px 8px rgba(255, 107, 107, 0.3);
   transition: all 0.2s ease;
-  font-family: 'Courier New', monospace;
+  font-family: "Courier New", monospace;
   border: 2px solid #fff;
 }
 
@@ -994,7 +1124,11 @@ onMounted(() => {
 .avatar-placeholder {
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, var(--primary-purple) 0%, var(--primary-purple-dark) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--primary-purple) 0%,
+    var(--primary-purple-dark) 100%
+  );
   color: var(--white);
   display: flex;
   align-items: center;
@@ -1153,7 +1287,11 @@ onMounted(() => {
 .message-send-btn:hover {
   transform: scale(1.1);
   box-shadow: 0 4px 10px rgba(155, 123, 216, 0.4);
-  background: linear-gradient(135deg, #8b5cf6 0%, var(--primary-purple-dark) 100%);
+  background: linear-gradient(
+    135deg,
+    #8b5cf6 0%,
+    var(--primary-purple-dark) 100%
+  );
 }
 
 .message-send-btn:active {
@@ -1459,7 +1597,8 @@ onMounted(() => {
   border: 1px solid var(--gray-300);
   border-radius: var(--radius-md);
   font-size: var(--font-size-base);
-  transition: border-color var(--transition-base), box-shadow var(--transition-base);
+  transition: border-color var(--transition-base),
+    box-shadow var(--transition-base);
 }
 
 .form-group input:focus,
@@ -1528,32 +1667,32 @@ onMounted(() => {
   .members-page {
     padding: var(--spacing-8) 0;
   }
-  
+
   .page-header h1 {
     font-size: var(--font-size-3xl);
   }
-  
+
   .page-header p {
     font-size: var(--font-size-lg);
   }
-  
+
   .members-grid {
     gap: var(--spacing-4);
   }
-  
+
   .member-card {
     grid-template-columns: 1fr;
     grid-template-rows: auto auto auto;
     min-height: auto;
     padding: var(--spacing-4);
   }
-  
+
   .member-card-left,
   .member-card-center,
   .member-card-right {
     grid-column: 1;
   }
-  
+
   .member-card-left {
     grid-row: 1;
     display: grid;
@@ -1561,50 +1700,50 @@ onMounted(() => {
     grid-template-rows: auto auto;
     gap: var(--spacing-2);
   }
-  
+
   .member-photo {
     grid-column: 1;
     grid-row: 1 / 3;
     aspect-ratio: 4/5;
   }
-  
+
   .website-badge {
     grid-column: 2;
     grid-row: 1;
     align-self: start;
     margin-top: 0;
   }
-  
+
   .icon-categories {
     grid-column: 2;
     grid-row: 2;
     align-self: end;
   }
-  
+
   .member-card-center {
     grid-row: 2;
     padding: var(--spacing-3) 0;
   }
-  
+
   .member-card-right {
     grid-row: 3;
     max-height: 140px;
   }
-  
+
   .comment-input-area {
     padding: var(--spacing-1);
   }
-  
+
   .message-send-btn {
     width: 24px;
     height: 24px;
   }
-  
+
   .message-send-btn svg {
     width: 12px;
     height: 12px;
   }
-  
+
   .speech-bubbles {
     flex-direction: row;
     gap: var(--spacing-1);
@@ -1613,26 +1752,26 @@ onMounted(() => {
     flex: none;
     height: auto;
   }
-  
+
   .speech-bubble {
     flex-shrink: 0;
     max-width: 120px;
   }
-  
+
   .comment-input-area {
     margin-top: var(--spacing-2);
     justify-content: center;
   }
-  
+
   .modal-content {
     margin: var(--spacing-4);
     width: calc(100% - 2 * var(--spacing-4));
   }
-  
+
   .modal-footer {
     flex-direction: column-reverse;
   }
-  
+
   .btn {
     width: 100%;
   }
@@ -1645,11 +1784,12 @@ onMounted(() => {
 }
 
 @keyframes highlightPulse {
-  0%, 100% { 
+  0%,
+  100% {
     transform: translateY(-8px);
     box-shadow: 0 20px 40px rgba(155, 123, 216, 0.2);
   }
-  50% { 
+  50% {
     transform: translateY(-12px);
     box-shadow: 0 25px 50px rgba(155, 123, 216, 0.4);
   }

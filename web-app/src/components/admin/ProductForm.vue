@@ -35,23 +35,21 @@
     </div>
     
     <div class="form-group">
-      <label>作者名</label>
-      <input
-        type="text"
-        :value="authorName"
-        @input="updateAuthor('name', $event.target.value)"
+      <label>作者</label>
+      <select
+        v-model="selectedMemberId"
+        @change="onMemberSelect"
         required
-      />
-    </div>
-    
-    <div class="form-group">
-      <label>作者の役割</label>
-      <input
-        type="text"
-        :value="authorRole"
-        @input="updateAuthor('role', $event.target.value)"
-        required
-      />
+      >
+        <option value="" disabled>メンバーを選択してください</option>
+        <option
+          v-for="member in props.members"
+          :key="member.id"
+          :value="member.id"
+        >
+          {{ member.name }} ({{ member.role }})
+        </option>
+      </select>
     </div>
     
     <div class="form-group">
@@ -92,6 +90,7 @@ interface Props {
     author: {
       name: string
       role?: string
+      avatar?: string
     }
     authorName?: string
     authorRole?: string
@@ -99,6 +98,12 @@ interface Props {
     [key: string]: any
   }
   isEditing: boolean
+  members?: Array<{
+    id: number
+    name: string
+    role: string
+    avatar?: string
+  }>
 }
 
 const props = defineProps<Props>()
@@ -111,6 +116,42 @@ const emit = defineEmits<{
 
 // Local state for form
 const localProduct = ref({ ...props.product })
+const selectedMemberId = ref<number | string>('')
+
+// Initialize selected member on mount or when editing
+const initializeSelectedMember = () => {
+  if (props.members && localProduct.value.author?.name) {
+    const member = props.members.find(m => m.name === localProduct.value.author.name)
+    if (member) {
+      selectedMemberId.value = member.id
+      // 既存の成果物編集時、メンバーの最新avatarで更新
+      // プレースホルダーURLの場合も更新
+      const currentAvatar = localProduct.value.author.avatar
+      const isCurrentPlaceholder = currentAvatar?.includes('placeholder')
+      const memberAvatar = member.avatar?.includes('placeholder') ? '' : member.avatar
+      
+      if (!currentAvatar || isCurrentPlaceholder || (memberAvatar && memberAvatar !== currentAvatar)) {
+        localProduct.value.author.avatar = memberAvatar || ''
+      }
+    }
+  }
+}
+
+// Handle member selection
+const onMemberSelect = () => {
+  const member = props.members?.find(m => m.id === Number(selectedMemberId.value))
+  if (member) {
+    // プレースホルダーURLは除外
+    const avatar = member.avatar?.includes('placeholder') ? '' : (member.avatar || '')
+    localProduct.value.author = {
+      name: member.name,
+      role: member.role,
+      avatar: avatar
+    }
+    localProduct.value.authorName = member.name
+    localProduct.value.authorRole = member.role
+  }
+}
 
 // Computed properties for author handling
 const authorName = computed({
@@ -153,9 +194,17 @@ const handleSubmit = () => {
   }
 
   // Ensure author object structure
+  // 選択したメンバーのavatarを含める
+  const selectedMember = props.members?.find(m => m.id === Number(selectedMemberId.value))
   localProduct.value.author = {
     name: authorName.value,
-    role: authorRole.value
+    role: authorRole.value,
+    avatar: selectedMember?.avatar || localProduct.value.author?.avatar || ''
+  }
+  
+  // プレースホルダーURLの場合は空文字にする
+  if (localProduct.value.author.avatar?.includes('placeholder')) {
+    localProduct.value.author.avatar = ''
   }
 
   // Add timestamp for new products
@@ -178,6 +227,13 @@ onMounted(() => {
   if (localProduct.value.tags && !localProduct.value.tagString) {
     localProduct.value.tagString = localProduct.value.tags.join(', ')
   }
+  // Initialize selected member
+  initializeSelectedMember()
+})
+
+// Watch for member list changes
+watch(() => props.members, () => {
+  initializeSelectedMember()
 })
 </script>
 

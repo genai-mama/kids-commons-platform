@@ -62,8 +62,16 @@
                 </div>
                 
                 <div class="product-footer">
-                  <div class="product-author">
-                    <div class="author-avatar">{{ product.author.avatar }}</div>
+                  <div class="product-author" @click="navigateToMember(product.author.name)" title="メンバーページへ">
+                    <img 
+                      v-if="product.author.avatar" 
+                      :src="product.author.avatar" 
+                      :alt="product.author.name"
+                      class="author-avatar"
+                    />
+                    <div v-else class="author-avatar-placeholder">
+                      {{ product.author.name.charAt(0).toUpperCase() }}
+                    </div>
                     <div class="author-info">
                       <div class="author-name">{{ product.author.name }}</div>
                     </div>
@@ -132,8 +140,9 @@ interface Props {
 const props = defineProps<Props>()
 
 // Events - 親コンポーネントに送信するイベント
-defineEmits<{
+const emit = defineEmits<{
   navigate: [page: string]
+  'navigate-to-member': [memberName: string]
 }>()
 
 // フィーチャードプロダクトと最新ニュースを取得
@@ -154,6 +163,10 @@ const formatDate = (dateString: string) => {
     month: 'long',
     day: 'numeric'
   })
+}
+
+const navigateToMember = (memberName: string) => {
+  emit('navigate-to-member', memberName)
 }
 </script>
 
@@ -411,9 +424,23 @@ const formatDate = (dateString: string) => {
   display: flex;
   align-items: center;
   gap: var(--spacing-2);
+  cursor: pointer;
+  transition: transform var(--transition-base);
+}
+
+.product-author:hover {
+  transform: scale(1.05);
 }
 
 .author-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--gray-200);
+}
+
+.author-avatar-placeholder {
   width: 40px;
   height: 40px;
   border-radius: 50%;
