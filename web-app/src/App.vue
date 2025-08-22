@@ -173,9 +173,11 @@
       :login-form="loginForm"
       :is-x-auth-loading="isXAuthLoading"
       :is-x-auth-available="isXAuthAvailable()"
+      :is-loading="authLoading"
       @close="closeLoginModal"
       @login="handleLoginWithForm"
       @x-login="handleXLogin"
+      @google-login="handleGoogleLogin"
       @show-signup="showSignupModal = true; showLoginModal = false"
     />
 
@@ -254,6 +256,7 @@ const {
   error: authError,
   login: firebaseLogin,
   signup: firebaseSignup,
+  signInWithGoogle,
   logout: firebaseLogout,
   getUserProfile,
   initializeAuth
@@ -651,6 +654,108 @@ const handleLogin = async () => {
         alert("ログインしました！\n（ストレージ容量が不足しています。一部機能が制限される可能性があります）");
       } else {
         alert("ログインに失敗しました。");
+      }
+    }
+  }
+};
+
+const handleGoogleLogin = async () => {
+  try {
+    // Firebase AuthenticationでGoogleログイン
+    const user = await signInWithGoogle();
+    
+    if (user) {
+      isLoggedIn.value = true;
+      
+      // ユーザープロフィールをローカルストレージから読み込み
+      console.log("Googleログイン処理:", user.email);
+      const savedProfile = localStorage.getItem(`profile_${user.email}`);
+      console.log("保存されたプロフィール:", savedProfile ? "見つかった" : "見つからない");
+      
+      // membersコレクションからユーザー情報を検索
+      const existingMember = members.value.find(member => member.email === user.email);
+      
+      if (savedProfile) {
+        userProfile.value = JSON.parse(savedProfile);
+        console.log("プロフィール読み込み完了:", userProfile.value.name);
+      } else if (existingMember) {
+        // ローカルにないがメンバーコレクションにはある場合
+        userProfile.value = {
+          ...existingMember,
+          skillsString: existingMember.skills ? existingMember.skills.join(", ") : "",
+          iconDescriptionsString: existingMember.iconDescriptions?.join(", ") || ""
+        };
+        console.log("既存メンバープロフィール読み込み完了:", userProfile.value.name);
+      } else {
+        // 新規ユーザーの場合、デフォルトプロフィールを作成
+        userProfile.value = {
+          name: user.displayName || user.email.split('@')[0],
+          role: "メンバー",
+          bio: "よろしくお願いします！",
+          avatar: user.photoURL || "",
+          skills: [],
+          skillsString: "",
+          location: "",
+          website: "",
+          personalWebsite: "",
+          twitter: "",
+          github: "",
+          visible: true,
+          email: user.email,
+          photos: [],
+          icons: [],
+          iconDescriptions: [],
+          photosString: "",
+          iconsString: "",
+          iconDescriptionsString: "",
+          joinDate: new Date().toISOString(),
+          featured: false,
+          iconList: []
+        };
+        
+        console.log('新規Googleユーザープロフィールを作成:', userProfile.value.name);
+      }
+      
+      currentUser.value = userProfile.value;
+      
+      // ログイン状態をローカルストレージに保存
+      localStorage.setItem('isLoggedIn', 'true');
+      localStorage.setItem('currentUserEmail', user.email);
+      
+      // 既存メンバーの情報でプロフィールを同期
+      if (existingMember) {
+        // 既存メンバーの情報でプロフィールを更新
+        userProfile.value = {
+          ...userProfile.value,
+          ...existingMember,
+          skillsString: existingMember.skills ? existingMember.skills.join(", ") : "",
+          iconDescriptionsString: existingMember.iconDescriptions?.join(", ") || ""
+        };
+        currentUser.value = userProfile.value;
+        console.log('Profile synced with existing member data on Google login');
+      }
+      
+      // 写真データを別途読み込み
+      userProfile.value.photos = loadUserPhotos(user.email);
+      
+      // ログイン時にもメンバーデータを同期
+      await updateMemberProfile();
+      
+      closeLoginModal();
+      alert("Googleでログインしました！");
+    }
+  } catch (error) {
+    console.error('Google login failed:', error);
+    // Firebase Authエラーの場合は、useAuthが既に適切なメッセージを設定済み
+    if (authError.value) {
+      alert(authError.value);
+    } else {
+      // QuotaExceededError等のその他のエラー
+      if (error.name === 'QuotaExceededError') {
+        closeLoginModal();
+        alert("Googleでログインしました！\n（ストレージ容量が不足しています。一部機能が制限される可能性があります）");
+      } else {
+        alert("Googleログインに失敗しました。");
       }
     }
   }
@@ -1254,13 +1359,109 @@ const searchProducts = (products: any[], query: string) => {
 // Vue.jsコンポーネントベースなので、レンダー関数は不要
 // データは自動的にリアクティブに表示される
 
+// Firebase認証状態の監視
+watch(authUser, async (newUser) => {
+  console.log('Firebase Auth User changed:', newUser?.email || 'No user');
+  
+  if (newUser) {
+    // Firebase認証が成功している場合、アプリケーションのログイン状態を更新
+    isLoggedIn.value = true;
+    
+    try {
+      // ユーザープロフィールをローカルストレージから読み込み
+      const savedProfile = localStorage.getItem(`profile_${newUser.email}`);
+      console.log("保存されたプロフィール:", savedProfile ? "見つかった" : "見つからない");
+      
+      // membersコレクションからユーザー情報を検索
+      const existingMember = members.value.find(member => member.email === newUser.email);
+      
+      if (savedProfile) {
+        userProfile.value = JSON.parse(savedProfile);
+        console.log("プロフィール読み込み完了:", userProfile.value.name);
+      } else if (existingMember) {
+        // ローカルにないがメンバーコレクションにはある場合
+        userProfile.value = {
+          ...existingMember,
+          skillsString: existingMember.skills ? existingMember.skills.join(", ") : "",
+          iconDescriptionsString: existingMember.iconDescriptions?.join(", ") || ""
+        };
+        console.log("既存メンバープロフィール読み込み完了:", userProfile.value.name);
+      } else {
+        // 新規ユーザーの場合、デフォルトプロフィールを作成
+        userProfile.value = {
+          name: newUser.displayName || newUser.email.split('@')[0],
+          role: "メンバー",
+          bio: "よろしくお願いします！",
+          avatar: newUser.photoURL || "",
+          skills: [],
+          skillsString: "",
+          location: "",
+          website: "",
+          personalWebsite: "",
+          twitter: "",
+          github: "",
+          visible: true,
+          email: newUser.email,
+          photos: [],
+          icons: [],
+          iconDescriptions: [],
+          photosString: "",
+          iconsString: "",
+          iconDescriptionsString: "",
+          joinDate: new Date().toISOString(),
+          featured: false,
+          iconList: []
+        };
+        
+        console.log('新規ユーザープロフィールを作成:', userProfile.value.name);
+      }
+      
+      currentUser.value = userProfile.value;
+      
+      // ログイン状態をローカルストレージに保存
+      localStorage.setItem('isLoggedIn', 'true');
+      localStorage.setItem('currentUserEmail', newUser.email);
+      
+      // 既存メンバーの情報でプロフィールを同期
+      if (existingMember) {
+        userProfile.value = {
+          ...userProfile.value,
+          ...existingMember,
+          skillsString: existingMember.skills ? existingMember.skills.join(", ") : "",
+          iconDescriptionsString: existingMember.iconDescriptions?.join(", ") || ""
+        };
+        currentUser.value = userProfile.value;
+        console.log('Profile synced with existing member data on auth state change');
+      }
+      
+      // 写真データを別途読み込み
+      userProfile.value.photos = loadUserPhotos(newUser.email);
+      
+      // ログイン時にもメンバーデータを同期
+      await updateMemberProfile();
+      
+      console.log("Firebase認証からのログイン処理完了:", newUser.email);
+    } catch (error) {
+      console.error('Auth state change processing error:', error);
+    }
+  } else {
+    // ログアウト状態
+    isLoggedIn.value = false;
+    currentUser.value = null;
+    userProfile.value = null;
+    localStorage.removeItem('isLoggedIn');
+    localStorage.removeItem('currentUserEmail');
+    console.log("ログアウト状態に更新");
+  }
+});
+
 // Initialization
 onMounted(async () => {
   try {
     console.log("アプリケーション初期化開始");
     
     // Firebase Authの初期化
-    initializeAuth();
+    await initializeAuth();
     
     const savedComments = localStorage.getItem("memberComments");
     if (savedComments) {
